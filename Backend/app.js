@@ -5,6 +5,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 console.log('Environment:', process.env.NODE_ENV);
 console.log('VERCEL:', process.env.VERCEL);
+console.log('MONGO_URI set:', !!process.env.MONGO_URI);
+console.log('INNGEST_SIGNING_KEY set:', !!process.env.INNGEST_SIGNING_KEY);
 
 const express = require('express');
 const cors = require('cors');
@@ -68,11 +70,16 @@ app.get('/api/health', async (req, res) => {
 try {
   console.log('Loading Inngest...');
   const { serve } = require("inngest/express");
+  console.log('Inngest express loaded');
+
   const { inngest, functions } = require("./Inngest/Inngest");
+  console.log('Inngest functions loaded, count:', functions.length);
+
   app.use("/api/inngest", serve({ client: inngest, functions }));
-  console.log('Inngest loaded successfully');
+  console.log('Inngest mounted successfully');
 } catch (e) {
   console.error('Inngest load error:', e.message);
+  console.error(e.stack);
 }
 
 // Error handling
