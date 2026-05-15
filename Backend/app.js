@@ -56,14 +56,38 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/health', async (req, res) => {
+  // Always try to connect if not connected
   if (!isConnected && process.env.MONGO_URI) {
     await ConnectDb();
   }
+
+  // Also check mongoose connection state
+  const mongoState = mongoose.connection.readyState;
+  const connected = isConnected || mongoState === 1;
+
   res.json({
-    status: isConnected ? 'ok' : 'degraded',
-    db: isConnected ? 'connected' : 'disconnected',
-    hasMongoUri: !!process.env.MONGO_URI
+    status: connected ? 'ok' : 'degraded',
+    db: connected ? 'connected' : 'disconnected',
+    hasMongoUri: !!process.env.MONGO_URI,
+    mongoState: mongoState
   });
+});
+
+// Test MongoDB connection endpoint
+app.get('/api/test-db', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      if (process.env.MONGO_URI) {
+        await mongoose.connect(process.env.MONGO_URI);
+      }
+    }
+
+    const User = require('./Models/User');
+    const count = await User.countDocuments();
+    res.json({ success: true, userCount: count });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
 });
 
 // Only load Inngest - it's the main requirement
