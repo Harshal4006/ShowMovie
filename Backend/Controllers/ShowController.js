@@ -1,0 +1,48 @@
+const Show = require('../Models/Show');
+
+const GetShowsByMovie = async (req, res) => {
+  try {
+    const { movieId } = req.params;
+    const shows = await Show.find({ movie: movieId, status: 'active' })
+      .populate('movie')
+      .sort({ showDateTime: 1 });
+    res.json(shows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const GetShowById = async (req, res) => {
+  try {
+    const show = await Show.findById(req.params.id).populate('movie');
+    if (!show) return res.status(404).json({ message: 'Show not found' });
+    res.json(show);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const GetAllShows = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query;
+    let query = {};
+
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    const shows = await Show.find(query)
+      .populate('movie')
+      .sort({ showDateTime: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const total = await Show.countDocuments(query);
+
+    res.json({ shows, total, page, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { GetShowsByMovie, GetShowById, GetAllShows };

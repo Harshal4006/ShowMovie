@@ -1,0 +1,25 @@
+.hero-text {
+  position: relative;
+  color: white;
+  overflow: hidden;
+}
+
+.hero-text::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255,255,255,0.7),
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  animation: sweep 3s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}

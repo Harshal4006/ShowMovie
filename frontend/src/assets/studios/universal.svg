@@ -1,0 +1,7 @@
+<svg width="320" height="96" viewBox="0 0 320 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="88" cy="48" r="26" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>
+  <path d="M66 48H110" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <path d="M88 22C79 30 74 39 74 48C74 57 79 66 88 74" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <path d="M88 22C97 30 102 39 102 48C102 57 97 66 88 74" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <text x="212" y="56" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3" fill="rgba(255,255,255,0.82)">UNIVERSAL</text>
+</svg>

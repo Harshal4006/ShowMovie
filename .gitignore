@@ -1,0 +1,50 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+Backend/node_modules/
+frontend/node_modules/
+
+# Logs
+logs
+*.log
+
+# Temporary files
+temp/
+Backend/Uploads/
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+Backend/dist/
+frontend/dist/
+dist-ssr
+
+# Package lock (use package-lock.json in each project separately)
+package-lock.json
+
+# Misc
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Vercel
+.vercel

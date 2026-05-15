@@ -1,0 +1,27 @@
+.is-animating-left {
+    transform: translateX(0.75rem) scale(0.97);
+    opacity: 0.2;
+    filter: blur(3px);
+}
+
+.is-animating-right {
+    transform: translateX(-0.75rem) scale(0.97);
+    opacity: 0.2;
+    filter: blur(3px);
+}
+
+.trailer-main-image.is-animating,
+.is-animating.trailer-main-image {
+    transform: scale(1.04);
+}
+
+.trailer-main-content.is-animating,
+.is-animating.trailer-main-content {
+    transform: translateY(0.5rem);
+    opacity: 0.7;
+}
+
+.is-animating:not(.trailer-main-image):not(.trailer-main-content) {
+    transform: scale(0.985);
+    opacity: 0.85;
+}

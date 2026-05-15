@@ -1,0 +1,25 @@
+<svg width="220" height="70" viewBox="0 0 220 70" xmlns="http://www.w3.org/2000/svg">
+  <!-- Text -->
+  <text x="10" y="40"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="26"
+        font-weight="600"
+        fill="white">
+    Prime Video
+  </text>
+
+  <!-- Smile Arrow -->
+  <path d="M40 50 Q100 70 160 50"
+        fill="none"
+        stroke="white"
+        stroke-width="3"
+        stroke-linecap="round"/>
+
+  <!-- Arrow Head -->
+  <path d="M150 47 L160 50 L150 53"
+        fill="none"
+        stroke="white"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+</svg>
