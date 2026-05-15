@@ -3,6 +3,9 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
+console.log('Environment:', process.env.NODE_ENV);
+console.log('VERCEL:', process.env.VERCEL);
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -22,16 +25,22 @@ app.use(express.urlencoded({ extended: true }));
 // MongoDB Connection
 let isConnected = false;
 const ConnectDb = async () => {
-  if (!process.env.MONGO_URI || isConnected) {
+  const mongoUri = process.env.MONGO_URI;
+  console.log('MONGO_URI present:', !!mongoUri);
+
+  if (!mongoUri || isConnected) {
     console.log('MONGO_URI not set or already connected');
     return;
   }
+
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
+    console.log('Attempting MongoDB connection...');
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 10000,
     });
     isConnected = true;
-    console.log('MongoDB Connected');
+    console.log('MongoDB Connected successfully');
   } catch (error) {
     console.error('MongoDB Error:', error.message);
   }
@@ -44,8 +53,15 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'ShowMovie API running' });
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: isConnected ? 'ok' : 'degraded', db: isConnected ? 'connected' : 'disconnected' });
+app.get('/api/health', async (req, res) => {
+  if (!isConnected && process.env.MONGO_URI) {
+    await ConnectDb();
+  }
+  res.json({
+    status: isConnected ? 'ok' : 'degraded',
+    db: isConnected ? 'connected' : 'disconnected',
+    hasMongoUri: !!process.env.MONGO_URI
+  });
 });
 
 // Only load Inngest - it's the main requirement
