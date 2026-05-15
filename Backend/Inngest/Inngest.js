@@ -1,26 +1,45 @@
 const { Inngest } = require("inngest");
+const mongoose = require("mongoose");
 
-// Initialize Inngest with signing key from environment
 const inngest = new Inngest({
   id: "movie-ticket-booking",
-  signingKey: process.env.INNGEST_SIGNING_KEY || process.env.INNGEST_SIGNIG_KEY,
+  signingKey: process.env.INNGEST_SIGNING_KEY,
 });
+
+// Helper to ensure MongoDB is connected
+async function ensureDbConnection() {
+  if (mongoose.connection.readyState !== 1) {
+    if (process.env.MONGO_URI) {
+      await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 10000,
+      });
+    }
+  }
+}
 
 const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk", name: "Sync User Creation", triggers: [{ event: "clerk/user.created" }] },
   async ({ event }) => {
+    console.log("Event received:", event.name);
+
     try {
-      // Check if MongoDB is connected by requiring mongoose
-      const mongoose = require('mongoose');
+      await ensureDbConnection();
+
       if (mongoose.connection.readyState !== 1) {
-        return { message: "Database not connected, skipping" };
+        console.log("MongoDB not connected");
+        return { message: "Database not available" };
       }
 
       const User = require("../Models/User");
       const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
+      console.log("Creating user:", id);
+
       const existingUser = await User.findOne({ clerkId: id });
-      if (existingUser) return { message: "User already exists" };
+      if (existingUser) {
+        console.log("User already exists");
+        return { message: "User already exists" };
+      }
 
       const user = await User.create({
         clerkId: id,
@@ -29,6 +48,7 @@ const syncUserCreation = inngest.createFunction(
         img: image_url || "",
       });
 
+      console.log("User created:", user._id);
       return { message: "User created", userId: user._id };
     } catch (error) {
       console.error("Error in syncUserCreation:", error.message);
@@ -40,10 +60,13 @@ const syncUserCreation = inngest.createFunction(
 const syncUserUpdate = inngest.createFunction(
   { id: "sync-user-update", name: "Sync User Update", triggers: [{ event: "clerk/user.updated" }] },
   async ({ event }) => {
+    console.log("Update event received:", event.name);
+
     try {
-      const mongoose = require('mongoose');
+      await ensureDbConnection();
+
       if (mongoose.connection.readyState !== 1) {
-        return { message: "Database not connected, skipping" };
+        return { message: "Database not available" };
       }
 
       const User = require("../Models/User");
@@ -68,10 +91,13 @@ const syncUserUpdate = inngest.createFunction(
 const syncUserDeletion = inngest.createFunction(
   { id: "sync-user-delete", name: "Sync User Deletion", triggers: [{ event: "clerk/user.deleted" }] },
   async ({ event }) => {
+    console.log("Delete event received:", event.name);
+
     try {
-      const mongoose = require('mongoose');
+      await ensureDbConnection();
+
       if (mongoose.connection.readyState !== 1) {
-        return { message: "Database not connected, skipping" };
+        return { message: "Database not available" };
       }
 
       const User = require("../Models/User");
