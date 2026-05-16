@@ -161,14 +161,23 @@ try {
     functions,
   });
 
-  // Both routes for Inngest
+  // Inngest route only
   app.all('/api/inngest', inngestHandler);
-  app.all('/api/inngest/*', inngestHandler);
 
   console.log('Inngest mounted successfully');
 } catch (e) {
   console.error('Inngest load error:', e.message);
   console.error(e.stack);
+
+  // Expose error to browser for debugging
+  app.get('/api/inngest-error', (req, res) => {
+    res.status(500).json({
+      ok: false,
+      message: 'Inngest failed to load',
+      error: e.message,
+      stack: e.stack,
+    });
+  });
 }
 
 // Error handling
