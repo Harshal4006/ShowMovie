@@ -106,8 +106,31 @@ app.get('/api/test-db', async (req, res) => {
 // Mount Inngest handler
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
+// Mount TMDB routes
+const TMDBRoutes = require('./Routes/TMDBRoutes');
+app.use('/api/tmdb', TMDBRoutes);
+
+// Mount Movie routes
+const MovieRoutes = require('./Routes/MovieRoutes');
+app.use('/api/movies', MovieRoutes);
+
+// Mount Admin routes
+const AdminRoutes = require('./Routes/AdminRoutes');
+app.use('/api/admin', AdminRoutes);
+
+
 // Error handling
 app.use(ErrorHandler);
 
 // Export for Vercel
 module.exports = app;
+
+// Start server locally (not needed on Vercel)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, async () => {
+    console.log(`Server running on port ${PORT}`);
+    // Connect to MongoDB on startup
+    await ConnectDb();
+  });
+}

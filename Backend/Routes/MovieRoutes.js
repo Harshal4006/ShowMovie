@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { GetAllMovies, GetMovieById, GetRelatedMovies } = require('../Controllers/MovieController');
+const { GetAllMovies, GetMovieById, GetFeaturedMovies, GetNowShowingMovies, GetUpcomingMovies, GetRelatedMovies } = require('../Controllers/MovieController');
 
 router.get('/', GetAllMovies);
+router.get('/featured', GetFeaturedMovies);
+router.get('/now-showing', GetNowShowingMovies);
+router.get('/upcoming', GetUpcomingMovies);
 router.get('/:id', GetMovieById);
 router.get('/:id/related', GetRelatedMovies);
 

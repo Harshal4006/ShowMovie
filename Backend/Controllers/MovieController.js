@@ -2,8 +2,7 @@ const Movie = require('../Models/Movie');
 
 const GetAllMovies = async (req, res) => {
   try {
-    const { genre, search, sort, page = 1, limit = 10 } = req.query;
-
+    const { genre, search, sort, page = 1, limit = 12 } = req.query;
     let query = { isActive: true };
 
     if (genre && genre !== 'all') {
@@ -19,10 +18,10 @@ const GetAllMovies = async (req, res) => {
     }
 
     let sortOption = {};
-    if (sort === 'rating') sortOption = { vote_average: -1 };
+    if (sort === 'rating') sortOption = { rating: -1 };
     else if (sort === 'title') sortOption = { title: 1 };
-    else if (sort === 'oldest') sortOption = { release_date: 1 };
-    else sortOption = { release_date: -1 };
+    else if (sort === 'oldest') sortOption = { releaseDate: 1 };
+    else sortOption = { releaseDate: -1 };
 
     const movies = await Movie.find(query)
       .sort(sortOption)
@@ -31,7 +30,7 @@ const GetAllMovies = async (req, res) => {
 
     const total = await Movie.countDocuments(query);
 
-    res.json({ movies, total, page, pages: Math.ceil(total / limit) });
+    res.json({ movies, total, page: parseInt(page), pages: Math.ceil(total / limit) });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -42,6 +41,39 @@ const GetMovieById = async (req, res) => {
     const movie = await Movie.findById(req.params.id);
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
     res.json(movie);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const GetFeaturedMovies = async (req, res) => {
+  try {
+    const movies = await Movie.find({ isFeatured: true, isActive: true })
+      .sort({ rating: -1 })
+      .limit(8);
+    res.json(movies);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const GetNowShowingMovies = async (req, res) => {
+  try {
+    const movies = await Movie.find({ status: 'active', isActive: true })
+      .sort({ releaseDate: -1 })
+      .limit(20);
+    res.json(movies);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const GetUpcomingMovies = async (req, res) => {
+  try {
+    const movies = await Movie.find({ status: 'coming-soon', isActive: true })
+      .sort({ releaseDate: 1 })
+      .limit(20);
+    res.json(movies);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -65,4 +97,4 @@ const GetRelatedMovies = async (req, res) => {
   }
 };
 
-module.exports = { GetAllMovies, GetMovieById, GetRelatedMovies };
+module.exports = { GetAllMovies, GetMovieById, GetFeaturedMovies, GetNowShowingMovies, GetUpcomingMovies, GetRelatedMovies };
