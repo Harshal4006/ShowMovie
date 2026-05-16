@@ -126,7 +126,7 @@ try {
   const { inngest, functions } = require('./Inngest/Inngest');
   console.log('Inngest functions loaded, count:', functions.length);
 
-  app.use('/api/inngest', serve({
+  app.all('/api/inngest', serve({
     client: inngest,
     functions,
   }));
