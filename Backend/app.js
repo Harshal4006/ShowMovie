@@ -21,85 +21,116 @@ app.use(cors({
   origin: '*',
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection
+// MongoDB Connection - only connect when needed, not globally
 let isConnected = false;
+
 const ConnectDb = async () => {
   const mongoUri = process.env.MONGO_URI;
+
   console.log('MONGO_URI present:', !!mongoUri);
 
-  if (!mongoUri || isConnected) {
-    console.log('MONGO_URI not set or already connected');
+  if (!mongoUri) {
+    throw new Error('MONGO_URI is not set');
+  }
+
+  if (isConnected && mongoose.connection.readyState === 1) {
+    console.log('MongoDB already connected');
     return;
   }
 
   try {
     console.log('Attempting MongoDB connection...');
+
     await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
     });
+
     isConnected = true;
     console.log('MongoDB Connected successfully');
   } catch (error) {
     console.error('MongoDB Error:', error.message);
+    throw error;
   }
 };
 
-ConnectDb();
+// Do NOT call ConnectDb() globally on Vercel - causes cold start issues
+// ConnectDb();
 
-// Minimal routes first - test if basic app works
+// Basic route
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'ShowMovie API running' });
+  res.json({
+    status: 'ok',
+    message: 'ShowMovie API running'
+  });
 });
 
+// Health route
 app.get('/api/health', async (req, res) => {
-  // Always try to connect if not connected
-  if (!isConnected && process.env.MONGO_URI) {
-    await ConnectDb();
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await ConnectDb();
+    }
+
+    res.json({
+      status: 'ok',
+      db: 'connected',
+      hasMongoUri: !!process.env.MONGO_URI,
+      mongoState: mongoose.connection.readyState
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'degraded',
+      db: 'disconnected',
+      hasMongoUri: !!process.env.MONGO_URI,
+      mongoState: mongoose.connection.readyState,
+      error: error.message
+    });
   }
-
-  // Also check mongoose connection state
-  const mongoState = mongoose.connection.readyState;
-  const connected = isConnected || mongoState === 1;
-
-  res.json({
-    status: connected ? 'ok' : 'degraded',
-    db: connected ? 'connected' : 'disconnected',
-    hasMongoUri: !!process.env.MONGO_URI,
-    mongoState: mongoState
-  });
 });
 
 // Test MongoDB connection endpoint
 app.get('/api/test-db', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
-      if (process.env.MONGO_URI) {
-        await mongoose.connect(process.env.MONGO_URI);
-      }
+      await ConnectDb();
     }
 
     const User = require('./Models/User');
     const count = await User.countDocuments();
-    res.json({ success: true, userCount: count });
+
+    res.json({
+      success: true,
+      userCount: count
+    });
   } catch (err) {
-    res.json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
   }
 });
 
-// Only load Inngest - it's the main requirement
+// Inngest route
 try {
   console.log('Loading Inngest...');
-  const { serve } = require("inngest/express");
+
+  const { serve } = require('inngest/express');
   console.log('Inngest express loaded');
 
-  const { inngest, functions } = require("./Inngest/Inngest");
+  const { inngest, functions } = require('./Inngest/Inngest');
   console.log('Inngest functions loaded, count:', functions.length);
 
-  app.use("/api/inngest", serve({ client: inngest, functions }));
+  app.use('/api/inngest', serve({
+    client: inngest,
+    functions,
+  }));
+
   console.log('Inngest mounted successfully');
 } catch (e) {
   console.error('Inngest load error:', e.message);
