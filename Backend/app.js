@@ -126,10 +126,24 @@ try {
   const { inngest, functions } = require('./Inngest/Inngest');
   console.log('Inngest functions loaded, count:', functions.length);
 
-  app.all('/api/inngest', serve({
+  // Test route
+  app.get('/api/inngest-test', (req, res) => {
+    res.json({
+      ok: true,
+      message: "Inngest test route working",
+      functionsCount: functions.length,
+    });
+  });
+
+  // Inngest handler
+  const inngestHandler = serve({
     client: inngest,
     functions,
-  }));
+  });
+
+  // Both routes for Inngest
+  app.all('/api/inngest', inngestHandler);
+  app.all('/api/inngest/*', inngestHandler);
 
   console.log('Inngest mounted successfully');
 } catch (e) {
