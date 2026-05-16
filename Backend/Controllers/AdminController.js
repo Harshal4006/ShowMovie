@@ -201,10 +201,47 @@ const DeleteMovie = async (req, res) => {
 // Create Show
 const CreateShow = async (req, res) => {
   try {
-    const { movieId, showDateTime, showPrice, theater, screenType, language } = req.body;
+    const { movieId, movieName, moviePoster, movieBackdrop, movieOverview, showDateTime, showPrice, theater, screenType, language, genres, runtime } = req.body;
+
+    // First check if movie already exists in Movie collection
+    let movie;
+    if (movieId) {
+      movie = await Movie.findById(movieId);
+    }
+
+    // If movie doesn't exist, create it
+    if (!movie && movieName) {
+      // Check if movie with similar title already exists
+      movie = await Movie.findOne({ title: movieName });
+      if (!movie) {
+        const { imageBaseUrl } = getTmdbConfig();
+        movie = await Movie.create({
+          tmdbId: Math.floor(Date.now() / 1000), // Use timestamp as fallback tmdbId
+          title: movieName,
+          overview: movieOverview || "",
+          posterPath: moviePoster || "",
+          backdropPath: movieBackdrop || "",
+          posterUrl: moviePoster ? (moviePoster.startsWith('http') ? moviePoster : `${imageBaseUrl}/w500${moviePoster}`) : null,
+          backdropUrl: movieBackdrop ? (movieBackdrop.startsWith('http') ? movieBackdrop : `${imageBaseUrl}/w1280${movieBackdrop}`) : null,
+          genres: genres || [],
+          runtime: runtime || 0,
+          language: language || 'English',
+          rating: 0,
+          status: 'active',
+          price: showPrice || 0,
+          movieLanguage: language || 'English',
+          format: screenType || '2D',
+          isFeatured: false
+        });
+      }
+    }
+
+    if (!movie) {
+      return res.status(400).json({ message: 'Movie not found and could not be created' });
+    }
 
     const show = await Show.create({
-      movie: movieId,
+      movie: movie._id,
       showDateTime,
       showPrice,
       theater,
@@ -216,6 +253,7 @@ const CreateShow = async (req, res) => {
     const populated = await Show.findById(show._id).populate('movie');
     res.status(201).json(populated);
   } catch (error) {
+    console.error('CreateShow error:', error);
     res.status(500).json({ message: error.message });
   }
 };

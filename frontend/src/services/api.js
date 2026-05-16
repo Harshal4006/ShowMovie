@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = 'https://showmovie-backend.vercel.app/api';
 
 const getHeaders = () => {
   const headers = { 'Content-Type': 'application/json' };
@@ -85,6 +85,16 @@ export const deleteMovie = async (id) => {
   return res.json();
 };
 
+// Admin Show Management
+export const createShow = async (showData) => {
+  const res = await fetch(`${API_BASE_URL}/admin/shows`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(showData)
+  });
+  return res.json();
+};
+
 export default {
   getMovies,
   getMovieById,
@@ -97,5 +107,6 @@ export default {
   getAdminMovies,
   importMovie,
   updateMovie,
-  deleteMovie
+  deleteMovie,
+  createShow
 };
