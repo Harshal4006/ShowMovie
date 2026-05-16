@@ -59,14 +59,12 @@ const ConnectDb = async () => {
   }
 };
 
-// Do NOT call ConnectDb() globally on Vercel - causes cold start issues
-// ConnectDb();
-
-// Basic route
+// Basic route with version
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'ShowMovie API running'
+    message: 'ShowMovie API running',
+    version: 'backend-v5'
   });
 });
 
@@ -116,7 +114,16 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+// Inngest test route - OUTSIDE try block
+app.get('/api/inngest-test', (req, res) => {
+  res.json({
+    ok: true,
+    message: 'Inngest test route working outside try block'
+  });
+});
+
 // Inngest route
+let functionsCount = 0;
 try {
   console.log('Loading Inngest...');
 
@@ -124,14 +131,15 @@ try {
   console.log('Inngest express loaded');
 
   const { inngest, functions } = require('./Inngest/Inngest');
-  console.log('Inngest functions loaded, count:', functions.length);
+  functionsCount = functions.length;
+  console.log('Inngest functions loaded, count:', functionsCount);
 
-  // Test route
+  // Update test route with functions count
   app.get('/api/inngest-test', (req, res) => {
     res.json({
       ok: true,
-      message: "Inngest test route working",
-      functionsCount: functions.length,
+      message: 'Inngest test route working',
+      functionsCount: functionsCount
     });
   });
 
