@@ -1,74 +1,63 @@
-// Load dotenv only in development
+// Load environment variables in development
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-console.log('Environment:', process.env.NODE_ENV);
-console.log('VERCEL:', process.env.VERCEL);
-console.log('MONGO_URI set:', !!process.env.MONGO_URI);
-console.log('INNGEST_SIGNING_KEY set:', !!process.env.INNGEST_SIGNING_KEY);
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { serve } = require('inngest/express');
 
 const ErrorHandler = require('./Middleware/ErrorMiddleware');
+const { inngest, functions } = require('./Inngest/Inngest');
 
 const app = express();
 
-// Middleware
+// Configure middleware
 app.use(cors({
   origin: '*',
   credentials: true
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection - only connect when needed, not globally
+// MongoDB connection helper
 let isConnected = false;
 
 const ConnectDb = async () => {
   const mongoUri = process.env.MONGO_URI;
-
-  console.log('MONGO_URI present:', !!mongoUri);
 
   if (!mongoUri) {
     throw new Error('MONGO_URI is not set');
   }
 
   if (isConnected && mongoose.connection.readyState === 1) {
-    console.log('MongoDB already connected');
     return;
   }
 
   try {
-    console.log('Attempting MongoDB connection...');
-
     await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 10000,
       connectTimeoutMS: 10000,
     });
-
     isConnected = true;
-    console.log('MongoDB Connected successfully');
+    console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error('MongoDB Error:', error.message);
+    console.error('MongoDB connection error:', error.message);
     throw error;
   }
 };
 
-// Basic route with version
+// Root route
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'ShowMovie API running',
-    version: 'backend-v5'
+    message: 'ShowMovie API running'
   });
 });
 
-// Health route
+// Health check route
 app.get('/api/health', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
@@ -92,7 +81,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Test MongoDB connection endpoint
+// Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
@@ -114,71 +103,8 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
-// Inngest test route - OUTSIDE try block
-app.get('/api/inngest-test', (req, res) => {
-  res.json({
-    ok: true,
-    message: 'Inngest test route working outside try block'
-  });
-});
-
-// Inngest route
-let functionsCount = 0;
-try {
-  console.log('Loading Inngest...');
-
-  const { serve } = require('inngest/express');
-  console.log('Inngest express loaded');
-
-  const { inngest, functions } = require('./Inngest/Inngest');
-  functionsCount = functions.length;
-  console.log('Inngest functions loaded, count:', functionsCount);
-
-  // Debug route - shows if Inngest loaded successfully
-  app.get('/api/inngest-debug', (req, res) => {
-    res.json({
-      ok: true,
-      message: 'Inngest loaded successfully',
-      functionsCount: functions.length,
-      functionNames: functions.map((fn) => fn.id || 'unknown'),
-      hasSigningKey: !!process.env.INNGEST_SIGNING_KEY,
-      hasEventKey: !!process.env.INNGEST_EVENT_KEY,
-    });
-  });
-
-  // Update test route with functions count
-  app.get('/api/inngest-test', (req, res) => {
-    res.json({
-      ok: true,
-      message: 'Inngest test route working',
-      functionsCount: functionsCount
-    });
-  });
-
-  // Inngest handler
-  const inngestHandler = serve({
-    client: inngest,
-    functions,
-  });
-
-  // Inngest route only
-  app.all('/api/inngest', inngestHandler);
-
-  console.log('Inngest mounted successfully');
-} catch (e) {
-  console.error('Inngest load error:', e.message);
-  console.error(e.stack);
-
-  // Expose error to browser for debugging
-  app.get('/api/inngest-error', (req, res) => {
-    res.status(500).json({
-      ok: false,
-      message: 'Inngest failed to load',
-      error: e.message,
-      stack: e.stack,
-    });
-  });
-}
+// Mount Inngest handler
+app.use('/api/inngest', serve({ client: inngest, functions }));
 
 // Error handling
 app.use(ErrorHandler);

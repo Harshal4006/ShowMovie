@@ -1,18 +1,13 @@
 const { Inngest } = require("inngest");
 const mongoose = require("mongoose");
 
-// Safe mongoose global setting only
 mongoose.set("strictQuery", true);
-
-console.log("INNGEST_SIGNING_KEY set:", !!process.env.INNGEST_SIGNING_KEY);
-console.log("MONGO_URI set:", !!process.env.MONGO_URI);
 
 // Reusable DB connection check
 let isConnected = false;
 
 async function connectDB() {
   if (isConnected && mongoose.connection.readyState === 1) {
-    console.log("DB already connected");
     return;
   }
 
@@ -20,19 +15,16 @@ async function connectDB() {
     throw new Error("MONGO_URI not configured");
   }
 
-  console.log("Connecting to MongoDB...");
-
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 5000,
       socketTimeoutMS: 5000,
     });
-
     isConnected = conn.connections[0].readyState === 1;
-    console.log("MongoDB Connected");
+    console.log('MongoDB connected for Inngest function');
   } catch (error) {
-    console.error("MongoDB connection error:", error.message);
+    console.error('MongoDB connection error:', error.message);
     throw error;
   }
 }
@@ -42,24 +34,7 @@ const inngest = new Inngest({
   signingKey: process.env.INNGEST_SIGNING_KEY,
 });
 
-// Test function
-const testFunction = inngest.createFunction(
-  {
-    id: "test-clerk",
-    name: "Test Function",
-    timeout: "30s",
-    triggers: [{ event: "test/clerk" }],
-  },
-  async ({ event }) => {
-    console.log("Test function ran with:", event.name);
-    return {
-      success: true,
-      eventName: event.name,
-    };
-  }
-);
-
-// Sync user creation
+// Sync Clerk user creation
 const syncUserCreation = inngest.createFunction(
   {
     id: "sync-user-from-clerk",
@@ -68,16 +43,12 @@ const syncUserCreation = inngest.createFunction(
     triggers: [{ event: "clerk/user.created" }],
   },
   async ({ event }) => {
-    console.log("Inngest user.created started");
-
     const { id, first_name, last_name, email_addresses, image_url } =
       event.data || {};
 
     if (!id) {
       throw new Error("No user ID in event");
     }
-
-    console.log("Processing user:", id);
 
     await connectDB();
 
@@ -86,7 +57,7 @@ const syncUserCreation = inngest.createFunction(
     const existing = await User.findOne({ clerkId: id });
 
     if (existing) {
-      console.log("User exists:", existing._id);
+      console.log('User already exists:', id);
       return {
         success: true,
         message: "User exists",
@@ -101,7 +72,7 @@ const syncUserCreation = inngest.createFunction(
       img: image_url || "",
     });
 
-    console.log("User created:", user._id);
+    console.log('User created via Clerk sync:', user._id);
 
     return {
       success: true,
@@ -111,7 +82,7 @@ const syncUserCreation = inngest.createFunction(
   }
 );
 
-// Sync user update
+// Sync Clerk user update
 const syncUserUpdate = inngest.createFunction(
   {
     id: "sync-user-update",
@@ -120,8 +91,6 @@ const syncUserUpdate = inngest.createFunction(
     triggers: [{ event: "clerk/user.updated" }],
   },
   async ({ event }) => {
-    console.log("Inngest user.updated started");
-
     const { id, first_name, last_name, email_addresses, image_url } =
       event.data || {};
 
@@ -152,7 +121,7 @@ const syncUserUpdate = inngest.createFunction(
 
     await user.save();
 
-    console.log("User updated:", user._id);
+    console.log('User updated via Clerk sync:', user._id);
 
     return {
       success: true,
@@ -162,7 +131,7 @@ const syncUserUpdate = inngest.createFunction(
   }
 );
 
-// Sync user deletion
+// Sync Clerk user deletion
 const syncUserDeletion = inngest.createFunction(
   {
     id: "sync-user-delete",
@@ -171,8 +140,6 @@ const syncUserDeletion = inngest.createFunction(
     triggers: [{ event: "clerk/user.deleted" }],
   },
   async ({ event }) => {
-    console.log("Inngest user.deleted started");
-
     const { id } = event.data || {};
 
     if (!id) {
@@ -193,7 +160,7 @@ const syncUserDeletion = inngest.createFunction(
       };
     }
 
-    console.log("User deleted:", user._id);
+    console.log('User deleted via Clerk sync:', user._id);
 
     return {
       success: true,
@@ -204,7 +171,6 @@ const syncUserDeletion = inngest.createFunction(
 );
 
 const functions = [
-  testFunction,
   syncUserCreation,
   syncUserUpdate,
   syncUserDeletion,
