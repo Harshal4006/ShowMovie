@@ -2,25 +2,25 @@ const mongoose = require('mongoose');
 
 const movieSchema = new mongoose.Schema({
   // TMDB fields
-  tmdbId: { type: Number, index: true },
-  title: { type: String, required: true, index: true },
-  originalTitle: { type: String },
-  overview: { type: String },
-  posterPath: { type: String },
-  backdropPath: { type: String },
-  posterUrl: { type: String },
-  backdropUrl: { type: String },
-  releaseDate: { type: String, index: true },
-  runtime: { type: Number },
+  tmdbId: Number,
+  title: { type: String, required: true },
+  originalTitle: String,
+  overview: String,
+  posterPath: String,
+  backdropPath: String,
+  posterUrl: String,
+  backdropUrl: String,
+  releaseDate: String,
+  runtime: Number,
   genres: [{
     id: Number,
     name: String
   }],
-  rating: { type: Number, index: true },
-  voteCount: { type: Number },
-  language: { type: String },
-  tagline: { type: String },
-  trailerKey: { type: String },
+  rating: Number,
+  voteCount: Number,
+  language: String,
+  tagline: String,
+  trailerKey: String,
   cast: [{
     name: String,
     character: String,
@@ -31,20 +31,11 @@ const movieSchema = new mongoose.Schema({
   price: { type: Number, default: 0 },
   movieLanguage: { type: String, default: 'English' },
   format: { type: String, default: '2D' },
-  status: {
-    type: String,
-    enum: ['active', 'inactive', 'coming-soon'],
-    default: 'coming-soon',
-    index: true
-  },
-  isFeatured: { type: Boolean, default: false, index: true },
+  status: { type: String, default: 'coming-soon' },
+  isFeatured: { type: Boolean, default: false },
 
   // Basic fields
-  isActive: { type: Boolean, default: true, index: true }
+  isActive: { type: Boolean, default: true }
 }, { timestamps: true });
-
-// Add compound indexes for better query performance
-movieSchema.index({ isActive: 1, status: 1 });
-movieSchema.index({ isActive: 1, isFeatured: 1 });
 
 module.exports = mongoose.model('Movie', movieSchema);

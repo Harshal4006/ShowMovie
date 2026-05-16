@@ -1,7 +1,18 @@
 const Movie = require('../Models/Movie');
+const mongoose = require('mongoose');
+
+const ensureDbConnection = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+    });
+  }
+};
 
 const GetAllMovies = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { genre, search, sort, page = 1, limit = 12 } = req.query;
     let query = { isActive: true };
 
@@ -23,15 +34,13 @@ const GetAllMovies = async (req, res) => {
     else if (sort === 'oldest') sortOption = { releaseDate: 1 };
     else sortOption = { releaseDate: -1 };
 
-    // Add timeout handling
     const movies = await Movie.find(query)
       .sort(sortOption)
       .skip((page - 1) * parseInt(limit))
       .limit(parseInt(limit))
-      .maxTimeMS(5000)
       .lean();
 
-    const total = await Movie.countDocuments(query).maxTimeMS(5000);
+    const total = await Movie.countDocuments(query);
 
     res.json({ movies, total, page: parseInt(page), pages: Math.ceil(total / limit) });
   } catch (error) {
@@ -42,7 +51,8 @@ const GetAllMovies = async (req, res) => {
 
 const GetMovieById = async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id).maxTimeMS(5000).lean();
+    await ensureDbConnection();
+    const movie = await Movie.findById(req.params.id).lean();
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
     res.json(movie);
   } catch (error) {
@@ -53,10 +63,10 @@ const GetMovieById = async (req, res) => {
 
 const GetFeaturedMovies = async (req, res) => {
   try {
+    await ensureDbConnection();
     const movies = await Movie.find({ isFeatured: true, isActive: true })
       .sort({ rating: -1 })
       .limit(8)
-      .maxTimeMS(5000)
       .lean();
     res.json(movies);
   } catch (error) {
@@ -67,10 +77,10 @@ const GetFeaturedMovies = async (req, res) => {
 
 const GetNowShowingMovies = async (req, res) => {
   try {
+    await ensureDbConnection();
     const movies = await Movie.find({ status: 'active', isActive: true })
       .sort({ releaseDate: -1 })
       .limit(20)
-      .maxTimeMS(5000)
       .lean();
     res.json(movies);
   } catch (error) {
@@ -81,10 +91,10 @@ const GetNowShowingMovies = async (req, res) => {
 
 const GetUpcomingMovies = async (req, res) => {
   try {
+    await ensureDbConnection();
     const movies = await Movie.find({ status: 'coming-soon', isActive: true })
       .sort({ releaseDate: 1 })
       .limit(20)
-      .maxTimeMS(5000)
       .lean();
     res.json(movies);
   } catch (error) {
@@ -95,7 +105,8 @@ const GetUpcomingMovies = async (req, res) => {
 
 const GetRelatedMovies = async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id).maxTimeMS(5000).lean();
+    await ensureDbConnection();
+    const movie = await Movie.findById(req.params.id).lean();
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
 
     const genreIds = movie.genres?.map(g => g.id) || [];
@@ -103,7 +114,7 @@ const GetRelatedMovies = async (req, res) => {
       _id: { $ne: movie._id },
       'genres.id': { $in: genreIds },
       isActive: true
-    }).limit(4).maxTimeMS(5000).lean();
+    }).limit(4).lean();
 
     res.json(related);
   } catch (error) {
