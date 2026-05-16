@@ -1,5 +1,9 @@
 const { Inngest } = require("inngest");
 
+// Log environment status on startup
+console.log("INNGEST_SIGNING_KEY set:", !!process.env.INNGEST_SIGNING_KEY);
+console.log("MONGO_URI set:", !!process.env.MONGO_URI);
+
 const inngest = new Inngest({
   id: "movie-ticket-booking",
   signingKey: process.env.INNGEST_SIGNING_KEY,
@@ -9,6 +13,7 @@ const inngest = new Inngest({
 const testFunction = inngest.createFunction(
   { id: "test-clerk", name: "Test Function", triggers: [{ event: "clerk/user.created" }] },
   async ({ event }) => {
+    console.log("Test function ran with:", event.name);
     return { success: true, eventName: event.name, data: event.data };
   }
 );
@@ -17,22 +22,34 @@ const testFunction = inngest.createFunction(
 const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk", name: "Sync User Creation", triggers: [{ event: "clerk/user.created" }] },
   async ({ event }) => {
+    console.log("Running syncUserCreation for:", event.data?.id);
+
+    if (!process.env.MONGO_URI) {
+      console.error("MONGO_URI not set");
+      throw new Error("MONGO_URI not configured");
+    }
+
+    const mongoose = require("mongoose");
+    const User = require("../Models/User");
+
     try {
       const { id, first_name, last_name, email_addresses, image_url } = event.data || {};
-      const mongoose = require("mongoose");
 
-      if (!process.env.MONGO_URI) return { error: "No MONGO_URI" };
+      if (!id) throw new Error("No user ID in event");
 
-      await mongoose.connect(process.env.MONGO_URI, {
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000
-      });
-
-      const User = require("../Models/User");
+      // Use existing connection or connect if needed
+      if (mongoose.connection.readyState !== 1) {
+        console.log("Connecting to MongoDB...");
+        await mongoose.connect(process.env.MONGO_URI, {
+          serverSelectionTimeoutMS: 10000,
+          connectTimeoutMS: 10000
+        });
+        console.log("MongoDB connected");
+      }
 
       const existing = await User.findOne({ clerkId: id });
       if (existing) {
-        await mongoose.disconnect();
+        console.log("User exists:", existing._id);
         return { message: "User exists", userId: existing._id.toString() };
       }
 
@@ -43,11 +60,11 @@ const syncUserCreation = inngest.createFunction(
         img: image_url || "",
       });
 
-      await mongoose.disconnect();
+      console.log("User created:", user._id);
       return { message: "Created", userId: user._id.toString() };
     } catch (err) {
-      console.error("Error:", err.message);
-      return { error: err.message };
+      console.error("Create user error:", err.message);
+      throw err;
     }
   }
 );
@@ -55,23 +72,30 @@ const syncUserCreation = inngest.createFunction(
 const syncUserUpdate = inngest.createFunction(
   { id: "sync-user-update", name: "Sync User Update", triggers: [{ event: "clerk/user.updated" }] },
   async ({ event }) => {
+    console.log("Running syncUserUpdate for:", event.data?.id);
+
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI not configured");
+    }
+
+    const mongoose = require("mongoose");
+    const User = require("../Models/User");
+
     try {
       const { id, first_name, last_name, email_addresses, image_url } = event.data || {};
-      const mongoose = require("mongoose");
 
-      if (!process.env.MONGO_URI) return { error: "No MONGO_URI" };
+      if (!id) throw new Error("No user ID in event");
 
-      await mongoose.connect(process.env.MONGO_URI, {
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000
-      });
-
-      const User = require("../Models/User");
+      if (mongoose.connection.readyState !== 1) {
+        await mongoose.connect(process.env.MONGO_URI, {
+          serverSelectionTimeoutMS: 10000,
+          connectTimeoutMS: 10000
+        });
+      }
 
       const user = await User.findOne({ clerkId: id });
       if (!user) {
-        await mongoose.disconnect();
-        return { message: "User not found" };
+        return { message: "User not found", clerkId: id };
       }
 
       user.name = `${first_name || ""} ${last_name || ""}`.trim();
@@ -79,10 +103,10 @@ const syncUserUpdate = inngest.createFunction(
       if (image_url) user.img = image_url;
       await user.save();
 
-      await mongoose.disconnect();
       return { message: "Updated", userId: user._id.toString() };
     } catch (err) {
-      return { error: err.message };
+      console.error("Update user error:", err.message);
+      throw err;
     }
   }
 );
@@ -90,29 +114,36 @@ const syncUserUpdate = inngest.createFunction(
 const syncUserDeletion = inngest.createFunction(
   { id: "sync-user-delete", name: "Sync User Deletion", triggers: [{ event: "clerk/user.deleted" }] },
   async ({ event }) => {
+    console.log("Running syncUserDeletion for:", event.data?.id);
+
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI not configured");
+    }
+
+    const mongoose = require("mongoose");
+    const User = require("../Models/User");
+
     try {
       const { id } = event.data || {};
-      const mongoose = require("mongoose");
 
-      if (!process.env.MONGO_URI) return { error: "No MONGO_URI" };
+      if (!id) throw new Error("No user ID in event");
 
-      await mongoose.connect(process.env.MONGO_URI, {
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000
-      });
-
-      const User = require("../Models/User");
+      if (mongoose.connection.readyState !== 1) {
+        await mongoose.connect(process.env.MONGO_URI, {
+          serverSelectionTimeoutMS: 10000,
+          connectTimeoutMS: 10000
+        });
+      }
 
       const user = await User.findOneAndDelete({ clerkId: id });
       if (!user) {
-        await mongoose.disconnect();
-        return { message: "User not found" };
+        return { message: "User not found", clerkId: id };
       }
 
-      await mongoose.disconnect();
       return { message: "Deleted", userId: user._id.toString() };
     } catch (err) {
-      return { error: err.message };
+      console.error("Delete user error:", err.message);
+      throw err;
     }
   }
 );
