@@ -134,6 +134,18 @@ try {
   functionsCount = functions.length;
   console.log('Inngest functions loaded, count:', functionsCount);
 
+  // Debug route - shows if Inngest loaded successfully
+  app.get('/api/inngest-debug', (req, res) => {
+    res.json({
+      ok: true,
+      message: 'Inngest loaded successfully',
+      functionsCount: functions.length,
+      functionNames: functions.map((fn) => fn.id || 'unknown'),
+      hasSigningKey: !!process.env.INNGEST_SIGNING_KEY,
+      hasEventKey: !!process.env.INNGEST_EVENT_KEY,
+    });
+  });
+
   // Update test route with functions count
   app.get('/api/inngest-test', (req, res) => {
     res.json({
