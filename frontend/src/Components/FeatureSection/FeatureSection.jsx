@@ -10,7 +10,7 @@ const FeatureSection = () => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const data = await getFeaturedMovies();
+        const data = await getNowShowingMovies();
         if (data.movies) {
           setMovies(data.movies.slice(0, 8));
         } else {
