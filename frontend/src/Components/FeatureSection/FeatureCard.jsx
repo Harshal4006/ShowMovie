@@ -9,7 +9,7 @@ const FeatureCard = ({ movie, schedule }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   // Handle both old dummy data format and new API format
-  const movieId = movie?.tmdbId || movie?.id;
+  const movieId = movie?._id || movie?.id || movie?.tmdbId;
   const title = movie?.title || movie?.title;
 
   const normalizeTmdbImage = (value, size) => {

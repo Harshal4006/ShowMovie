@@ -1,11 +1,27 @@
 const Show = require('../Models/Show');
+const Movie = require('../Models/Movie');
+const mongoose = require('mongoose');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 const GetShowsByMovie = async (req, res) => {
   try {
     await ensureDbConnection();
     const { movieId } = req.params;
-    const shows = await Show.find({ movie: movieId, status: 'active' })
+
+    let resolvedMovieId = movieId;
+    if (!mongoose.isValidObjectId(movieId)) {
+      const tmdbId = Number(movieId);
+      if (Number.isFinite(tmdbId)) {
+        const movie = await Movie.findOne({ tmdbId }).select('_id').lean();
+        resolvedMovieId = movie?._id?.toString() || null;
+      } else {
+        resolvedMovieId = null;
+      }
+    }
+
+    if (!resolvedMovieId) return res.json([]);
+
+    const shows = await Show.find({ movie: resolvedMovieId, status: 'active' })
       .populate('movie')
       .sort({ showDateTime: 1 });
     res.json(shows);

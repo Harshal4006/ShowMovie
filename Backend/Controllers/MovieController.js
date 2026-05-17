@@ -1,4 +1,5 @@
 const Movie = require('../Models/Movie');
+const mongoose = require('mongoose');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 const GetAllMovies = async (req, res) => {
@@ -43,7 +44,18 @@ const GetAllMovies = async (req, res) => {
 const GetMovieById = async (req, res) => {
   try {
     await ensureDbConnection();
-    const movie = await Movie.findById(req.params.id).lean();
+    const { id } = req.params;
+
+    let movie = null;
+    if (mongoose.isValidObjectId(id)) {
+      movie = await Movie.findById(id).lean();
+    } else {
+      const tmdbId = Number(id);
+      if (Number.isFinite(tmdbId)) {
+        movie = await Movie.findOne({ tmdbId }).lean();
+      }
+    }
+
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
     res.json(movie);
   } catch (error) {
@@ -97,7 +109,18 @@ const GetUpcomingMovies = async (req, res) => {
 const GetRelatedMovies = async (req, res) => {
   try {
     await ensureDbConnection();
-    const movie = await Movie.findById(req.params.id).lean();
+    const { id } = req.params;
+
+    let movie = null;
+    if (mongoose.isValidObjectId(id)) {
+      movie = await Movie.findById(id).lean();
+    } else {
+      const tmdbId = Number(id);
+      if (Number.isFinite(tmdbId)) {
+        movie = await Movie.findOne({ tmdbId }).lean();
+      }
+    }
+
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
 
     const genreIds = movie.genres?.map(g => g.id) || [];
