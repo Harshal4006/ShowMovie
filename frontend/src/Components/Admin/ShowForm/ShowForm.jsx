@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Search, Loader2, X, Plus, Trash2 } from "lucide-react";
-import { getNowShowingMovies, searchTmdbMovies } from "../../../services/api";
+import { searchTmdbMovies } from "../../../services/api";
 
 const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
   const [tmdbMovies, setTmdbMovies] = useState([]);
@@ -14,6 +14,10 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
     movieId: initialData.movieId || "",
     poster: initialData.poster || "",
     poster2: initialData.poster2 || "",
+    releaseDate: initialData.releaseDate || "",
+    runtime: initialData.runtime || "",
+    genres: initialData.genres || "",
+    rating: initialData.rating || "",
     theater: initialData.theater || "",
     showtimes: initialData.showtimes || [{ date: "", time: "" }],
     price: initialData.price || "",
@@ -80,6 +84,11 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
       poster2: movie.backdropUrl || movie.backdrop_path,
       description: movie.overview,
       language: movie.language || "English",
+      // Clear manual-only fields when TMDB movie is selected
+      releaseDate: "",
+      runtime: "",
+      genres: "",
+      rating: "",
     }));
   };
 
@@ -93,7 +102,10 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.movieName.trim()) newErrors.movieName = "Please select a movie";
+    if (!formData.movieName.trim()) newErrors.movieName = "Movie name is required";
+    if (!formData.movieId && !formData.poster && !formData.poster2) {
+      newErrors.poster = "Poster or backdrop is required for manual movies";
+    }
     if (!formData.theater) newErrors.theater = "Theater is required";
 
     const invalidShowtimes = formData.showtimes.filter(st => !st.date || !st.time);
@@ -125,6 +137,10 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
       movieId: "",
       poster: "",
       poster2: "",
+      releaseDate: "",
+      runtime: "",
+      genres: "",
+      rating: "",
       theater: "",
       showtimes: [{ date: "", time: "" }],
       price: "",
@@ -211,7 +227,12 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
         {selectedMovie && (
           <div className="mt-4 flex items-center gap-4 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
             <img
-              src={selectedMovie.posterUrl || selectedMovie.poster_path || "https://via.placeholder.com/100x150"}
+              src={
+                selectedMovie.posterUrl ||
+                (selectedMovie.poster_path
+                  ? `https://image.tmdb.org/t/p/w200${selectedMovie.poster_path}`
+                  : "https://via.placeholder.com/100x150")
+              }
               alt={selectedMovie.title}
               className="w-16 h-24 object-cover rounded"
             />
@@ -227,6 +248,111 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
             >
               <X className="h-5 w-5" />
             </button>
+          </div>
+        )}
+
+        {/* Manual movie details (when not selecting a TMDB movie) */}
+        {!selectedMovie && (
+          <div className="mt-4 rounded-lg border border-gray-700 bg-gray-900/40 p-4">
+            <p className="text-sm font-semibold text-white">Manual Movie Details (optional)</p>
+            <p className="mt-1 text-xs text-gray-400">
+              If you don’t select a TMDB movie, fill these so the movie card shows poster/genres/runtime.
+            </p>
+
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Movie Name *</label>
+                <input
+                  type="text"
+                  name="movieName"
+                  value={formData.movieName}
+                  onChange={handleChange}
+                  placeholder="e.g. Spider-Man"
+                  className={`w-full rounded-lg border bg-gray-800 px-4 py-3 text-white focus:outline-none ${
+                    errors.movieName ? "border-red-500" : "border-gray-700 focus:border-red-500"
+                  }`}
+                />
+                {errors.movieName && <p className="mt-1 text-xs text-red-500">{errors.movieName}</p>}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Release Date</label>
+                <input
+                  type="date"
+                  name="releaseDate"
+                  value={formData.releaseDate}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Runtime (minutes)</label>
+                <input
+                  type="number"
+                  name="runtime"
+                  value={formData.runtime}
+                  onChange={handleChange}
+                  placeholder="e.g. 148"
+                  min="0"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Genres (comma separated)</label>
+                <input
+                  type="text"
+                  name="genres"
+                  value={formData.genres}
+                  onChange={handleChange}
+                  placeholder="e.g. Action, Adventure, Sci-Fi"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Poster URL</label>
+                <input
+                  type="text"
+                  name="poster"
+                  value={formData.poster}
+                  onChange={handleChange}
+                  placeholder="https://...jpg (or TMDB path like /abc.jpg)"
+                  className={`w-full rounded-lg border bg-gray-800 px-4 py-3 text-white focus:outline-none ${
+                    errors.poster ? "border-red-500" : "border-gray-700 focus:border-red-500"
+                  }`}
+                />
+                {errors.poster && <p className="mt-1 text-xs text-red-500">{errors.poster}</p>}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-300">Backdrop URL</label>
+                <input
+                  type="text"
+                  name="poster2"
+                  value={formData.poster2}
+                  onChange={handleChange}
+                  placeholder="https://...jpg (or TMDB path like /abc.jpg)"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="mb-2 block text-sm font-medium text-gray-300">Rating (0-10)</label>
+                <input
+                  type="number"
+                  name="rating"
+                  value={formData.rating}
+                  onChange={handleChange}
+                  placeholder="e.g. 7.8"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:border-red-500"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -12,8 +12,23 @@ const FeatureCard = ({ movie, schedule }) => {
   const movieId = movie?.tmdbId || movie?.id;
   const title = movie?.title || movie?.title;
   const overview = movie?.overview;
-  const posterUrl = movie?.posterUrl || movie?.poster_path || movie?.posterPath;
-  const backdropUrl = movie?.backdropUrl || movie?.backdrop_path || movie?.backdropPath;
+
+  const normalizeTmdbImage = (value, size) => {
+    if (!value) return null;
+    if (typeof value !== "string") return null;
+    if (value.startsWith("http")) return value;
+    if (value.startsWith("/")) return `https://image.tmdb.org/t/p/${size}${value}`;
+    return value;
+  };
+
+  const posterUrl = normalizeTmdbImage(
+    movie?.posterUrl || movie?.poster_path || movie?.posterPath,
+    "w500"
+  );
+  const backdropUrl = normalizeTmdbImage(
+    movie?.backdropUrl || movie?.backdrop_path || movie?.backdropPath,
+    "w1280"
+  );
   const releaseDate = movie?.releaseDate || movie?.release_date;
   const originalLanguage = movie?.language || movie?.original_language;
   const voteAverage = movie?.rating || movie?.vote_average;
