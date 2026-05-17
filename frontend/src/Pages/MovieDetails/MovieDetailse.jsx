@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import { getMovieById, getRelatedMovies, getShowsByMovie } from "../../services/api";
+import { getMovieById, getRelatedMovies } from "../../services/api";
 import { isFavoriteShow, toggleFavoriteShow } from "../../lib/favorites.js";
 import { MovieDetailsSkeleton } from "../../Components/Skeletons";
 
