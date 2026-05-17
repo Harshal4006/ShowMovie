@@ -212,7 +212,7 @@ const DeleteMovie = async (req, res) => {
 const CreateShow = async (req, res) => {
   try {
     await ensureDbConnection();
-    const { movieId, movieName, moviePoster, movieBackdrop, movieOverview, showDateTime, showPrice, theater, screenType, language, genres, runtime } = req.body;
+    const { movieId, movieName, moviePoster, movieBackdrop, movieOverview, showDateTime, showPrice, theater, screenType, language, genres, runtime, releaseDate, tagline, rating, voteCount, cast } = req.body;
 
     // First check if movie already exists in Movie collection
     let movie;
@@ -227,17 +227,23 @@ const CreateShow = async (req, res) => {
       if (!movie) {
         const { imageBaseUrl } = getTmdbConfig();
         movie = await Movie.create({
-          tmdbId: Math.floor(Date.now() / 1000), // Use timestamp as fallback tmdbId
+          tmdbId: Math.floor(Date.now() / 1000),
           title: movieName,
+          originalTitle: movieName,
           overview: movieOverview || "",
           posterPath: moviePoster || "",
           backdropPath: movieBackdrop || "",
           posterUrl: moviePoster ? (moviePoster.startsWith('http') ? moviePoster : `${imageBaseUrl}/w500${moviePoster}`) : null,
           backdropUrl: movieBackdrop ? (movieBackdrop.startsWith('http') ? movieBackdrop : `${imageBaseUrl}/w1280${movieBackdrop}`) : null,
-          genres: genres || [],
+          releaseDate: releaseDate || "",
           runtime: runtime || 0,
+          genres: genres || [],
+          rating: rating || 0,
+          voteCount: voteCount || 0,
           language: language || 'English',
-          rating: 0,
+          tagline: tagline || "",
+          trailerKey: null,
+          cast: cast || [],
           status: 'active',
           price: showPrice || 0,
           movieLanguage: language || 'English',

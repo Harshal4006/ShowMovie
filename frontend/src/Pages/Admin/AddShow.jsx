@@ -5,7 +5,7 @@ import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import AddShowHeader from "../../Components/Admin/AddShow/AddShowHeader";
 import AddShowForm from "../../Components/Admin/AddShow/AddShowForm";
 import AddShowPreview from "../../Components/Admin/AddShow/AddShowPreview";
-import { createShow } from "../../services/api";
+import { createShow, getTmdbMovieDetails } from "../../services/api";
 
 const AddShow = () => {
   const navigate = useNavigate();
@@ -15,9 +15,35 @@ const AddShow = () => {
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
+      // Get full TMDB movie details to get genres, runtime, etc.
+      let genres = [];
+      let runtime = 0;
+      let releaseDate = "";
+      let tagline = "";
+      let rating = 0;
+      let voteCount = 0;
+      let cast = [];
+      let tmdbId = formData.movieId;
+
+      if (tmdbId) {
+        try {
+          const details = await getTmdbMovieDetails(tmdbId);
+          genres = details.genres || [];
+          runtime = details.runtime || 0;
+          releaseDate = details.releaseDate || "";
+          tagline = details.tagline || "";
+          rating = details.rating || details.vote_average || 0;
+          voteCount = details.voteCount || details.vote_count || 0;
+          cast = details.cast || [];
+        } catch (e) {
+          console.error("Failed to get TMDB details:", e);
+        }
+      }
+
       // Prepare show data - include movie details so it gets saved to Movie collection too
       const showData = {
         movieName: formData.movieName,
+        movieId: formData.movieId,
         moviePoster: formData.poster,
         movieBackdrop: formData.poster2,
         movieOverview: formData.description,
@@ -26,6 +52,13 @@ const AddShow = () => {
         theater: formData.theater,
         screenType: formData.screenType,
         language: formData.language,
+        genres: genres,
+        runtime: runtime,
+        releaseDate: releaseDate,
+        tagline: tagline,
+        rating: rating,
+        voteCount: voteCount,
+        cast: cast,
       };
 
       await createShow(showData);
