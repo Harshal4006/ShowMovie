@@ -222,17 +222,123 @@ const CreateShow = async (req, res) => {
     // First check if movie already exists in Movie collection
     let movie;
     if (movieId) {
-      movie = await Movie.findById(movieId);
+      // `movieId` can be either a Mongo ObjectId (existing movie) OR a numeric TMDB id (from TMDB search results)
+      if (mongoose.isValidObjectId(movieId)) {
+        movie = await Movie.findById(movieId);
+      } else {
+        const tmdbId = Number(movieId);
+        if (Number.isFinite(tmdbId)) {
+          movie = await Movie.findOne({ tmdbId });
+        }
+      }
+    }
+
+    // If TMDB id was provided but movie isn't in DB yet, import full details from TMDB now
+    if (!movie && movieId && !mongoose.isValidObjectId(movieId)) {
+      const tmdbId = Number(movieId);
+      if (Number.isFinite(tmdbId)) {
+        const existingByTmdb = await Movie.findOne({ tmdbId });
+        if (existingByTmdb) {
+          movie = existingByTmdb;
+        } else {
+          const { imageBaseUrl } = getTmdbConfig();
+          const [tmdbMovie, credits, videos] = await Promise.all([
+            callTmdb(`/movie/${tmdbId}?language=en-US`),
+            callTmdb(`/movie/${tmdbId}/credits?language=en-US`),
+            callTmdb(`/movie/${tmdbId}/videos?language=en-US`)
+          ]);
+
+          const trailer = videos.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+          const tmdbCast = credits.cast?.slice(0, 10).map(c => ({
+            name: c.name,
+            character: c.character,
+            profilePath: c.profile_path ? `${imageBaseUrl}/w200${c.profile_path}` : null
+          }));
+
+          movie = await Movie.create({
+            tmdbId: tmdbMovie.id,
+            title: tmdbMovie.title,
+            originalTitle: tmdbMovie.original_title,
+            overview: tmdbMovie.overview,
+            posterPath: tmdbMovie.poster_path,
+            backdropPath: tmdbMovie.backdrop_path,
+            posterUrl: tmdbMovie.poster_path ? `${imageBaseUrl}/w500${tmdbMovie.poster_path}` : null,
+            backdropUrl: tmdbMovie.backdrop_path ? `${imageBaseUrl}/w1280${tmdbMovie.backdrop_path}` : null,
+            releaseDate: tmdbMovie.release_date,
+            runtime: tmdbMovie.runtime,
+            genres: tmdbMovie.genres,
+            rating: tmdbMovie.vote_average,
+            voteCount: tmdbMovie.vote_count,
+            language: tmdbMovie.original_language,
+            tagline: tmdbMovie.tagline,
+            trailerKey: trailer?.key || null,
+            cast: tmdbCast,
+            status: 'active',
+            price: showPrice || 0,
+            movieLanguage: language || 'English',
+            format: screenType || '2D',
+            isFeatured: false
+          });
+        }
+      }
     }
 
     // If movie doesn't exist, create it
     if (!movie && movieName) {
+      // If no TMDB id is provided, try to resolve the movie from TMDB by title to avoid empty cards
+      try {
+        const search = await callTmdb(`/search/movie?query=${encodeURIComponent(movieName)}&language=en-US&page=1`);
+        const bestMatch = search.results?.[0];
+        if (bestMatch?.id) {
+          const { imageBaseUrl } = getTmdbConfig();
+          const [tmdbMovie, credits, videos] = await Promise.all([
+            callTmdb(`/movie/${bestMatch.id}?language=en-US`),
+            callTmdb(`/movie/${bestMatch.id}/credits?language=en-US`),
+            callTmdb(`/movie/${bestMatch.id}/videos?language=en-US`)
+          ]);
+
+          const trailer = videos.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+          const tmdbCast = credits.cast?.slice(0, 10).map(c => ({
+            name: c.name,
+            character: c.character,
+            profilePath: c.profile_path ? `${imageBaseUrl}/w200${c.profile_path}` : null
+          }));
+
+          movie = await Movie.create({
+            tmdbId: tmdbMovie.id,
+            title: tmdbMovie.title,
+            originalTitle: tmdbMovie.original_title,
+            overview: tmdbMovie.overview,
+            posterPath: tmdbMovie.poster_path,
+            backdropPath: tmdbMovie.backdrop_path,
+            posterUrl: tmdbMovie.poster_path ? `${imageBaseUrl}/w500${tmdbMovie.poster_path}` : null,
+            backdropUrl: tmdbMovie.backdrop_path ? `${imageBaseUrl}/w1280${tmdbMovie.backdrop_path}` : null,
+            releaseDate: tmdbMovie.release_date,
+            runtime: tmdbMovie.runtime,
+            genres: tmdbMovie.genres,
+            rating: tmdbMovie.vote_average,
+            voteCount: tmdbMovie.vote_count,
+            language: tmdbMovie.original_language,
+            tagline: tmdbMovie.tagline,
+            trailerKey: trailer?.key || null,
+            cast: tmdbCast,
+            status: 'active',
+            price: showPrice || 0,
+            movieLanguage: language || 'English',
+            format: screenType || '2D',
+            isFeatured: false
+          });
+        }
+      } catch (e) {
+        // fall back to minimal creation below
+      }
+
       // Check if movie with similar title already exists
-      movie = await Movie.findOne({ title: movieName });
+      if (!movie) movie = await Movie.findOne({ title: movieName });
       if (!movie) {
         const { imageBaseUrl } = getTmdbConfig();
         movie = await Movie.create({
-          tmdbId: Math.floor(Date.now() / 1000),
+          tmdbId: Number.isFinite(Number(movieId)) ? Number(movieId) : Math.floor(Date.now() / 1000),
           title: movieName,
           originalTitle: movieName,
           overview: movieOverview || "",
@@ -276,7 +382,10 @@ const CreateShow = async (req, res) => {
     res.status(201).json(populated);
   } catch (error) {
     console.error('CreateShow error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: 'Failed to create show',
+      error: error.message
+    });
   }
 };
 

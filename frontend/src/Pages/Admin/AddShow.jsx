@@ -38,16 +38,6 @@ const AddShow = () => {
         } catch (e) {
           console.error("Failed to get TMDB details:", e);
         }
-      } else {
-        // Manual movie entry fallback (when TMDB ID is not selected)
-        runtime = Number.parseInt(formData.runtime, 10) || 0;
-        releaseDate = formData.releaseDate || "";
-        rating = Number.parseFloat(formData.rating) || 0;
-        const genreNames = (formData.genres || "")
-          .split(",")
-          .map((g) => g.trim())
-          .filter(Boolean);
-        genres = genreNames.map((name, index) => ({ id: index + 1, name }));
       }
 
       // Prepare show data - include movie details so it gets saved to Movie collection too
