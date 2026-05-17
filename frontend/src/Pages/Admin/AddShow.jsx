@@ -18,6 +18,10 @@ const AddShow = () => {
     setIsSubmitting(true);
     try {
       const token = await getToken();
+      if (!token) {
+        toast.error("Please sign in again (missing auth token).");
+        return;
+      }
       // Get full TMDB movie details to get genres, runtime, etc.
       let genres = [];
       let runtime = 0;
@@ -44,13 +48,17 @@ const AddShow = () => {
       }
 
       // Prepare show data - include movie details so it gets saved to Movie collection too
+      const showDateTimes = (formData.showtimes || [])
+        .filter((st) => st?.date && st?.time)
+        .map((st) => `${st.date}T${st.time}`);
+
       const showData = {
         movieName: formData.movieName,
         movieId: formData.movieId,
         moviePoster: formData.poster,
         movieBackdrop: formData.poster2,
         movieOverview: formData.description,
-        showDateTime: formData.showtimes[0].date + 'T' + formData.showtimes[0].time,
+        showDateTimes,
         showPrice: formData.price,
         theater: formData.theater,
         screenType: formData.screenType,
@@ -69,7 +77,7 @@ const AddShow = () => {
       navigate("/admin/list-shows");
     } catch (error) {
       console.error("Failed to create show:", error);
-      toast.error("Failed to add show");
+      toast.error(error?.message || "Failed to add show");
     } finally {
       setIsSubmitting(false);
     }

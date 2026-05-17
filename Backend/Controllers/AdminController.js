@@ -209,7 +209,34 @@ const DeleteMovie = async (req, res) => {
 const CreateShow = async (req, res) => {
   try {
     await ensureDbConnection();
-    const { movieId, movieName, moviePoster, movieBackdrop, movieOverview, showDateTime, showPrice, theater, screenType, language, genres, runtime, releaseDate, tagline, rating, voteCount, cast } = req.body;
+    const {
+      movieId,
+      movieName,
+      moviePoster,
+      movieBackdrop,
+      movieOverview,
+      showDateTime,
+      showDateTimes,
+      showPrice,
+      theater,
+      screenType,
+      language,
+      genres,
+      runtime,
+      releaseDate,
+      tagline,
+      rating,
+      voteCount,
+      cast,
+    } = req.body;
+
+    const dateTimes = Array.isArray(showDateTimes) && showDateTimes.length > 0
+      ? showDateTimes
+      : (showDateTime ? [showDateTime] : []);
+
+    if (dateTimes.length === 0) {
+      return res.status(400).json({ message: 'At least one showDateTime is required' });
+    }
 
     // First check if movie already exists in Movie collection
     let movie;
@@ -360,18 +387,23 @@ const CreateShow = async (req, res) => {
       return res.status(400).json({ message: 'Movie not found and could not be created' });
     }
 
-    const show = await Show.create({
+    const showsToCreate = dateTimes.map((dt) => ({
       movie: movie._id,
-      showDateTime,
+      showDateTime: dt,
       showPrice,
       theater,
       screenType,
       language,
       status: 'active'
-    });
+    }));
 
-    const populated = await Show.findById(show._id).populate('movie');
-    res.status(201).json(populated);
+    const createdShows = await Show.insertMany(showsToCreate, { ordered: true });
+    const createdIds = createdShows.map((s) => s._id);
+    const populated = await Show.find({ _id: { $in: createdIds } })
+      .populate('movie')
+      .sort({ showDateTime: 1 });
+
+    res.status(201).json({ shows: populated, movie });
   } catch (error) {
     console.error('CreateShow error:', error);
     res.status(500).json({

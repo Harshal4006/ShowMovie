@@ -1,6 +1,13 @@
 const CastGrid = ({ cast }) => {
   if (cast.length === 0) return null;
 
+  const normalizeProfileImage = (value) => {
+    if (!value || typeof value !== "string") return null;
+    if (value.startsWith("http")) return value;
+    if (value.startsWith("/")) return `https://image.tmdb.org/t/p/w200${value}`;
+    return value;
+  };
+
   const handleCastClick = (actorName) => {
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(actorName)}`;
     window.open(searchUrl, "_blank", "noopener,noreferrer");
@@ -19,7 +26,10 @@ const CastGrid = ({ cast }) => {
             <div className="relative h-56 w-full overflow-hidden rounded-2xl bg-linear-to-br from-gray-900/90 to-gray-800/90">
               <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent z-10" />
               <img
-                src={actor.profile_path}
+                src={
+                  normalizeProfileImage(actor.profilePath || actor.profile_path) ||
+                  "https://via.placeholder.com/300x450"
+                }
                 alt={actor.name}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
