@@ -35,6 +35,7 @@ const callTmdb = async (endpoint) => {
 // Dashboard Stats
 const GetDashboardStats = async (req, res) => {
   try {
+    await ensureDbConnection();
     const totalBookings = await Booking.countDocuments();
     const totalRevenue = await Booking.aggregate([
       { $match: { isPaid: true } },
@@ -113,6 +114,7 @@ const TmdbGetMovieDetails = async (req, res) => {
 // Import Movie from TMDB
 const ImportMovie = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { tmdbId, price, movieLanguage, format, status, isFeatured } = req.body;
 
     const existing = await Movie.findOne({ tmdbId });
@@ -155,7 +157,7 @@ const ImportMovie = async (req, res) => {
       price: price || 0,
       movieLanguage: movieLanguage || 'English',
       format: format || '2D',
-      status: status || 'coming-soon',
+      status: status || 'active',
       isFeatured: isFeatured || false
     });
 
@@ -168,6 +170,7 @@ const ImportMovie = async (req, res) => {
 // Get All Movies (Admin)
 const GetAllMoviesAdmin = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { status, page = 1, limit = 20 } = req.query;
     const query = {};
     if (status) query.status = status;
@@ -184,6 +187,7 @@ const GetAllMoviesAdmin = async (req, res) => {
 // Update Movie (Admin)
 const UpdateMovie = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { price, movieLanguage, format, status, isFeatured } = req.body;
     const movie = await Movie.findByIdAndUpdate(
       req.params.id,
@@ -200,6 +204,7 @@ const UpdateMovie = async (req, res) => {
 // Delete Movie (Admin)
 const DeleteMovie = async (req, res) => {
   try {
+    await ensureDbConnection();
     const movie = await Movie.findByIdAndDelete(req.params.id);
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
     res.json({ message: 'Movie deleted successfully' });
@@ -278,6 +283,7 @@ const CreateShow = async (req, res) => {
 // Update Show
 const UpdateShow = async (req, res) => {
   try {
+    await ensureDbConnection();
     const show = await Show.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('movie');
     if (!show) return res.status(404).json({ message: 'Show not found' });
     res.json(show);
@@ -289,6 +295,7 @@ const UpdateShow = async (req, res) => {
 // Delete Show
 const DeleteShow = async (req, res) => {
   try {
+    await ensureDbConnection();
     const show = await Show.findByIdAndDelete(req.params.id);
     if (!show) return res.status(404).json({ message: 'Show not found' });
     res.json({ message: 'Show deleted successfully' });
@@ -300,6 +307,7 @@ const DeleteShow = async (req, res) => {
 // Get All Bookings (Admin)
 const GetAllBookings = async (req, res) => {
   try {
+    await ensureDbConnection();
     const bookings = await Booking.find().populate('show').populate('user', 'name email').sort({ createdAt: -1 });
     res.json(bookings);
   } catch (error) {
