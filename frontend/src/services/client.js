@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export class ApiError extends Error {
   constructor(message, { status, data } = {}) {
@@ -10,6 +10,12 @@ export class ApiError extends Error {
 }
 
 export const request = async (path, options = {}) => {
+  if (!API_BASE_URL) {
+    throw new ApiError(
+      "VITE_API_URL is not set. Configure it in your frontend environment (Vercel Project → Settings → Environment Variables) and redeploy."
+    );
+  }
+
   const {
     method = "GET",
     token,
@@ -40,4 +46,3 @@ export const request = async (path, options = {}) => {
 
   return data;
 };
-
