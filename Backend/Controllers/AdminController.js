@@ -238,6 +238,12 @@ const CreateShow = async (req, res) => {
       return res.status(400).json({ message: 'At least one showDateTime is required' });
     }
 
+    // Validate date times early to avoid inserting bad shows
+    const invalid = dateTimes.find((dt) => Number.isNaN(new Date(dt).getTime()));
+    if (invalid) {
+      return res.status(400).json({ message: 'Invalid showDateTime value', showDateTime: invalid });
+    }
+
     // First check if movie already exists in Movie collection
     let movie;
     if (movieId) {

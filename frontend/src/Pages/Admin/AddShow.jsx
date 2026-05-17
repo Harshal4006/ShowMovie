@@ -50,7 +50,9 @@ const AddShow = () => {
       // Prepare show data - include movie details so it gets saved to Movie collection too
       const showDateTimes = (formData.showtimes || [])
         .filter((st) => st?.date && st?.time)
-        .map((st) => `${st.date}T${st.time}`);
+        // Force UTC to avoid timezone shifts between server/client.
+        // We store showDateTime in Mongo as UTC and format back to local in UI.
+        .map((st) => `${st.date}T${st.time}:00.000Z`);
 
       const showData = {
         movieName: formData.movieName,
