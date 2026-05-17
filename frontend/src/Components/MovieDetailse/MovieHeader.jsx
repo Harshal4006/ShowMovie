@@ -2,12 +2,27 @@ import { Calendar, Clock, Globe } from "lucide-react";
 import { formatRuntime } from "../../lib/formatRuntime.js";
 
 const MovieHeader = ({ movie, language, genres }) => {
+  const normalizeTmdbImage = (value, size) => {
+    if (!value || typeof value !== "string") return null;
+    if (value.startsWith("http")) return value;
+    if (value.startsWith("/")) return `https://image.tmdb.org/t/p/${size}${value}`;
+    return value;
+  };
+
+  const backdropSrc = normalizeTmdbImage(
+    movie?.backdropUrl || movie?.backdrop_path || movie?.backdropPath,
+    "w1280"
+  );
+
+  const releaseDate = movie?.releaseDate || movie?.release_date;
+  const runtime = movie?.runtime || 0;
+
   return (
     <>
       {/* Background blur */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <img
-          src={movie.backdrop_path}
+          src={backdropSrc || "https://via.placeholder.com/1200x600"}
           alt=""
           loading="lazy"
           className="absolute inset-0 h-full w-full scale-110 object-cover opacity-20 blur-3xl"
@@ -27,7 +42,7 @@ const MovieHeader = ({ movie, language, genres }) => {
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-gray-400">
           <span className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            {movie.release_date || "Coming soon"}
+            {releaseDate || "Coming soon"}
           </span>
           <span className="flex items-center gap-1">
             <Globe className="h-4 w-4" />
@@ -35,7 +50,7 @@ const MovieHeader = ({ movie, language, genres }) => {
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
-            {formatRuntime(movie.runtime)}
+            {formatRuntime(runtime)}
           </span>
         </div>
       </div>

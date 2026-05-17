@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import { getMovieById, getRelatedMovies } from "../../services/api";
+import { getMovieById, getRelatedMovies, getShowsByMovie } from "../../services/api";
 import { isFavoriteShow, toggleFavoriteShow } from "../../lib/favorites.js";
 import { MovieDetailsSkeleton } from "../../Components/Skeletons";
 
@@ -12,18 +12,31 @@ import ShowTimes from "../../Components/MovieDetailse/ShowTimes.jsx";
 import CastGrid from "../../Components/MovieDetailse/CastGrid.jsx";
 import RelatedMovies from "../../Components/MovieDetailse/RelatedMovies.jsx";
 
-const SHOW_DATES = [
-  { date: "2026-08-01", day: "Sat", timeSlots: ["10:00 AM", "2:30 PM", "7:00 PM", "10:30 PM"] },
-  { date: "2026-08-02", day: "Sun", timeSlots: ["11:00 AM", "3:30 PM", "8:00 PM"] },
-  { date: "2026-08-03", day: "Mon", timeSlots: ["1:00 PM", "5:30 PM", "9:00 PM"] },
-  { date: "2026-08-04", day: "Tue", timeSlots: ["12:00 PM", "4:30 PM", "8:30 PM"] },
-];
+const formatDateKey = (iso) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const formatTimeLabel = (iso) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const MovieDetailse = () => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [relatedMovies, setRelatedMovies] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(SHOW_DATES[0]?.date || null);
+  const [showDates, setShowDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [favorite, setFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,6 +54,31 @@ const MovieDetailse = () => {
           // Fetch related movies
           const related = await getRelatedMovies(id);
           setRelatedMovies(related.movies || related || []);
+
+          // Fetch shows for this movie
+          const movieId = data?._id || id;
+          const nextShows = await getShowsByMovie(movieId);
+          const showList = Array.isArray(nextShows) ? nextShows : (nextShows?.shows || []);
+
+          const grouped = new Map();
+          for (const s of showList) {
+            const dateKey = formatDateKey(s.showDateTime);
+            const time = formatTimeLabel(s.showDateTime);
+            if (!dateKey || !time) continue;
+            if (!grouped.has(dateKey)) grouped.set(dateKey, new Set());
+            grouped.get(dateKey).add(time);
+          }
+
+          const nextShowDates = [...grouped.entries()]
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([date, timeSet]) => ({
+              date,
+              day: new Date(date).toLocaleDateString("en-IN", { weekday: "short" }),
+              timeSlots: [...timeSet],
+            }));
+
+          setShowDates(nextShowDates);
+          setSelectedDate((prev) => prev || nextShowDates[0]?.date || null);
         }
       } catch (err) {
         console.error('Failed to fetch movie:', err);
@@ -112,13 +150,13 @@ const MovieDetailse = () => {
               onTrailerClick={handleTrailerClick}
               language={language}
               selectedDate={selectedDate}
-              SHOW_DATES={SHOW_DATES}
+              showDates={showDates}
             />
           </div>
 
           <div className="lg:col-span-2">
             <MovieHeader movie={movie} language={language} genres={genres} />
-            <ShowTimes SHOW_DATES={SHOW_DATES} selectedDate={selectedDate} setSelectedDate={setSelectedDate} movie={movie} />
+            <ShowTimes showDates={showDates} selectedDate={selectedDate} setSelectedDate={setSelectedDate} movie={movie} />
           </div>
         </div>
 

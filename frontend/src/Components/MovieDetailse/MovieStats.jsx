@@ -2,17 +2,41 @@ import { Star, Clock, Calendar, Heart, Ticket, PlayCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatRuntime } from "../../lib/formatRuntime.js";
 
-const MovieStats = ({ movie, favorite, handleFavoriteToggle, onTrailerClick, language, selectedDate, SHOW_DATES }) => {
-  const releaseYear = movie.release_date?.split("-")[0] || "2026";
-  const defaultTime = SHOW_DATES[0]?.timeSlots?.[0] || "10:00 AM";
-  const bookingUrl = `/movies/${movie.id}/${selectedDate || SHOW_DATES[0]?.date}?time=${encodeURIComponent(defaultTime)}`;
+const MovieStats = ({ movie, favorite, handleFavoriteToggle, onTrailerClick, language, selectedDate, showDates }) => {
+  const normalizeTmdbImage = (value, size) => {
+    if (!value || typeof value !== "string") return null;
+    if (value.startsWith("http")) return value;
+    if (value.startsWith("/")) return `https://image.tmdb.org/t/p/${size}${value}`;
+    return value;
+  };
+
+  const posterSrc = normalizeTmdbImage(
+    movie?.posterUrl || movie?.poster_path || movie?.posterPath,
+    "w500"
+  );
+  const backdropSrc = normalizeTmdbImage(
+    movie?.backdropUrl || movie?.backdrop_path || movie?.backdropPath,
+    "w1280"
+  );
+
+  const releaseDate = movie?.releaseDate || movie?.release_date;
+  const releaseYear = releaseDate?.split("-")[0] || "—";
+  const voteAverage = movie?.rating ?? movie?.vote_average;
+  const runtime = movie?.runtime || 0;
+  const movieId = movie?._id || movie?.id || movie?.tmdbId;
+
+  const defaultDate = selectedDate || showDates?.[0]?.date;
+  const defaultTime = showDates?.find((d) => d.date === defaultDate)?.timeSlots?.[0] || "";
+  const bookingUrl = defaultDate && defaultTime
+    ? `/movies/${movieId}/${defaultDate}?time=${encodeURIComponent(defaultTime)}`
+    : `/movies/${movieId}`;
 
   return (
     <div className="sticky top-24">
       <div className="overflow-hidden rounded-4xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
         <div className="relative overflow-hidden rounded-3xl">
           <img
-            src={movie.poster_path || movie.backdrop_path}
+            src={posterSrc || backdropSrc || "https://via.placeholder.com/600x900"}
             alt={movie.title}
             loading="lazy"
             className="h-auto w-full object-cover"
@@ -49,12 +73,12 @@ const MovieStats = ({ movie, favorite, handleFavoriteToggle, onTrailerClick, lan
         <div className="mt-6 grid grid-cols-3 gap-3">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur">
             <Star className="mx-auto h-5 w-5 fill-red-500 text-red-500" />
-            <p className="mt-2 text-2xl font-bold text-white">{movie.vote_average?.toFixed(1)}</p>
+            <p className="mt-2 text-2xl font-bold text-white">{Number(voteAverage || 0).toFixed(1)}</p>
             <p className="text-xs text-gray-400">Rating</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur">
             <Clock className="mx-auto h-5 w-5 text-red-500" />
-            <p className="mt-2 text-2xl font-bold text-white">{formatRuntime(movie.runtime)}</p>
+            <p className="mt-2 text-2xl font-bold text-white">{formatRuntime(runtime)}</p>
             <p className="text-xs text-gray-400">Runtime</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur">

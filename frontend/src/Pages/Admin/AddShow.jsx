@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import AddShowHeader from "../../Components/Admin/AddShow/AddShowHeader";
@@ -9,12 +10,14 @@ import { createShow, getTmdbMovieDetails } from "../../services/api";
 
 const AddShow = () => {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quickAddData, setQuickAddData] = useState(null);
 
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
+      const token = await getToken();
       // Get full TMDB movie details to get genres, runtime, etc.
       let genres = [];
       let runtime = 0;
@@ -61,7 +64,7 @@ const AddShow = () => {
         cast: cast,
       };
 
-      await createShow(showData);
+      await createShow(token, showData);
       toast.success("Show added successfully!");
       navigate("/admin/list-shows");
     } catch (error) {

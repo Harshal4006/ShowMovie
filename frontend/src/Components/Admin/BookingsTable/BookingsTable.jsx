@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { MoreVertical, CheckCircle, XCircle, Clock, IndianRupee } from "lucide-react";
 import toast from "react-hot-toast";
 
-const BookingsTable = ({ bookings, onView, onUpdateStatus }) => {
+const BookingsTable = ({ bookings, onUpdateStatus }) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -13,9 +13,6 @@ const BookingsTable = ({ bookings, onView, onUpdateStatus }) => {
   const currentPage = Math.min(page, totalPages);
   const pageStartIndex = (currentPage - 1) * pageSize;
   const pageBookings = safeBookings.slice(pageStartIndex, pageStartIndex + pageSize);
-
-  const fromRow = safeBookings.length === 0 ? 0 : pageStartIndex + 1;
-  const toRow = Math.min(safeBookings.length, pageStartIndex + pageSize);
 
   const getStatusBadge = (status) => {
     const statusConfig = {

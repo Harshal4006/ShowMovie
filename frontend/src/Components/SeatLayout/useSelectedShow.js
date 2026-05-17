@@ -1,26 +1,26 @@
 import { useMemo } from "react";
 
-import { dummyDashboardData } from "../../assets/assets.js";
 import { getShowTimeLabel, timeToMinutes } from "./seatLayoutUtils.js";
 
-export const useSelectedShow = ({ movie, date, time }) => {
-  return useMemo(() => {
-    const activeShows = dummyDashboardData?.activeShows ?? [];
-    if (!movie || !date) return null;
+const formatDateKey = (iso) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
 
-    const forMovie = activeShows.filter((show) => {
-      const showMovieId = show?.movie?.id ?? show?.movie?._id;
-      const movieId = movie?.id ?? movie?._id;
-      return showMovieId === movieId;
-    });
+export const useSelectedShow = ({ movieId, shows, date, time }) => {
+  return useMemo(() => {
+    if (!movieId || !date || !Array.isArray(shows)) return null;
+    const forMovie = shows.filter((s) => s?.movie?._id === movieId || s?.movie === movieId);
 
     if (forMovie.length === 0) return null;
 
     const dateMatches = forMovie.filter((show) => {
-      const showDate = new Date(show?.showDateTime ?? 0);
-      if (Number.isNaN(showDate.getTime())) return false;
-      const localDateString = showDate.toISOString().slice(0, 10);
-      return localDateString === date;
+      const showDate = formatDateKey(show?.showDateTime ?? 0);
+      return showDate === date;
     });
 
     const pool = dateMatches.length > 0 ? dateMatches : forMovie;
@@ -36,5 +36,5 @@ export const useSelectedShow = ({ movie, date, time }) => {
     });
 
     return exact ?? pool[0];
-  }, [date, movie, time]);
+  }, [date, movieId, shows, time]);
 };

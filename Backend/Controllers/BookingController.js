@@ -1,10 +1,17 @@
 const Booking = require('../Models/Booking');
 const Show = require('../Models/Show');
+const User = require('../Models/User');
+const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 const CreateBooking = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { showId, bookedSeats, amount } = req.body;
-    const userId = req.user.id;
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findOne({ clerkId: clerkUserId });
+    if (!user) return res.status(404).json({ message: 'User not found. Please sign in again.' });
 
     // Check seat availability
     const show = await Show.findById(showId);
@@ -19,7 +26,7 @@ const CreateBooking = async (req, res) => {
 
     // Create booking
     const booking = await Booking.create({
-      user: userId,
+      user: user._id,
       show: showId,
       bookedSeats,
       amount,
@@ -29,13 +36,15 @@ const CreateBooking = async (req, res) => {
     // Update show occupied seats
     const newOccupied = new Map(occupiedSeats);
     for (const seat of bookedSeats) {
-      newOccupied.set(seat, userId);
+      newOccupied.set(seat, user._id.toString());
     }
     await Show.findByIdAndUpdate(showId, { occupiedSeats: newOccupied });
 
     const populated = await Booking.findById(booking._id)
       .populate('show')
       .populate('user', 'name email');
+
+    await User.findByIdAndUpdate(user._id, { $addToSet: { bookings: booking._id } });
 
     res.status(201).json(populated);
   } catch (error) {
@@ -45,8 +54,14 @@ const CreateBooking = async (req, res) => {
 
 const GetUserBookings = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const bookings = await Booking.find({ user: userId })
+    await ensureDbConnection();
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findOne({ clerkId: clerkUserId });
+    if (!user) return res.json([]);
+
+    const bookings = await Booking.find({ user: user._id })
       .populate('show')
       .sort({ createdAt: -1 });
     res.json(bookings);
@@ -57,6 +72,7 @@ const GetUserBookings = async (req, res) => {
 
 const GetBookingById = async (req, res) => {
   try {
+    await ensureDbConnection();
     const booking = await Booking.findById(req.params.id)
       .populate('show')
       .populate('user', 'name email');
@@ -64,7 +80,13 @@ const GetBookingById = async (req, res) => {
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
     // Only allow user or admin to view
-    if (booking.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findOne({ clerkId: clerkUserId });
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+    if (booking.user._id.toString() !== user._id.toString() && user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 

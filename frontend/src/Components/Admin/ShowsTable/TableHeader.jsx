@@ -1,4 +1,4 @@
-const TableHeader = ({ allSelected, onSelectAll, selectedCount, showsLength }) => {
+const TableHeader = ({ allSelected, onSelectAll }) => {
   return (
     <thead className="bg-gray-900/50">
       <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

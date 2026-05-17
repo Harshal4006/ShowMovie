@@ -1,33 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { dummyBookingData } from "../../assets/assets.js";
+import React, { useMemo, useState, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
 import StatsSection from "../../Components/MyBooking/StatsSection.jsx";
 import FilterTabs from "../../Components/MyBooking/FilterTabs.jsx";
 import BookingsGrid from "../../Components/MyBooking/BookingsGrid.jsx";
 import EmptyState from "../../Components/MyBooking/EmptyState.jsx";
 import HelpSection from "../../Components/MyBooking/HelpSection.jsx";
 import { BookingCardSkeleton } from "../../Components/Skeletons";
+import { getMyBookings } from "../../services/api";
 
 const MyBooking = () => {
-  const [bookings] = useState(() => dummyBookingData);
+  const { getToken, isSignedIn } = useAuth();
+  const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        if (!isSignedIn) {
+          setBookings([]);
+          return;
+        }
+        const token = await getToken();
+        const data = await getMyBookings(token);
+        setBookings(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setError(e?.message || "Failed to load bookings");
+        setBookings([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [getToken, isSignedIn]);
 
-  const filteredBookings = bookings.filter((booking) => {
+  const filteredBookings = useMemo(() => bookings.filter((booking) => {
     if (filter === "all") return true;
     if (filter === "paid") return booking.isPaid;
     if (filter === "pending") return !booking.isPaid;
     return true;
-  });
+  }), [bookings, filter]);
 
   const totalBookings = bookings.length;
   const paidBookings = bookings.filter((b) => b.isPaid).length;
   const pendingBookings = bookings.filter((b) => !b.isPaid).length;
-  const totalAmount = bookings.reduce((sum, b) => sum + b.amount, 0);
+  const totalAmount = bookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
 
   return (
     <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
@@ -59,6 +79,11 @@ const MyBooking = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <BookingCardSkeleton key={i} />
             ))}
+          </div>
+        ) : error ? (
+          <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 px-6 py-10 text-center text-gray-200">
+            <h2 className="text-xl font-semibold text-white">Couldn’t load bookings</h2>
+            <p className="mt-2 text-sm text-gray-400">{error}</p>
           </div>
         ) : filteredBookings.length > 0 ? (
           <BookingsGrid bookings={filteredBookings} />

@@ -11,7 +11,6 @@ const FeatureCard = ({ movie, schedule }) => {
   // Handle both old dummy data format and new API format
   const movieId = movie?.tmdbId || movie?.id;
   const title = movie?.title || movie?.title;
-  const overview = movie?.overview;
 
   const normalizeTmdbImage = (value, size) => {
     if (!value) return null;

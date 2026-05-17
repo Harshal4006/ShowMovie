@@ -11,6 +11,9 @@ import ShowViewModal from "../../Components/Admin/ListShows/ShowViewModal";
 import ShowEditModal from "../../Components/Admin/ListShows/ShowEditModal";
 import { adminShowsQuickActions, adminShowsRecentActivity, dummyDashboardData } from "../../assets/assets";
 
+const THEATERS = ["PVR Cinemas", "INOX", "Cinepolis", "IMAX", "Wave Cinemas"];
+const SCREEN_TYPES = ["IMAX", "3D", "2D", "Dolby Atmos", "Premium", "4DX"];
+
 const ListShows = () => {
   const navigate = useNavigate();
 
@@ -27,9 +30,6 @@ const ListShows = () => {
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   };
 
-  const theaters = ["PVR Cinemas", "INOX", "Cinepolis", "IMAX", "Wave Cinemas"];
-  const screenTypes = ["IMAX", "3D", "2D", "Dolby Atmos", "Premium", "4DX"];
-
   // load initial shows from dummy data
   const initialShows = useMemo(() => {
     return (dummyDashboardData.activeShows ?? []).map((s, idx) => ({
@@ -37,12 +37,12 @@ const ListShows = () => {
       movieName: s.movie?.title ?? `Show ${idx + 1}`,
       poster: s.movie?.poster_path ?? "",
       poster2: s.movie?.backdrop_path ?? "",
-      theater: theaters[idx % theaters.length],
+      theater: THEATERS[idx % THEATERS.length],
       date: formatDate(s.showDateTime),
       time: formatTime(s.showDateTime),
       price: Number(s.showPrice ?? 0),
       language: (s.movie?.original_language ?? "en").toUpperCase(),
-      screenType: screenTypes[idx % screenTypes.length],
+      screenType: SCREEN_TYPES[idx % SCREEN_TYPES.length],
       description: s.movie?.overview ?? "",
       status: "active",
     }));

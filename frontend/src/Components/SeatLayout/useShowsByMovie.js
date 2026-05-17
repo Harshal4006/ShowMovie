@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
 
-import { getMovieById } from "../../services/api";
+import { getShowsByMovie } from "../../services/api";
 
-export const useSeatLayoutMovie = (id) => {
-  const [movie, setMovie] = useState(null);
+export const useShowsByMovie = (movieId) => {
+  const [shows, setShows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!movieId) return;
     const controller = new AbortController();
 
     const load = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getMovieById(id, { signal: controller.signal });
-        setMovie(data?.message ? null : data);
+        const data = await getShowsByMovie(movieId, { signal: controller.signal });
+        setShows(Array.isArray(data) ? data : []);
       } catch (e) {
         if (e?.name !== "AbortError") {
-          setError(e?.message || "Failed to load movie");
-          setMovie(null);
+          setError(e?.message || "Failed to load shows");
+          setShows([]);
         }
       } finally {
         setIsLoading(false);
@@ -29,7 +29,8 @@ export const useSeatLayoutMovie = (id) => {
 
     load();
     return () => controller.abort();
-  }, [id]);
+  }, [movieId]);
 
-  return { movie, isLoading, error };
+  return { shows, isLoading, error };
 };
+

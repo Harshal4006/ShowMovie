@@ -7,47 +7,25 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const { serve } = require('inngest/express');
+const { clerkMiddleware } = require('@clerk/express');
 
 const ErrorHandler = require('./Middleware/ErrorMiddleware');
 const { inngest, functions } = require('./Inngest/Inngest');
+const ensureDbConnection = require('./Utils/ensureDbConnection');
 
 const app = express();
 
 // Configure middleware
+const allowedOrigin = process.env.FRONTEND_URL;
 app.use(cors({
-  origin: '*',
-  credentials: true
+  origin: allowedOrigin || '*',
+  credentials: Boolean(allowedOrigin),
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection helper
-let isConnected = false;
-
-const ConnectDb = async () => {
-  const mongoUri = process.env.MONGO_URI;
-
-  if (!mongoUri) {
-    throw new Error('MONGO_URI is not set');
-  }
-
-  if (isConnected && mongoose.connection.readyState === 1) {
-    return;
-  }
-
-  try {
-    await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
-    });
-    isConnected = true;
-    console.log('MongoDB connected successfully');
-  } catch (error) {
-    console.error('MongoDB connection error:', error.message);
-    throw error;
-  }
-};
+// Clerk auth (reads CLERK_SECRET_KEY, etc from env)
+app.use(clerkMiddleware());
 
 // Root route
 app.get('/', (req, res) => {
@@ -61,7 +39,7 @@ app.get('/', (req, res) => {
 app.get('/api/health', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
-      await ConnectDb();
+      await ensureDbConnection();
     }
 
     res.json({
@@ -81,27 +59,29 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Test database connection endpoint
-app.get('/api/test-db', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      await ConnectDb();
+// Test database endpoint (dev only)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/test-db', async (req, res) => {
+    try {
+      if (mongoose.connection.readyState !== 1) {
+        await ensureDbConnection();
+      }
+
+      const User = require('./Models/User');
+      const count = await User.countDocuments();
+
+      res.json({
+        success: true,
+        userCount: count
+      });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        error: err.message
+      });
     }
-
-    const User = require('./Models/User');
-    const count = await User.countDocuments();
-
-    res.json({
-      success: true,
-      userCount: count
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
-  }
-});
+  });
+}
 
 // Mount Inngest handler
 app.use('/api/inngest', serve({ client: inngest, functions }));
@@ -113,6 +93,18 @@ app.use('/api/tmdb', TMDBRoutes);
 // Mount Movie routes
 const MovieRoutes = require('./Routes/MovieRoutes');
 app.use('/api/movies', MovieRoutes);
+
+// Mount Show routes
+const ShowRoutes = require('./Routes/ShowRoutes');
+app.use('/api/shows', ShowRoutes);
+
+// Mount Booking routes
+const BookingRoutes = require('./Routes/BookingRoutes');
+app.use('/api/bookings', BookingRoutes);
+
+// Mount Auth routes
+const AuthRoutes = require('./Routes/AuthRoutes');
+app.use('/api/auth', AuthRoutes);
 
 // Mount Admin routes
 const AdminRoutes = require('./Routes/AdminRoutes');
@@ -126,11 +118,11 @@ app.use(ErrorHandler);
 module.exports = app;
 
 // Start server locally (not needed on Vercel)
-if (process.env.NODE_ENV !== 'production') {
+if (require.main === module && process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     // Connect to MongoDB on startup
-    await ConnectDb();
+    await ensureDbConnection();
   });
 }

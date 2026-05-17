@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { formatRuntime } from "../../lib/formatRuntime.js";
 import MoviePoster from "./MoviePoster";
 import { MovieInfo, MovieMeta } from "./MovieInfo";
 import DateTimeInfo from "./DateTimeInfo";
@@ -11,9 +10,6 @@ const BookingCard = ({ booking }) => {
   const movie = show?.movie;
   const showDateTime = show?.showDateTime;
   const showPrice = show?.showPrice;
-
-  const releaseYear = movie?.release_date?.split("-")[0] || "2026";
-  const genres = movie?.genres?.slice(0, 2).map((genre) => genre.name).join(", ") || "Action";
 
   return (
     <div
@@ -36,7 +32,7 @@ const BookingCard = ({ booking }) => {
           showPrice={showPrice}
         />
 
-        <BookingFooter movieId={movie?.id} bookingId={booking._id} />
+        <BookingFooter movieId={movie?._id || movie?.id} bookingId={booking._id} />
       </div>
     </div>
   );

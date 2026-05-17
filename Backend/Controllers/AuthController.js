@@ -1,8 +1,10 @@
 const User = require('../Models/User');
+const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 // Sync user from Clerk to MongoDB
 const SyncUser = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { clerkId, name, email } = req.body;
 
     let user = await User.findOne({ clerkId });
@@ -30,7 +32,11 @@ const SyncUser = async (req, res) => {
 // Get current user
 const GetCurrentUser = async (req, res) => {
   try {
-    const user = await User.findOne({ clerkId: req.user.id })
+    await ensureDbConnection();
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findOne({ clerkId: clerkUserId })
       .populate('bookings')
       .populate('favorites');
 
@@ -44,6 +50,7 @@ const GetCurrentUser = async (req, res) => {
 // Update user role (admin only)
 const UpdateUserRole = async (req, res) => {
   try {
+    await ensureDbConnection();
     const { userId, role } = req.body;
     const user = await User.findByIdAndUpdate(
       userId,
@@ -61,9 +68,15 @@ const UpdateUserRole = async (req, res) => {
 const ToggleFavorite = async (req, res) => {
   try {
     const { movieId } = req.body;
-    const user = await User.findOne({ clerkId: req.user.id });
+    await ensureDbConnection();
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const index = user.favorites.indexOf(movieId);
+    const user = await User.findOne({ clerkId: clerkUserId });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const movieIdString = String(movieId || '');
+    const index = user.favorites.findIndex((id) => String(id) === movieIdString);
     if (index > -1) {
       user.favorites.splice(index, 1);
     } else {

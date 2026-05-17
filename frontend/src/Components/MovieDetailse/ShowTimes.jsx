@@ -1,12 +1,21 @@
 import { Link } from "react-router-dom";
 import CountdownTimer from "../CountdownTimer/CountdownTimer.jsx";
 
-const ShowTimes = ({ SHOW_DATES, selectedDate, setSelectedDate, movie }) => {
+const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
+  if (!Array.isArray(showDates) || showDates.length === 0) {
+    return (
+      <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-gray-200 backdrop-blur-sm">
+        <h2 className="mb-2 text-2xl font-semibold text-white">Showtimes</h2>
+        <p className="text-sm text-gray-400">No active shows available for this movie right now.</p>
+      </div>
+    );
+  }
+
   // Calculate the next show time for countdown
   const getNextShowTime = () => {
     if (!selectedDate) return null;
     
-    const selectedShow = SHOW_DATES.find((d) => d.date === selectedDate);
+    const selectedShow = showDates.find((d) => d.date === selectedDate);
     if (!selectedShow || !selectedShow.timeSlots.length) return null;
     
     // Get current date and time
@@ -54,7 +63,8 @@ const ShowTimes = ({ SHOW_DATES, selectedDate, setSelectedDate, movie }) => {
     return targetDate;
   };
 
-  const nextShowTime = getNextShowTime();
+    const nextShowTime = getNextShowTime();
+    const movieId = movie?._id || movie?.id || movie?.tmdbId;
 
   return (
     <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
@@ -71,7 +81,7 @@ const ShowTimes = ({ SHOW_DATES, selectedDate, setSelectedDate, movie }) => {
       )}
       
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {SHOW_DATES.map((showDate) => (
+        {showDates.map((showDate) => (
           <button
             key={showDate.date}
             type="button"
@@ -103,12 +113,12 @@ const ShowTimes = ({ SHOW_DATES, selectedDate, setSelectedDate, movie }) => {
         <div>
           <h3 className="mb-3 text-lg font-medium text-white">Available Times</h3>
           <div className="flex flex-wrap gap-3">
-            {SHOW_DATES
+            {showDates
               .find((d) => d.date === selectedDate)
               ?.timeSlots.map((time, index) => (
                 <Link
                   key={index}
-                  to={`/movies/${movie.id}/${selectedDate}?time=${time}`}
+                  to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(time)}`}
                   aria-label={`Book for ${time}`}
                   className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-gray-200 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-white"
                 >

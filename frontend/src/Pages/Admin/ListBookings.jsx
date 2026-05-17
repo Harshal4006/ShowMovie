@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { IndianRupee } from "lucide-react";
-import toast from "react-hot-toast";
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import BookingsTable from "../../Components/Admin/BookingsTable/BookingsTable";
 import BookingsHeader from "../../Components/Admin/ListBookings/BookingsHeader";

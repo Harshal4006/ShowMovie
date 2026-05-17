@@ -1,35 +1,33 @@
 import React, { useEffect, useState } from "react";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
-import { dummyDashboardData, dummyShowsData } from "../../assets/assets.js";
 import { getFavoriteIds } from "../../lib/favorites.js";
+import { getMovies } from "../../services/api";
 
 const Favorite = () => {
   const [favoriteShows, setFavoriteShows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const scheduleByMovieId = new Map(
-      dummyDashboardData.activeShows.map((activeShow) => [
-        activeShow.movie.id,
-        {
-          dateTime: activeShow.showDateTime,
-          price: activeShow.showPrice,
-        },
-      ]),
-    );
-
     const syncFavorites = () => {
-      const favoriteIds = getFavoriteIds();
-      const nextFavoriteShows = dummyShowsData
-        .filter((show) => favoriteIds.includes(show.id))
-        .map((show) => ({
-          ...show,
-          schedule: scheduleByMovieId.get(show.id),
-        }));
+      const favoriteIds = new Set(getFavoriteIds());
+      setIsLoading(true);
+      setError(null);
 
-      setFavoriteShows(nextFavoriteShows);
-      setTimeout(() => setIsLoading(false), 300);
+      (async () => {
+        try {
+          const data = await getMovies({ limit: 100 });
+          const movies = data?.movies || [];
+          const nextFavoriteShows = movies.filter((m) => favoriteIds.has(m.tmdbId));
+          setFavoriteShows(nextFavoriteShows);
+        } catch (e) {
+          setError(e?.message || "Failed to load favorites");
+          setFavoriteShows([]);
+        } finally {
+          setIsLoading(false);
+        }
+      })();
     };
 
     syncFavorites();
@@ -57,10 +55,15 @@ const Favorite = () => {
           <div className="mt-10">
             <MovieGridSkeleton count={4} />
           </div>
+        ) : error ? (
+          <div className="mt-10 rounded-4xl border border-white/10 bg-white/4 px-6 py-12 text-center backdrop-blur-sm">
+            <h2 className="text-2xl font-semibold text-white">Couldn’t load favorites</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-400 sm:text-base">{error}</p>
+          </div>
         ) : favoriteShows.length ? (
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {favoriteShows.map((show) => (
-              <FeatureCard key={show.id} show={show} schedule={show.schedule} />
+            {favoriteShows.map((movie) => (
+              <FeatureCard key={movie._id || movie.tmdbId} movie={movie} />
             ))}
           </div>
         ) : (

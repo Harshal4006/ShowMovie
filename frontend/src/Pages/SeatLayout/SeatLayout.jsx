@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 import ShowTimingsCard from "../../Components/SeatLayout/ShowTimingsCard.jsx";
 import LoadingState from "../../Components/SeatLayout/LoadingState.jsx";
@@ -11,12 +12,14 @@ import SeatSummaryCard from "../../Components/SeatLayout/SeatSummaryCard.jsx";
 import BookingConfirmationModal from "../../Components/SeatLayout/BookingConfirmationModal.jsx";
 import QuickBookingSuggestions from "../../Components/SeatLayout/QuickBookingSuggestions.jsx";
 import { useSeatLayoutModel } from "../../Components/SeatLayout/useSeatLayoutModel.js";
+import { createBooking } from "../../services/api";
 
 const SeatLayout = () => {
   const navigate = useNavigate();
   const { id, date } = useParams();
   const [searchParams] = useSearchParams();
   const time = searchParams.get("time") || "";
+  const { isSignedIn, getToken } = useAuth();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false); // block UI while processing booking
 
@@ -34,7 +37,6 @@ const SeatLayout = () => {
     subtotal,
     toggleSeat,
     selectMultipleSeats,
-    confirmBooking,
   } = useSeatLayoutModel({ id, date, time });
 
   const handleToggleSeat = (seatId) => {
@@ -56,27 +58,33 @@ const SeatLayout = () => {
   };
 
   // finalize the booking and redirect
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
+    if (!selectedShow?._id) {
+      toast.error("Show not found for selected date/time.");
+      return;
+    }
+    if (!isSignedIn) {
+      toast.error("Please sign in to book tickets.");
+      return;
+    }
+
     setIsProcessing(true);
+    try {
+      const token = await getToken();
+      await createBooking(token, {
+        showId: selectedShow._id,
+        bookedSeats: selectedSeats,
+        amount: subtotal,
+      });
 
-    // Simulate API call delay
-    setTimeout(() => {
-      const result = confirmBooking();
-      if (!result.ok) {
-        toast.error("Failed to confirm booking. Please try again.");
-        setIsProcessing(false);
-        return;
-      }
-
-      setIsProcessing(false);
       setShowConfirmationModal(false);
       toast.success("Booking confirmed! Redirecting to your bookings...");
-      
-      // Navigate after a short delay
-      setTimeout(() => {
-        navigate("/my-booking");
-      }, 1500);
-    }, 1000);
+      navigate("/my-booking");
+    } catch (e) {
+      toast.error(e?.message || "Failed to confirm booking. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleCloseModal = () => {

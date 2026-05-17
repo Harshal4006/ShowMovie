@@ -4,15 +4,7 @@ const Booking = require('../Models/Booking');
 const User = require('../Models/User');
 const axios = require('axios');
 const mongoose = require('mongoose');
-
-const ensureDbConnection = async () => {
-  if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000,
-    });
-  }
-};
+const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 // TMDB Helper Functions
 const getTmdbConfig = () => {

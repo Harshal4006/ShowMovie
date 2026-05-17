@@ -23,10 +23,7 @@ const TableRow = ({
   onEdit,
   onDelete,
   onMoreClick,
-  openMoreId,
 }) => {
-  const isMoreOpen = openMoreId === show.id;
-
   return (
     <tr className="hover:bg-gray-800/30 transition-colors">
       <td className="px-4 py-4">

@@ -107,7 +107,6 @@ const ShowsTable = ({
                   onEdit={onEdit}
                   onDelete={handleDelete}
                   onMoreClick={handleMoreClick}
-                  openMoreId={openMore?.id}
                 />
               ))
             )}
