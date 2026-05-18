@@ -13,10 +13,6 @@ export const getMostPopularMovies = () => request(`/movies/most-popular`);
 export const getNowShowingMovies = () => request(`/movies/now-showing`);
 export const getUpcomingMovies = () => request(`/movies/upcoming`);
 export const getRelatedMovies = (id) => request(`/movies/${id}/related`);
-export const getMovies = (params = {}) => {
-  const query = new URLSearchParams(params).toString();
-  return request(`/movies?${query}`);
-};
 export const getShowById = (id) => request(`/shows/${id}`);
 export const getShowsByMovie = (movieId, options = {}) => request(`/shows/movie/${movieId}`, options);
 
