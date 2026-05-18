@@ -13,7 +13,8 @@ const MovieTable = ({ movies, loading, onEdit, onDelete }) => {
   if (movies.length === 0) {
     return (
       <div className="mt-6 rounded-xl bg-gray-900/50 border border-gray-800 p-8 text-center">
-        <p className="text-gray-400">No movies found</p>
+        <p className="text-gray-400">No movies found in database.</p>
+        <p className="mt-2 text-xs text-gray-600">Add movies from the Add Show page.</p>
       </div>
     );
   }
@@ -38,7 +39,11 @@ const MovieTable = ({ movies, loading, onEdit, onDelete }) => {
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
                   <img
-                    src={movie.posterUrl || movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : "https://via.placeholder.com/50x75"}
+                    src={
+                      movie.posterUrl ||
+                      (movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : null) ||
+                      "https://via.placeholder.com/50x75"
+                    }
                     alt={movie.title}
                     className="h-12 w-8 rounded object-cover"
                   />

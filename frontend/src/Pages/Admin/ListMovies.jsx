@@ -17,7 +17,7 @@ const ListMovies = () => {
 
   useEffect(() => {
     fetchMovies();
-  }, []);
+  }, [getToken]);
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -26,6 +26,7 @@ const ListMovies = () => {
       const data = await getAdminMovies(token, { status: statusFilter !== "all" ? statusFilter : undefined });
       setMovies(data.movies || []);
     } catch (error) {
+      console.error("Failed to load movies:", error);
       toast.error("Failed to load movies");
     } finally {
       setLoading(false);
@@ -67,16 +68,29 @@ const ListMovies = () => {
           
           <div className="mt-6 rounded-xl bg-gray-900/50 border border-gray-800 p-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search movies..."
-                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-white sm:max-w-xs"
-              />
+              <div className="relative flex-1 max-w-xs">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search movies..."
+                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 pr-10 text-sm text-white"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  fetchMovies();
+                }}
                 className="rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-white"
               >
                 <option value="all">All Status</option>
@@ -84,6 +98,11 @@ const ListMovies = () => {
                 <option value="coming-soon">Coming Soon</option>
               </select>
             </div>
+            {searchQuery && (
+              <p className="mt-2 text-xs text-gray-500">
+                Showing results for "{searchQuery}" - {movies.filter(m => !searchQuery || m.title?.toLowerCase().includes(searchQuery.toLowerCase())).length} found
+              </p>
+            )}
           </div>
 
           <MovieTable
