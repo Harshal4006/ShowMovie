@@ -68,7 +68,11 @@ const MovieDetailse = () => {
             const ms = new Date(s.showDateTime).getTime();
             if (!grouped.has(dateKey)) grouped.set(dateKey, new Map());
             const existing = grouped.get(dateKey).get(time);
-            if (existing == null || ms < existing.ms) grouped.get(dateKey).set(time, { ms, show: s });
+            if (existing == null) {
+              grouped.get(dateKey).set(time, { ms, shows: [s] });
+            } else {
+              existing.shows.push(s);
+            }
           }
 
           const nextShowDates = [...grouped.entries()]
@@ -78,7 +82,7 @@ const MovieDetailse = () => {
               day: new Date(date).toLocaleDateString("en-IN", { weekday: "short" }),
               timeSlots: [...timeMap.entries()]
                 .sort((a, b) => a[1].ms - b[1].ms)
-                .map(([label, data]) => ({ label, showId: data.show._id, price: data.show.showPrice })),
+                .flatMap(([label, data]) => data.shows.map((show) => ({ label, showId: show._id, price: show.showPrice }))),
             }));
 
           setShowDates(nextShowDates);
