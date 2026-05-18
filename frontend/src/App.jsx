@@ -17,6 +17,7 @@ const Dashboard = lazy(() => import("./Pages/Admin/Dashboard.jsx"));
 const AddShow = lazy(() => import("./Pages/Admin/AddShow.jsx"));
 const ListShows = lazy(() => import("./Pages/Admin/ListShows.jsx"));
 const ListBookings = lazy(() => import("./Pages/Admin/ListBookings.jsx"));
+const ListMovies = lazy(() => import("./Pages/Admin/ListMovies.jsx"));
 
 // Non-lazy components (used on all pages)
 import AnimatedBackground from "./Components/AnimatedBackground/AnimatedBackground.jsx";
@@ -50,6 +51,7 @@ const App = () => {
                 <Route path="/admin/add-show" element={<AddShow />} />
                 <Route path="/admin/list-shows" element={<ListShows />} />
                 <Route path="/admin/list-bookings" element={<ListBookings />} />
+                <Route path="/admin/list-movies" element={<ListMovies />} />
             </Routes>
           </ErrorBoundary>
         </Suspense>
