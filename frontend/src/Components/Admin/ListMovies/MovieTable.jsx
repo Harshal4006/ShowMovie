@@ -32,6 +32,7 @@ const MovieTable = ({ movies, loading, onEdit, onDelete }) => {
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Featured</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Trending</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Popular</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Trailer</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Rating</th>
             <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
           </tr>
@@ -78,6 +79,11 @@ const MovieTable = ({ movies, loading, onEdit, onDelete }) => {
               <td className="px-4 py-3">
                 <span className={`text-lg ${movie.isMostPopular ? 'text-red-500' : 'text-gray-600'}`}>
                   {movie.isMostPopular ? '★' : '○'}
+                </span>
+              </td>
+              <td className="px-4 py-3">
+                <span className={`text-lg ${movie.trailerUrl ? 'text-red-500' : 'text-gray-600'}`}>
+                  {movie.trailerUrl ? '★' : '○'}
                 </span>
               </td>
               <td className="px-4 py-3">

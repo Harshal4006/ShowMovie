@@ -8,10 +8,24 @@ const TrailerCarousel = ({
   isAnimating, 
   goToPrevious, 
   goToNext,
-  dummyTrailers,
+  trailers,
   activeIndex,
   setActiveIndex
 }) => {
+  if (!centerTrailer) return null;
+
+  const getImageUrl = (movie) => {
+    return movie?.backdropUrl || movie?.posterUrl || '';
+  };
+
+  const getTitle = (movie) => {
+    return movie?.title || 'Untitled';
+  };
+
+  const getTagline = (movie) => {
+    return movie?.tagline || 'Tap into the atmosphere, action, and emotion before you book your seat.';
+  };
+
   return (
     <div className="relative mt-6 flex items-center justify-center sm:mt-8 lg:overflow-visible">
       <div className="absolute left-0 top-1/2 z-30 hidden w-[24%] -translate-y-1/2 items-center justify-center lg:flex">
@@ -31,12 +45,14 @@ const TrailerCarousel = ({
             isAnimating ? "is-animating-left" : ""
           }`}
         >
-          <img
-            src={leftTrailer.image}
-            alt="Previous trailer preview"
-            loading="lazy"
-            className="h-92 w-full object-cover"
-          />
+          {leftTrailer && (
+            <img
+              src={getImageUrl(leftTrailer)}
+              alt="Previous trailer preview"
+              loading="lazy"
+              className="h-92 w-full object-cover"
+            />
+          )}
         </div>
       </div>
 
@@ -57,18 +73,20 @@ const TrailerCarousel = ({
             isAnimating ? "is-animating-right" : ""
           }`}
         >
-          <img
-            src={rightTrailer.image}
-            alt="Next trailer preview"
-            loading="lazy"
-            className="h-92 w-full object-cover"
-          />
+          {rightTrailer && (
+            <img
+              src={getImageUrl(rightTrailer)}
+              alt="Next trailer preview"
+              loading="lazy"
+              className="h-92 w-full object-cover"
+            />
+          )}
         </div>
       </div>
 
       <div className="relative z-10 w-full max-w-4xl lg:overflow-visible">
         <a
-          href={centerTrailer.videoUrl}
+          href={centerTrailer.trailerUrl}
           target="_blank"
           rel="noreferrer"
           className={`group relative block overflow-hidden rounded-4xl border border-white/10 bg-white/5 p-2 shadow-[0_25px_60px_rgba(0,0,0,0.28)] backdrop-blur-sm transition-[transform,opacity,box-shadow] duration-500 ease-in-out sm:rounded-4xl sm:p-3 lg:overflow-visible ${
@@ -77,8 +95,8 @@ const TrailerCarousel = ({
         >
           <div className="relative overflow-hidden rounded-3xl sm:rounded-3xl">
             <img
-              src={centerTrailer.image}
-              alt="Current trailer"
+              src={getImageUrl(centerTrailer)}
+              alt={getTitle(centerTrailer)}
               loading="lazy"
               className={`trailer-main-image aspect-4/5 w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-[1.03] sm:aspect-16/10 lg:h-120 lg:aspect-auto ${
                 isAnimating ? "is-animating" : ""
@@ -122,20 +140,20 @@ const TrailerCarousel = ({
               }`}
             >
               <h3 className="max-w-[75%] text-xl font-semibold text-white sm:max-w-none sm:text-3xl">
-                {centerTrailer.title}
+                {getTitle(centerTrailer)}
               </h3>
 
               <p className="mt-2 max-w-xl text-sm leading-6 text-gray-300 sm:mt-3 sm:max-w-2xl sm:text-base">
-                Tap into the atmosphere, action, and emotion before you book your seat.
+                {getTagline(centerTrailer)}
               </p>
             </div>
           </div>
         </a>
 
         <div className="mt-4 flex justify-center gap-2 lg:hidden">
-          {dummyTrailers.map((trailer, index) => (
+          {trailers.map((trailer, index) => (
             <button
-              key={trailer.title}
+              key={trailer._id || index}
               type="button"
               onClick={() => setActiveIndex(index)}
               className={`h-2.5 rounded-full transition-all duration-300 ${
@@ -143,7 +161,7 @@ const TrailerCarousel = ({
                   ? "w-8 bg-red-500"
                   : "w-2.5 bg-white/30 hover:bg-white/50"
               }`}
-              aria-label={`Show trailer ${trailer.title}`}
+              aria-label={`Show trailer ${getTitle(trailer)}`}
             />
           ))}
         </div>

@@ -11,6 +11,7 @@ const MovieEditModal = ({ movie, onClose, onSave }) => {
     price: movie?.price || 0,
     movieLanguage: movie?.movieLanguage || 'English',
     format: movie?.format || '2D',
+    trailerUrl: movie?.trailerUrl || '',
   });
 
   const handleChange = (field, value) => {
@@ -85,6 +86,19 @@ const MovieEditModal = ({ movie, onClose, onSave }) => {
                   <p className="text-xs text-gray-500">Show on home page most popular section</p>
                 </div>
               </label>
+
+              <label className="flex items-center gap-3 rounded-xl border border-gray-800 bg-gray-800/30 p-4 cursor-pointer hover:border-gray-700 transition">
+                <input
+                  type="checkbox"
+                  checked={formData.isTrendingTrailer}
+                  onChange={(e) => handleChange('isTrendingTrailer', e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-600 bg-gray-800 text-red-500 focus:ring-red-500"
+                />
+                <div>
+                  <p className="font-medium text-white">Trending Trailer</p>
+                  <p className="text-xs text-gray-500">Show on home page trending trailers section</p>
+                </div>
+              </label>
             </div>
           </div>
 
@@ -122,6 +136,18 @@ const MovieEditModal = ({ movie, onClose, onSave }) => {
                 <option value="IMAX">IMAX</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm text-gray-400">Trailer URL (YouTube)</label>
+            <input
+              type="url"
+              value={formData.trailerUrl}
+              onChange={(e) => handleChange('trailerUrl', e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:border-red-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">Enter a YouTube URL to show this movie in Trending Trailers</p>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
