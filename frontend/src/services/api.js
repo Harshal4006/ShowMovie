@@ -38,6 +38,8 @@ export const searchTmdbMovies = (query, page = 1) =>
 export const getTmdbMovieDetails = (tmdbId) => request(`/admin/tmdb/movie/${tmdbId}`);
 export const getTmdbNowPlaying = (page = 1) => request(`/admin/tmdb/now-playing?page=${page}`);
 export const getTmdbUpcoming = (page = 1) => request(`/admin/tmdb/upcoming?page=${page}`);
+export const getTmdbTrending = (page = 1) => request(`/admin/tmdb/trending?page=${page}`);
+export const getTmdbPopular = (page = 1) => request(`/admin/tmdb/popular?page=${page}`);
 
 // Admin Movie Management (auth)
 export const getAdminMovies = (token, params = {}) => {

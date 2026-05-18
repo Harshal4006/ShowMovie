@@ -7,6 +7,8 @@ const {
   TmdbSearchMovies,
   TmdbGetNowPlaying,
   TmdbGetUpcoming,
+  TmdbGetTrending,
+  TmdbGetPopular,
   TmdbGetMovieDetails,
   ImportMovie,
   GetAllMoviesAdmin,
@@ -25,6 +27,8 @@ router.get('/dashboard', VerifyToken, VerifyAdmin, GetDashboardStats);
 router.get('/tmdb/search', TmdbSearchMovies);
 router.get('/tmdb/now-playing', TmdbGetNowPlaying);
 router.get('/tmdb/upcoming', TmdbGetUpcoming);
+router.get('/tmdb/trending', TmdbGetTrending);
+router.get('/tmdb/popular', TmdbGetPopular);
 router.get('/tmdb/movie/:tmdbId', TmdbGetMovieDetails);
 
 // Movies management

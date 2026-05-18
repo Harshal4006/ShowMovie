@@ -5,15 +5,13 @@ import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import MovieHeader from "../../Components/Admin/ListMovies/MovieHeader";
 import MovieTable from "../../Components/Admin/ListMovies/MovieTable";
 import MovieEditModal from "../../Components/Admin/ListMovies/MovieEditModal";
-import { getAdminMovies, updateMovie, deleteMovie, searchTmdbMovies, getTmdbMovieDetails } from "../../services/api";
+import { getAdminMovies, updateMovie, deleteMovie } from "../../services/api";
 
 const ListMovies = () => {
   const { getToken } = useAuth();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMovieId, setEditMovieId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -23,7 +21,7 @@ const ListMovies = () => {
         toast.error("Please login again");
         return;
       }
-      const data = await getAdminMovies(token, { status: statusFilter !== "all" ? statusFilter : undefined });
+      const data = await getAdminMovies(token);
       setMovies(data.movies || []);
     } catch (error) {
       console.error("Failed to load movies:", error);
@@ -69,51 +67,9 @@ const ListMovies = () => {
       <main className="flex-1 w-full lg:ml-64">
         <div className="p-4 sm:p-6 lg:p-8">
           <MovieHeader onRefresh={fetchMovies} />
-          
-          <div className="mt-6 rounded-xl bg-gray-900/50 border border-gray-800 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative flex-1 max-w-xs">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search movies..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 pr-10 text-sm text-white"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  fetchMovies();
-                }}
-                className="rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-white"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="coming-soon">Coming Soon</option>
-              </select>
-            </div>
-            {searchQuery && (
-              <p className="mt-2 text-xs text-gray-500">
-                Showing results for "{searchQuery}" - {movies.filter(m => !searchQuery || m.title?.toLowerCase().includes(searchQuery.toLowerCase())).length} found
-              </p>
-            )}
-          </div>
 
           <MovieTable
-            movies={movies.filter(m => {
-              const q = searchQuery.toLowerCase();
-              return !q || (m.title && m.title.toLowerCase().includes(q));
-            })}
+            movies={movies}
             loading={loading}
             onEdit={(id) => setEditMovieId(id)}
             onDelete={handleDeleteMovie}

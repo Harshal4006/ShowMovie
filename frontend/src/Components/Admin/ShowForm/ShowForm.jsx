@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Search, Loader2, X, Film, Calendar } from "lucide-react";
-import { searchTmdbMovies, getTmdbNowPlaying, getTmdbUpcoming } from "../../../services/api";
+import { Search, Loader2, X, Film, Calendar, TrendingUp, Star } from "lucide-react";
+import { searchTmdbMovies, getTmdbNowPlaying, getTmdbUpcoming, getTmdbTrending, getTmdbPopular } from "../../../services/api";
 
 const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
   const [tmdbMovies, setTmdbMovies] = useState([]);
@@ -37,6 +37,10 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
         data = await getTmdbNowPlaying();
       } else if (activeTab === "upcoming") {
         data = await getTmdbUpcoming();
+      } else if (activeTab === "trending") {
+        data = await getTmdbTrending();
+      } else if (activeTab === "popular") {
+        data = await getTmdbPopular();
       }
       if (data?.movies && data.movies.length > 0) {
         setTmdbMovies(data.movies);
@@ -167,6 +171,30 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
           </button>
           <button
             type="button"
+            onClick={() => setActiveTab("trending")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "trending"
+                ? "bg-red-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-700"
+            }`}
+          >
+            <TrendingUp className="h-4 w-4" />
+            Trending
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("popular")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "popular"
+                ? "bg-red-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-700"
+            }`}
+          >
+            <Star className="h-4 w-4" />
+            Most Popular
+          </button>
+          <button
+            type="button"
             onClick={() => setActiveTab("search")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
               activeTab === "search"
@@ -210,10 +238,12 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
           <>
             <p className="text-xs text-gray-500 mb-3">
               {activeTab === "now-playing" ? "Currently in theaters" : 
-               activeTab === "upcoming" ? "Coming soon to theaters" : 
+               activeTab === "upcoming" ? "Coming soon to theaters" :
+               activeTab === "trending" ? "Trending this week" :
+               activeTab === "popular" ? "Most popular movies" :
                "Search results"}
             </p>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded">
               {tmdbMovies.map((movie) => (
                 <div
                   key={movie.id}

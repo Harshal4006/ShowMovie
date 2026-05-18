@@ -83,6 +83,28 @@ const TmdbGetUpcoming = async (req, res) => {
   }
 };
 
+// TMDB Get Trending movies
+const TmdbGetTrending = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const data = await callTmdb(`/trending/movie/week?language=en-US&page=${page}`);
+    res.json({ movies: data.results, page: data.page, totalPages: data.total_pages });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get trending movies', error: error.message });
+  }
+};
+
+// TMDB Get Popular movies
+const TmdbGetPopular = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const data = await callTmdb(`/movie/popular?language=en-US&page=${page}&region=US`);
+    res.json({ movies: data.results, page: data.page, totalPages: data.total_pages });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get popular movies', error: error.message });
+  }
+};
+
 // TMDB Get Movie Details
 const TmdbGetMovieDetails = async (req, res) => {
   try {
@@ -503,6 +525,8 @@ module.exports = {
   TmdbSearchMovies,
   TmdbGetNowPlaying,
   TmdbGetUpcoming,
+  TmdbGetTrending,
+  TmdbGetPopular,
   TmdbGetMovieDetails,
   ImportMovie,
   GetAllMoviesAdmin,
