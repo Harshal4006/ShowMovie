@@ -225,10 +225,10 @@ const GetAllMoviesAdmin = async (req, res) => {
 const UpdateMovie = async (req, res) => {
   try {
     await ensureDbConnection();
-    const { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular } = req.body;
+    const { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular, trailerUrl } = req.body;
     const movie = await Movie.findByIdAndUpdate(
       req.params.id,
-      { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular },
+      { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular, trailerUrl },
       { new: true }
     );
     if (!movie) return res.status(404).json({ message: 'Movie not found' });

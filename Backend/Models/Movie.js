@@ -21,6 +21,7 @@ const movieSchema = new mongoose.Schema({
   language: String,
   tagline: String,
   trailerKey: String,
+  trailerUrl: String,
   cast: [{
     name: String,
     character: String,

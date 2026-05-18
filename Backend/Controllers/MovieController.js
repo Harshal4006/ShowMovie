@@ -111,6 +111,23 @@ const GetMostPopularMovies = async (req, res) => {
   }
 };
 
+const GetTrailerMovies = async (req, res) => {
+  try {
+    await ensureDbConnection();
+    const movies = await Movie.find({ 
+      trailerUrl: { $exists: true, $ne: null, $ne: '' }, 
+      isActive: true 
+    })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+    res.json(movies);
+  } catch (error) {
+    console.error('GetTrailerMovies error:', error.message);
+    res.status(500).json({ message: error.message, movies: [] });
+  }
+};
+
 const GetNowShowingMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -176,6 +193,7 @@ module.exports = {
   GetFeaturedMovies, 
   GetTrendingMovies, 
   GetMostPopularMovies,
+  GetTrailerMovies,
   GetNowShowingMovies, 
   GetUpcomingMovies, 
   GetRelatedMovies 

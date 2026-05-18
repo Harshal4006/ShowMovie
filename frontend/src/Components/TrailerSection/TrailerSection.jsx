@@ -1,29 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { dummyTrailers } from "../../assets/assets.js";
 import TrailerCarousel from "./TrailerCarousel.jsx";
+import { getTrailerMovies } from "../../services/api";
 import "./TrailerSection.css";
 
 const TrailerSection = () => {
+  const [trailers, setTrailers] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrailers = async () => {
+      try {
+        const data = await getTrailerMovies();
+        setTrailers(data || []);
+      } catch (error) {
+        console.error('Failed to fetch trailers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrailers();
+  }, []);
 
   const goToPrevious = () => {
+    if (trailers.length === 0) return;
     setIsAnimating(true);
-    setActiveIndex((prev) => (prev === 0 ? dummyTrailers.length - 1 : prev - 1));
+    setActiveIndex((prev) => (prev === 0 ? trailers.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
+    if (trailers.length === 0) return;
     setIsAnimating(true);
-    setActiveIndex((prev) => (prev === dummyTrailers.length - 1 ? 0 : prev + 1));
+    setActiveIndex((prev) => (prev === trailers.length - 1 ? 0 : prev + 1));
   };
 
   useEffect(() => {
+    if (trailers.length === 0) return;
     const autoSlide = window.setInterval(() => {
       goToNext();
     }, 3500);
 
     return () => window.clearInterval(autoSlide);
-  }, []);
+  }, [trailers.length]);
 
   useEffect(() => {
     if (!isAnimating) return undefined;
@@ -36,14 +55,19 @@ const TrailerSection = () => {
   }, [activeIndex, isAnimating]);
 
   const getVisibleTrailer = (offset) => {
+    if (trailers.length === 0) return null;
     const index =
-      (activeIndex + offset + dummyTrailers.length) % dummyTrailers.length;
-    return dummyTrailers[index];
+      (activeIndex + offset + trailers.length) % trailers.length;
+    return trailers[index];
   };
 
   const leftTrailer = getVisibleTrailer(-1);
   const centerTrailer = getVisibleTrailer(0);
   const rightTrailer = getVisibleTrailer(1);
+
+  if (loading) return null;
+
+  if (trailers.length === 0) return null;
 
   return (
     <section data-reveal className="relative w-full overflow-hidden px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6 lg:overflow-visible lg:px-10 xl:px-16">
@@ -62,7 +86,7 @@ const TrailerSection = () => {
           isAnimating={isAnimating}
           goToPrevious={goToPrevious}
           goToNext={goToNext}
-          dummyTrailers={dummyTrailers}
+          trailers={trailers}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
         />

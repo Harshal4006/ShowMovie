@@ -10,6 +10,7 @@ export const getMovieById = (id, options = {}) => request(`/movies/${id}`, optio
 export const getFeaturedMovies = () => request(`/movies/featured`);
 export const getTrendingMovies = () => request(`/movies/trending`);
 export const getMostPopularMovies = () => request(`/movies/most-popular`);
+export const getTrailerMovies = () => request(`/movies/trailers`);
 export const getNowShowingMovies = () => request(`/movies/now-showing`);
 export const getUpcomingMovies = () => request(`/movies/upcoming`);
 export const getRelatedMovies = (id) => request(`/movies/${id}/related`);
