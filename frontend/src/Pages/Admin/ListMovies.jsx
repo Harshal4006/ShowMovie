@@ -15,17 +15,11 @@ const ListMovies = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    fetchMovies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const fetchMovies = async () => {
     setLoading(true);
     try {
       const token = await getToken();
       if (!token) {
-        console.error("No token available");
         toast.error("Please login again");
         return;
       }
@@ -33,11 +27,15 @@ const ListMovies = () => {
       setMovies(data.movies || []);
     } catch (error) {
       console.error("Failed to load movies:", error);
-      toast.error("Failed to load movies: " + (error?.message || "Unknown error"));
+      toast.error("Failed to load movies");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchMovies();
+  }, []);
 
   const handleSaveMovie = async (movieId, updates) => {
     try {
