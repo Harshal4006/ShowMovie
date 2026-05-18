@@ -10,7 +10,7 @@ const MovieTable = ({ movies, loading, onEdit, onDelete }) => {
     );
   }
 
-  if (movies.length === 0) {
+  if (!movies || movies.length === 0) {
     return (
       <div className="mt-6 rounded-xl bg-gray-900/50 border border-gray-800 p-8 text-center">
         <p className="text-gray-400">No movies found in database.</p>
@@ -21,6 +21,9 @@ const MovieTable = ({ movies, loading, onEdit, onDelete }) => {
 
   return (
     <div className="mt-6 overflow-x-auto rounded-xl border border-gray-800 bg-gray-900/50">
+      <p className="px-4 py-2 text-xs text-gray-500 border-b border-gray-800">
+        Showing {movies.length} movie(s)
+      </p>
       <table className="w-full min-w-[800px]">
         <thead>
           <tr className="border-b border-gray-800">

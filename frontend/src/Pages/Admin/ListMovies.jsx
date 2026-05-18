@@ -17,17 +17,23 @@ const ListMovies = () => {
 
   useEffect(() => {
     fetchMovies();
-  }, [getToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchMovies = async () => {
     setLoading(true);
     try {
       const token = await getToken();
+      if (!token) {
+        console.error("No token available");
+        toast.error("Please login again");
+        return;
+      }
       const data = await getAdminMovies(token, { status: statusFilter !== "all" ? statusFilter : undefined });
       setMovies(data.movies || []);
     } catch (error) {
       console.error("Failed to load movies:", error);
-      toast.error("Failed to load movies");
+      toast.error("Failed to load movies: " + (error?.message || "Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -106,9 +112,10 @@ const ListMovies = () => {
           </div>
 
           <MovieTable
-            movies={movies.filter(m => 
-              !searchQuery || m.title?.toLowerCase().includes(searchQuery.toLowerCase())
-            )}
+            movies={movies.filter(m => {
+              const q = searchQuery.toLowerCase();
+              return !q || (m.title && m.title.toLowerCase().includes(q));
+            })}
             loading={loading}
             onEdit={(id) => setEditMovieId(id)}
             onDelete={handleDeleteMovie}
