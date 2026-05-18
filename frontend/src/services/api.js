@@ -65,6 +65,17 @@ export const getAdminShows = (token, params = {}) => {
   return request(`/shows?${query}`, { token });
 };
 
+// Notifications (auth)
+export const getNotifications = (token) => request(`/notifications`, { token });
+export const markNotificationRead = (token, id) =>
+  request(`/notifications/${id}/read`, { method: "PATCH", token });
+export const markAllNotificationsRead = (token) =>
+  request(`/notifications/read-all`, { method: "PATCH", token });
+export const deleteNotification = (token, id) =>
+  request(`/notifications/${id}`, { method: "DELETE", token });
+export const clearAllNotifications = (token) =>
+  request(`/notifications`, { method: "DELETE", token });
+
 export default {
   getMovies,
   getMovieById,
@@ -91,4 +102,9 @@ export default {
   deleteShow,
   getAdminDashboard,
   getAdminBookings,
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification,
+  clearAllNotifications,
 };

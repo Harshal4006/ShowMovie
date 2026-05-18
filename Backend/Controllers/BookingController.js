@@ -2,6 +2,7 @@ const Booking = require('../Models/Booking');
 const Show = require('../Models/Show');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
+const { CreateNotification } = require('./NotificationController');
 
 const CreateBooking = async (req, res) => {
   try {
@@ -45,6 +46,16 @@ const CreateBooking = async (req, res) => {
       .populate('user', 'name email');
 
     await User.findByIdAndUpdate(user._id, { $addToSet: { bookings: booking._id } });
+
+    // Create notification for the user
+    await CreateNotification(
+      user._id,
+      'booking_confirmed',
+      'Booking Confirmed!',
+      `Your booking for ${bookedSeats.length} seat(s) has been confirmed.`,
+      booking._id,
+      'Booking'
+    );
 
     res.status(201).json(populated);
   } catch (error) {

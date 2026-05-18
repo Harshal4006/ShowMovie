@@ -28,8 +28,13 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
       
       // Loop through time slots to find the next upcoming show
       for (const timeSlot of selectedShow.timeSlots) {
-        const [time, period] = timeSlot.split(' ');
-        const [hoursStr, minutesStr] = time.split(':');
+        if (!timeSlot || typeof timeSlot !== 'string') continue;
+        const parts = timeSlot.split(' ');
+        if (parts.length < 2) continue;
+        const [time, period] = parts;
+        const timeParts = time.split(':');
+        if (timeParts.length < 2) continue;
+        const [hoursStr, minutesStr] = timeParts;
         let hours = parseInt(hoursStr);
         const minutes = parseInt(minutesStr || '0');
         
@@ -50,8 +55,14 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
     
     // Default to first time slot of selected date
     const firstTime = selectedShow.timeSlots[0];
-    const [time, period] = firstTime.split(' ');
-    const [hoursStr, minutesStr] = time.split(':');
+    if (!firstTime || typeof firstTime !== 'string') return null;
+    
+    const timeParts = firstTime.split(' ');
+    if (timeParts.length < 2) return null;
+    const [time, period] = timeParts;
+    const timeComponents = time.split(':');
+    if (timeComponents.length < 2) return null;
+    const [hoursStr, minutesStr] = timeComponents;
     let hours = parseInt(hoursStr);
     const minutes = parseInt(minutesStr || '0');
     

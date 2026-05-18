@@ -106,6 +106,10 @@ app.use('/api/bookings', BookingRoutes);
 const AuthRoutes = require('./Routes/AuthRoutes');
 app.use('/api/auth', AuthRoutes);
 
+// Mount Notification routes
+const NotificationRoutes = require('./Routes/NotificationRoutes');
+app.use('/api/notifications', NotificationRoutes);
+
 // Mount Admin routes
 const AdminRoutes = require('./Routes/AdminRoutes');
 app.use('/api/admin', AdminRoutes);

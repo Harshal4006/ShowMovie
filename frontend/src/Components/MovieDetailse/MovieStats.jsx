@@ -19,8 +19,8 @@ const MovieStats = ({ movie, favorite, handleFavoriteToggle, onTrailerClick, lan
     "w1280"
   );
 
-  const releaseDate = movie?.releaseDate || movie?.release_date;
-  const releaseYear = releaseDate?.split("-")[0] || "—";
+const releaseDate = movie?.releaseDate || movie?.release_date;
+  const releaseYear = (releaseDate && typeof releaseDate === 'string') ? releaseDate.split("-")[0] : "—";
   const voteAverage = movie?.rating ?? movie?.vote_average;
   const runtime = movie?.runtime || 0;
   const movieId = movie?._id || movie?.id || movie?.tmdbId;

@@ -5,6 +5,7 @@ const User = require('../Models/User');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
+const { CreateNotification } = require('./NotificationController');
 
 // TMDB Helper Functions
 const getTmdbConfig = () => {
@@ -408,6 +409,27 @@ const CreateShow = async (req, res) => {
     const populated = await Show.find({ _id: { $in: createdIds } })
       .populate('movie')
       .sort({ showDateTime: 1 });
+
+    // Notify users who favorited this movie
+    if (movie) {
+      const favoritedUsers = await User.find({ favorites: movie._id }).select('_id');
+      const showDate = new Date(dateTimes[0]).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      for (const user of favoritedUsers) {
+        await CreateNotification(
+          user._id,
+          'show_added',
+          'New Show Added!',
+          `"${movie.title}" is now showing from ${showDate}`,
+          movie._id,
+          'Movie'
+        );
+      }
+    }
 
     res.status(201).json({ shows: populated, movie });
   } catch (error) {
