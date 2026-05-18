@@ -59,7 +59,7 @@ const TableRow = ({
         <div className="text-xs text-gray-500">{show.time}</div>
       </td>
       <td className="px-4 py-4 hidden md:table-cell">
-        <div className="flex items-center font-bold text-sm"><IndianRupee size={14} className="inline self-center" />{show.price}</div>
+        <div className="flex items-center font-bold text-sm"><IndianRupee size={14} className="inline self-center" />{show.showPrice || show.price || 0}</div>
         <div className="text-xs text-gray-500">per seat</div>
       </td>
       <td className="px-4 py-4 hidden xl:table-cell">

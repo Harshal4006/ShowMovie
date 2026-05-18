@@ -8,7 +8,7 @@ const AddShowPreview = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-lg border border-gray-800 p-4 bg-gray-800/30">
           <div className="text-xs text-gray-500 mb-1">Theater</div>
-          <div className="text-base font-semibold">PVR Cinemas</div>zzzzz
+          <div className="text-base font-semibold">PVR Cinemas</div>
         </div>
         <div className="rounded-lg border border-gray-800 p-4 bg-gray-800/30">
           <div className="text-xs text-gray-500 mb-1">Screen Type</div>

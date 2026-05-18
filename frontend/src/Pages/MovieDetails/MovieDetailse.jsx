@@ -15,8 +15,10 @@ import RelatedMovies from "../../Components/MovieDetailse/RelatedMovies.jsx";
 const formatDateKey = (iso) => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  // Use UTC date to avoid date shifting across timezones
-  return d.toISOString().slice(0, 10);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 };
 
 const formatTimeLabel = (iso) => {
@@ -65,9 +67,8 @@ const MovieDetailse = () => {
             if (!dateKey || !time) continue;
             const ms = new Date(s.showDateTime).getTime();
             if (!grouped.has(dateKey)) grouped.set(dateKey, new Map());
-            // de-dupe by label; keep earliest ms for stable sorting
             const existing = grouped.get(dateKey).get(time);
-            if (existing == null || ms < existing) grouped.get(dateKey).set(time, ms);
+            if (existing == null || ms < existing.ms) grouped.get(dateKey).set(time, { ms, show: s });
           }
 
           const nextShowDates = [...grouped.entries()]
@@ -76,8 +77,8 @@ const MovieDetailse = () => {
               date,
               day: new Date(date).toLocaleDateString("en-IN", { weekday: "short" }),
               timeSlots: [...timeMap.entries()]
-                .sort((a, b) => a[1] - b[1])
-                .map(([label]) => label),
+                .sort((a, b) => a[1].ms - b[1].ms)
+                .map(([label, data]) => ({ label, showId: data.show._id, price: data.show.showPrice })),
             }));
 
           setShowDates(nextShowDates);

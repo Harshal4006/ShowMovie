@@ -60,6 +60,10 @@ export const deleteShow = (token, id) =>
 // Admin Bookings (auth)
 export const getAdminDashboard = (token) => request(`/admin/dashboard`, { token });
 export const getAdminBookings = (token) => request(`/admin/bookings`, { token });
+export const getAdminShows = (token, params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return request(`/shows?${query}`, { token });
+};
 
 export default {
   getMovies,

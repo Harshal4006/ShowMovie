@@ -17,7 +17,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
     theater: initialData.theater || "",
     showtimes: initialData.showtimes || [{ date: "", time: "" }],
     price: initialData.price || "",
-    language: initialData.language || "",
     screenType: initialData.screenType || "",
     description: initialData.description || "",
     status: initialData.status || "active",
@@ -35,7 +34,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
     try {
       // First try to get Now Playing from TMDB - but this needs auth, so use search instead
       const searchData = await searchTmdbMovies("Avengers", 1);
-      console.log("Initial load - search results:", searchData);
       if (searchData.movies && searchData.movies.length > 0) {
         setTmdbMovies(searchData.movies);
       }
@@ -54,7 +52,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
     try {
       console.log("Searching for:", searchQuery);
       const data = await searchTmdbMovies(searchQuery);
-      console.log("Search results:", data);
       if (data.movies && data.movies.length > 0) {
         setTmdbMovies(data.movies);
         toast.success(`Found ${data.movies.length} movies`);
@@ -79,7 +76,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
       poster: movie.posterUrl || movie.poster_path,
       poster2: movie.backdropUrl || movie.backdrop_path,
       description: movie.overview,
-      language: movie.language || "English",
     }));
   };
 
@@ -103,7 +99,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
     }
 
     if (!formData.price || Number(formData.price) <= 0) newErrors.price = "Valid price is required";
-    if (!formData.language) newErrors.language = "Language is required";
     if (!formData.screenType) newErrors.screenType = "Screen type is required";
     return newErrors;
   };
@@ -129,7 +124,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
       theater: "",
       showtimes: [{ date: "", time: "" }],
       price: "",
-      language: "",
       screenType: "",
       description: "",
       status: "active",
@@ -263,20 +257,7 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
             {errors.theater && <p className="mt-1 text-xs text-red-500">{errors.theater}</p>}
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-300">Language *</label>
-            <select
-              name="language"
-              value={formData.language}
-              onChange={handleChange}
-              className={`w-full rounded-lg border bg-gray-800 px-4 py-3 text-white focus:outline-none ${errors.language ? "border-red-500" : "border-gray-700 focus:border-red-500"}`}
-            >
-              <option value="English">English</option>
-              <option value="Hindi">Hindi</option>
-              <option value="Tamil">Tamil</option>
-              <option value="Telugu">Telugu</option>
-            </select>
-          </div>
+          
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Screen Type *</label>

@@ -63,8 +63,9 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
     return targetDate;
   };
 
-    const nextShowTime = getNextShowTime();
+const nextShowTime = getNextShowTime();
     const movieId = movie?._id || movie?.id || movie?.tmdbId;
+    const movieObjId = movie?._id;
 
   return (
     <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
@@ -113,16 +114,16 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
         <div>
           <h3 className="mb-3 text-lg font-medium text-white">Available Times</h3>
           <div className="flex flex-wrap gap-3">
-            {showDates
+{showDates
               .find((d) => d.date === selectedDate)
-              ?.timeSlots.map((time, index) => (
+              ?.timeSlots.map((slot, index) => (
                 <Link
                   key={index}
-                  to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(time)}`}
-                  aria-label={`Book for ${time}`}
+                  to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(slot.label)}&showId=${slot.showId}&price=${slot.price || 0}`}
+                  aria-label={`Book for ${slot.label}`}
                   className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-gray-200 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-white"
                 >
-                  {time}
+                  {slot.label}
                 </Link>
               ))}
           </div>

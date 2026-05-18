@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import ShowsTable from "../../Components/Admin/ShowsTable/ShowsTable";
 import ShowsHeader from "../../Components/Admin/ListShows/ShowsHeader";
@@ -9,15 +10,13 @@ import ShowsActionBar from "../../Components/Admin/ListShows/ShowsActionBar";
 import ShowsFooter from "../../Components/Admin/ListShows/ShowsFooter";
 import ShowViewModal from "../../Components/Admin/ListShows/ShowViewModal";
 import ShowEditModal from "../../Components/Admin/ListShows/ShowEditModal";
-import { adminShowsQuickActions, adminShowsRecentActivity, dummyDashboardData } from "../../assets/assets";
-
-const THEATERS = ["PVR Cinemas", "INOX", "Cinepolis", "IMAX", "Wave Cinemas"];
-const SCREEN_TYPES = ["IMAX", "3D", "2D", "Dolby Atmos", "Premium", "4DX"];
+import { adminShowsQuickActions, adminShowsRecentActivity } from "../../assets/assets";
+import { getAdminShows, updateShow, deleteShow } from "../../services/api";
 
 const ListShows = () => {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
 
-  // format helpers
   const formatDate = (iso) => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "-";
@@ -30,25 +29,8 @@ const ListShows = () => {
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   };
 
-  // load initial shows from dummy data
-  const initialShows = useMemo(() => {
-    return (dummyDashboardData.activeShows ?? []).map((s, idx) => ({
-      id: idx + 1,
-      movieName: s.movie?.title ?? `Show ${idx + 1}`,
-      poster: s.movie?.poster_path ?? "",
-      poster2: s.movie?.backdrop_path ?? "",
-      theater: THEATERS[idx % THEATERS.length],
-      date: formatDate(s.showDateTime),
-      time: formatTime(s.showDateTime),
-      price: Number(s.showPrice ?? 0),
-      language: (s.movie?.original_language ?? "en").toUpperCase(),
-      screenType: SCREEN_TYPES[idx % SCREEN_TYPES.length],
-      description: s.movie?.overview ?? "",
-      status: "active",
-    }));
-  }, []);
-
-  const [shows, setShows] = useState(initialShows);
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedShowIds, setSelectedShowIds] = useState([]);
   const [viewShowId, setViewShowId] = useState(null);
   const [editShowId, setEditShowId] = useState(null);
@@ -56,12 +38,49 @@ const ListShows = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  useEffect(() => {
+    const fetchShows = async () => {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        const data = await getAdminShows(token);
+        const fetchedShows = Array.isArray(data) ? data : (data?.shows || []);
+        const mapped = fetchedShows.map((s) => {
+          const movie = s?.movie;
+          return {
+            id: s?._id,
+            _id: s?._id,
+            movieName: movie?.title || "Unknown",
+            poster: movie?.posterUrl || movie?.poster_path || "",
+            poster2: movie?.backdropUrl || movie?.backdrop_path || "",
+            theater: s?.theater || "",
+            date: formatDate(s?.showDateTime),
+            time: formatTime(s?.showDateTime),
+            price: s?.showPrice || 0,
+            language: movie?.language || movie?.original_language || "",
+            screenType: s?.screenType || "",
+            description: movie?.overview || "",
+            status: s?.status || "active",
+            showPrice: s?.showPrice,
+            showDateTime: s?.showDateTime,
+          };
+        });
+        setShows(mapped);
+      } catch (err) {
+        toast.error("Failed to load shows");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShows();
+  }, [getToken]);
+
   const viewShow = useMemo(
-    () => shows.find((s) => s.id === viewShowId) || null,
+    () => shows.find((s) => (s._id || s.id) === (viewShowId || viewShowId)) || null,
     [shows, viewShowId]
   );
   const editShow = useMemo(
-    () => shows.find((s) => s.id === editShowId) || null,
+    () => shows.find((s) => (s._id || s.id) === (editShowId || editShowId)) || null,
     [shows, editShowId]
   );
 
@@ -75,10 +94,18 @@ const ListShows = () => {
     });
   }, [shows, searchQuery, statusFilter]);
 
-  const handleEdit = (show) => setEditShowId(show.id);
-  const handleDelete = (id) => {
-    setShows((prev) => prev.filter((show) => show.id !== id));
-    setSelectedShowIds((prev) => prev.filter((x) => x !== id));
+  const handleEdit = (show) => setEditShowId(show._id || show.id);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this show?")) return;
+    try {
+      const token = await getToken();
+      await deleteShow(token, id);
+      setShows((prev) => prev.filter((s) => (s._id || s.id) !== id));
+      setSelectedShowIds((prev) => prev.filter((x) => x !== id));
+      toast.success("Show deleted");
+    } catch (err) {
+      toast.error("Failed to delete show");
+    }
   };
   const handleView = (id) => setViewShowId(id);
   const handleAddNew = () => navigate("/admin/add-show");

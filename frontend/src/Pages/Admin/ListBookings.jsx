@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { IndianRupee } from "lucide-react";
+import { useAuth } from "@clerk/clerk-react";
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import BookingsTable from "../../Components/Admin/BookingsTable/BookingsTable";
 import BookingsHeader from "../../Components/Admin/ListBookings/BookingsHeader";
@@ -8,10 +9,12 @@ import BookingsActionBar from "../../Components/Admin/ListBookings/BookingsActio
 import BookingsInsights from "../../Components/Admin/ListBookings/BookingsInsights";
 import BookingsFooter from "../../Components/Admin/ListBookings/BookingsFooter";
 import BookingModal from "../../Components/Admin/ListBookings/BookingModal";
-import { adminBookingsHelpActions, adminBookingsRecentNotifications, dummyBookingData } from "../../assets/assets";
+import { adminBookingsHelpActions, adminBookingsRecentNotifications } from "../../assets/assets";
+import { getAdminBookings } from "../../services/api";
 
 const ListBookings = () => {
-  // format helpers
+  const { getToken } = useAuth();
+
   const formatDate = (iso) => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "-";
@@ -24,29 +27,43 @@ const ListBookings = () => {
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   };
 
-  // transform raw booking data to display format
-  const mapBooking = (b, idx) => ({
-    id: idx + 1,
-    bookingId: b._id ? `BK-${String(b._id).slice(-6).toUpperCase()}` : `BK-${String(idx + 1).padStart(3, "0")}`,
-    userName: b.user?.name ?? "User",
-    userEmail: "admin@showmovie.com",
-    movieName: b.show?.movie?.title ?? "Movie",
-    theater: "Main Theater",
-    seats: (b.bookedSeats ?? []).join(", "),
-    screen: "Screen A1",
-    amount: String(b.amount ?? 0),
-    tickets: (b.bookedSeats ?? []).length,
-    bookingDate: formatDate(b.show?.showDateTime),
-    bookingTime: formatTime(b.show?.showDateTime),
-    paymentStatus: b.isPaid ? "paid" : "pending",
-    paymentMethod: b.isPaid ? "UPI" : "Cash",
-  });
-
-  const [bookings, setBookings] = useState(dummyBookingData.map(mapBooking));
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [viewBooking, setViewBooking] = useState(null);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const token = await getToken();
+        const data = await getAdminBookings(token);
+        const raw = Array.isArray(data) ? data : (data?.bookings || []);
+        setBookings(raw.map((b, idx) => ({
+          id: b._id || idx,
+          bookingId: b._id ? `BK-${String(b._id).slice(-6).toUpperCase()}` : `BK-${String(idx + 1).padStart(3, "0")}`,
+          userName: b.user?.name ?? "User",
+          userEmail: b.user?.email ?? "N/A",
+          movieName: b.show?.movie?.title ?? "Movie",
+          theater: b.show?.theater || "Main Theater",
+          seats: (b.bookedSeats ?? []).join(", "),
+          screen: b.show?.screenType || "Screen A1",
+          amount: String(b.amount ?? 0),
+          tickets: (b.bookedSeats ?? []).length,
+          bookingDate: formatDate(b.show?.showDateTime),
+          bookingTime: formatTime(b.show?.showDateTime),
+          paymentStatus: b.isPaid ? "paid" : "pending",
+          paymentMethod: b.isPaid ? "UPI" : "Cash",
+        })));
+      } catch (e) {
+        console.error("Failed to load bookings:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, [getToken]);
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-
 import { getShowTimeLabel, timeToMinutes } from "./seatLayoutUtils.js";
+import { useSearchParams } from "react-router-dom";
 
 const formatDateKey = (iso) => {
   const d = new Date(iso);
@@ -12,19 +12,26 @@ const formatDateKey = (iso) => {
 };
 
 export const useSelectedShow = ({ movieId, shows, date, time }) => {
-  return useMemo(() => {
-    if (!movieId || !date || !Array.isArray(shows)) return null;
-    const forMovie = shows.filter((s) => s?.movie?._id === movieId || s?.movie === movieId);
+  const [searchParams] = useSearchParams();
+  const showIdFromUrl = searchParams.get("showId");
 
+  return useMemo(() => {
+    if (!movieId || !Array.isArray(shows)) return null;
+
+    if (showIdFromUrl) {
+      const found = shows.find((s) => s._id === showIdFromUrl || s.showId === showIdFromUrl);
+      if (found) return found;
+    }
+
+    const forMovie = shows.filter((s) => s?.movie?._id === movieId || s?.movie === movieId);
     if (forMovie.length === 0) return null;
 
-    const dateMatches = forMovie.filter((show) => {
-      const showDate = formatDateKey(show?.showDateTime ?? 0);
-      return showDate === date;
-    });
+    if (!date) return forMovie[0];
 
-    const pool = dateMatches.length > 0 ? dateMatches : forMovie;
+    const pool = forMovie;
     if (pool.length === 0) return null;
+
+    if (!time) return pool[0];
 
     const targetMinutes = timeToMinutes(time);
     if (targetMinutes == null) return pool[0];
@@ -36,5 +43,5 @@ export const useSelectedShow = ({ movieId, shows, date, time }) => {
     });
 
     return exact ?? pool[0];
-  }, [date, movieId, shows, time]);
+  }, [date, movieId, shows, time, showIdFromUrl]);
 };
