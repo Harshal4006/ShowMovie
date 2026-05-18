@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import CountdownTimer from "../CountdownTimer/CountdownTimer.jsx";
 
 const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
@@ -11,78 +12,38 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
     );
   }
 
-  // Calculate the next show time for countdown
-  const getNextShowTime = () => {
+  const nextShowTime = useMemo(() => {
     if (!selectedDate) return null;
     
     const selectedShow = showDates.find((d) => d.date === selectedDate);
-    if (!selectedShow || !selectedShow.timeSlots.length) return null;
+    if (!selectedShow || !selectedShow.timeSlots || selectedShow.timeSlots.length === 0) return null;
     
-    // Get current date and time
     const now = new Date();
-    const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = now.toISOString().split('T')[0];
     
-    // If selected date is today, find next time slot
     if (selectedDate === today) {
-      const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
+      const currentMs = now.getTime();
       
-      // Loop through time slots to find the next upcoming show
-      for (const timeSlot of selectedShow.timeSlots) {
-        if (!timeSlot || typeof timeSlot !== 'string') continue;
-        const parts = timeSlot.split(' ');
-        if (parts.length < 2) continue;
-        const [time, period] = parts;
-        const timeParts = time.split(':');
-        if (timeParts.length < 2) continue;
-        const [hoursStr, minutesStr] = timeParts;
-        let hours = parseInt(hoursStr);
-        const minutes = parseInt(minutesStr || '0');
-        
-        // Convert AM/PM to 24-hour format
-        if (period === 'PM' && hours !== 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        
-        const slotTime = hours * 60 + minutes;
-        
-        // If this slot is in the future, use it
-        if (slotTime > currentTime) {
-          const targetDate = new Date(now);
-          targetDate.setHours(hours, minutes, 0, 0);
-          return targetDate;
+      for (const slot of selectedShow.timeSlots) {
+        if (!slot || !slot.showId) continue;
+        const slotDate = new Date(slot.showDateTime || selectedDate);
+        if (slotDate.getTime() > currentMs) {
+          return slotDate;
         }
       }
     }
     
-    // Default to first time slot of selected date
-    const firstTime = selectedShow.timeSlots[0];
-    if (!firstTime || typeof firstTime !== 'string') return null;
-    
-    const timeParts = firstTime.split(' ');
-    if (timeParts.length < 2) return null;
-    const [time, period] = timeParts;
-    const timeComponents = time.split(':');
-    if (timeComponents.length < 2) return null;
-    const [hoursStr, minutesStr] = timeComponents;
-    let hours = parseInt(hoursStr);
-    const minutes = parseInt(minutesStr || '0');
-    
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-    
-    const targetDate = new Date(selectedDate);
-    targetDate.setHours(hours, minutes, 0, 0);
-    return targetDate;
-  };
+    return selectedShow.timeSlots[0]?.showDateTime 
+      ? new Date(selectedShow.timeSlots[0].showDateTime)
+      : null;
+  }, [selectedDate, showDates]);
 
-const nextShowTime = getNextShowTime();
-    const movieId = movie?._id || movie?.id || movie?.tmdbId;
-    const movieObjId = movie?._id;
+  const movieId = movie?._id || movie?.id || movie?.tmdbId;
 
   return (
     <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
       <h2 className="mb-6 text-2xl font-semibold text-white">Showtimes</h2>
       
-      {/* Countdown Timer */}
       {nextShowTime && (
         <div className="mb-6">
           <CountdownTimer
@@ -125,13 +86,13 @@ const nextShowTime = getNextShowTime();
         <div>
           <h3 className="mb-3 text-lg font-medium text-white">Available Times</h3>
           <div className="flex flex-wrap gap-3">
-{showDates
+            {showDates
               .find((d) => d.date === selectedDate)
               ?.timeSlots.map((slot, index) => (
                 <Link
-                  key={index}
-                  to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(slot.label)}&showId=${slot.showId}&price=${slot.price || 0}`}
-                  aria-label={`Book for ${slot.label}`}
+                  key={slot.showId || index}
+                  to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(slot.label || '')}&showId=${slot.showId || ''}&price=${slot.price || 0}`}
+                  aria-label={`Book for ${slot.label || 'Show ' + (index + 1)}`}
                   className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-gray-200 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-white"
                 >
                   {slot.label}

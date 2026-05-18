@@ -82,7 +82,12 @@ const MovieDetailse = () => {
               day: new Date(date).toLocaleDateString("en-IN", { weekday: "short" }),
               timeSlots: [...timeMap.entries()]
                 .sort((a, b) => a[1].ms - b[1].ms)
-                .flatMap(([label, data]) => data.shows.map((show) => ({ label, showId: show._id, price: show.showPrice }))),
+                .flatMap(([label, data]) => data.shows.map((show) => ({ 
+                  label, 
+                  showId: show._id, 
+                  price: show.showPrice,
+                  showDateTime: show.showDateTime 
+                }))),
             }));
 
           setShowDates(nextShowDates);
