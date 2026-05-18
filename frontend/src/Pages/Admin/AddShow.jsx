@@ -96,7 +96,6 @@ const AddShow = () => {
           <AddShowHeader onQuickAdd={handleQuickAdd} />
 
           <AddShowForm onSubmit={handleSubmit} initialData={quickAddData || {}} />
-
           <AddShowPreview />
 
           {isSubmitting && (

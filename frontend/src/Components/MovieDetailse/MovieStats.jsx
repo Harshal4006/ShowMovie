@@ -19,16 +19,17 @@ const MovieStats = ({ movie, favorite, handleFavoriteToggle, onTrailerClick, lan
     "w1280"
   );
 
-const releaseDate = movie?.releaseDate || movie?.release_date;
+  const releaseDate = movie?.releaseDate || movie?.release_date;
   const releaseYear = (releaseDate && typeof releaseDate === 'string') ? releaseDate.split("-")[0] : "—";
   const voteAverage = movie?.rating ?? movie?.vote_average;
   const runtime = movie?.runtime || 0;
   const movieId = movie?._id || movie?.id || movie?.tmdbId;
 
   const defaultDate = selectedDate || showDates?.[0]?.date;
-  const defaultTime = showDates?.find((d) => d.date === defaultDate)?.timeSlots?.[0] || "";
-  const bookingUrl = defaultDate && defaultTime
-    ? `/movies/${movieId}/${defaultDate}?time=${encodeURIComponent(defaultTime)}`
+  const defaultTimeSlot = showDates?.find((d) => d.date === defaultDate)?.timeSlots?.[0];
+  const hasShows = defaultDate && defaultTimeSlot;
+  const bookingUrl = hasShows
+    ? `/movies/${movieId}/${defaultDate}?time=${encodeURIComponent(defaultTimeSlot.label || '')}&showId=${defaultTimeSlot.showId || ''}&price=${defaultTimeSlot.price || 0}`
     : `/movies/${movieId}`;
 
   return (
@@ -37,7 +38,7 @@ const releaseDate = movie?.releaseDate || movie?.release_date;
         <div className="relative overflow-hidden rounded-3xl">
           <img
             src={posterSrc || backdropSrc || "https://via.placeholder.com/600x900"}
-            alt={movie.title}
+            alt={movie?.title}
             loading="lazy"
             className="h-auto w-full object-cover"
           />
@@ -54,7 +55,7 @@ const releaseDate = movie?.releaseDate || movie?.release_date;
             }`}
             aria-label={`${
               favorite ? "Remove" : "Add"
-            } ${movie.title} ${favorite ? "from" : "to"} favorites`}
+            } ${movie?.title} ${favorite ? "from" : "to"} favorites`}
           >
             <Heart
               className={`h-5 w-5 transition duration-300 ${
@@ -91,19 +92,28 @@ const releaseDate = movie?.releaseDate || movie?.release_date;
         {/* Book ticket button */}
         <Link
           to={bookingUrl}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-red-500 px-6 py-4 text-lg font-semibold text-white shadow-[0_10px_30px_rgba(239,68,68,0.3)] transition hover:bg-red-400"
+          className={`mt-6 flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-lg font-semibold transition ${
+            hasShows
+              ? "bg-red-500 text-white shadow-[0_10px_30px_rgba(239,68,68,0.3)] hover:bg-red-400"
+              : "bg-gray-700 text-gray-400 cursor-not-allowed"
+          }`}
         >
           <Ticket className="h-5 w-5" />
-          Book Tickets Now
+          {hasShows ? "Book Tickets Now" : "No Shows Available"}
         </Link>
 
         {/* Watch trailer button */}
         <button
           onClick={onTrailerClick}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-blue-500/60 bg-transparent px-6 py-4 text-lg font-semibold text-blue-400 transition hover:bg-blue-500/10 hover:text-blue-300"
+          disabled={!movie?.trailerKey}
+          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-full border px-6 py-4 text-lg font-semibold transition ${
+            movie?.trailerKey
+              ? "border-blue-500/60 bg-transparent text-blue-400 hover:bg-blue-500/10 hover:text-blue-300"
+              : "border-gray-700 bg-transparent text-gray-600 cursor-not-allowed"
+          }`}
         >
           <PlayCircle className="h-5 w-5" />
-          Watch Trailer
+          {movie?.trailerKey ? "Watch Trailer" : "No Trailer"}
         </button>
       </div>
     </div>

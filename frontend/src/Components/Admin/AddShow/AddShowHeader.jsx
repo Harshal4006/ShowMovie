@@ -1,7 +1,6 @@
 import { ArrowLeft, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { dummyShowsData } from "../../../assets/assets";
 
 const AddShowHeader = ({ onQuickAdd }) => {
   const navigate = useNavigate();
@@ -11,22 +10,22 @@ const AddShowHeader = ({ onQuickAdd }) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
-    const movie = dummyShowsData?.[0];
     const sampleData = {
-      movieName: movie?.title || "Sample Movie",
-      poster: movie?.poster_path || "",
-      poster2: movie?.backdrop_path || "",
-      theater: "PVR Cinemas",
-      showtimes: [{ date: tomorrowStr, time: "19:30" }],
-      price: "15.99",
-      language: (movie?.original_language || "en").toUpperCase(),
-      screenType: "IMAX",
-      description: movie?.overview || "",
+      movieName: "",
+      movieId: "",
+      poster: "",
+      poster2: "",
+      theater: "Theater 1",
+      showtimes: [{ date: tomorrowStr, time: "19:00" }],
+      price: "",
+      language: "English",
+      screenType: "2D",
+      description: "",
       status: "active"
     };
 
     onQuickAdd(sampleData);
-    toast.success("Quick add data loaded! Fill remaining details and submit.");
+    toast.success("Form pre-filled! Select a movie and complete the details.");
   };
 
   return (

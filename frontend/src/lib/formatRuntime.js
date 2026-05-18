@@ -1,5 +1,5 @@
 export const formatRuntime = (minutes) => {
-  if (!minutes) return "0h 0m";
+  if (!minutes || minutes <= 0) return "—";
 
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;

@@ -85,20 +85,24 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
       {selectedDate && (
         <div>
           <h3 className="mb-3 text-lg font-medium text-white">Available Times</h3>
-          <div className="flex flex-wrap gap-3">
-            {showDates
-              .find((d) => d.date === selectedDate)
-              ?.timeSlots.map((slot, index) => (
-                <Link
-                  key={slot.showId || index}
-                  to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(slot.label || '')}&showId=${slot.showId || ''}&price=${slot.price || 0}`}
-                  aria-label={`Book for ${slot.label || 'Show ' + (index + 1)}`}
-                  className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-gray-200 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-white"
-                >
-                  {slot.label}
-                </Link>
-              ))}
-          </div>
+          {showDates.find((d) => d.date === selectedDate)?.timeSlots?.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {showDates
+                .find((d) => d.date === selectedDate)
+                ?.timeSlots.map((slot, index) => (
+                  <Link
+                    key={slot.showId || index}
+                    to={`/movies/${movieId}/${selectedDate}?time=${encodeURIComponent(slot.label || '')}&showId=${slot.showId || ''}&price=${slot.price || 0}`}
+                    aria-label={`Book for ${slot.label || 'Show ' + (index + 1)}`}
+                    className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-gray-200 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-white"
+                  >
+                    {slot.label}
+                  </Link>
+                ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">No show times available for this date.</p>
+          )}
         </div>
       )}
     </div>

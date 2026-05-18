@@ -76,11 +76,11 @@ const ListShows = () => {
   }, [getToken]);
 
   const viewShow = useMemo(
-    () => shows.find((s) => (s._id || s.id) === (viewShowId || viewShowId)) || null,
+    () => shows.find((s) => (s._id || s.id) === viewShowId) || null,
     [shows, viewShowId]
   );
   const editShow = useMemo(
-    () => shows.find((s) => (s._id || s.id) === (editShowId || editShowId)) || null,
+    () => shows.find((s) => (s._id || s.id) === editShowId) || null,
     [shows, editShowId]
   );
 
