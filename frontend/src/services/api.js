@@ -36,6 +36,8 @@ export const toggleFavorite = (token, movieId) =>
 export const searchTmdbMovies = (query, page = 1) =>
   request(`/admin/tmdb/search?query=${encodeURIComponent(query)}&page=${page}`);
 export const getTmdbMovieDetails = (tmdbId) => request(`/admin/tmdb/movie/${tmdbId}`);
+export const getTmdbNowPlaying = (page = 1) => request(`/admin/tmdb/now-playing?page=${page}`);
+export const getTmdbUpcoming = (page = 1) => request(`/admin/tmdb/upcoming?page=${page}`);
 
 // Admin Movie Management (auth)
 export const getAdminMovies = (token, params = {}) => {

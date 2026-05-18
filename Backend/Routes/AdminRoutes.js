@@ -5,6 +5,8 @@ const VerifyAdmin = require('../Middleware/AdminMiddleware');
 const {
   GetDashboardStats,
   TmdbSearchMovies,
+  TmdbGetNowPlaying,
+  TmdbGetUpcoming,
   TmdbGetMovieDetails,
   ImportMovie,
   GetAllMoviesAdmin,
@@ -21,6 +23,8 @@ router.get('/dashboard', VerifyToken, VerifyAdmin, GetDashboardStats);
 
 // TMDB endpoints (public for admin search)
 router.get('/tmdb/search', TmdbSearchMovies);
+router.get('/tmdb/now-playing', TmdbGetNowPlaying);
+router.get('/tmdb/upcoming', TmdbGetUpcoming);
 router.get('/tmdb/movie/:tmdbId', TmdbGetMovieDetails);
 
 // Movies management

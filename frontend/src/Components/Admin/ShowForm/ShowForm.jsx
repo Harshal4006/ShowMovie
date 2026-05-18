@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Search, Loader2, X, Plus, Trash2 } from "lucide-react";
-import { searchTmdbMovies } from "../../../services/api";
+import { Search, Loader2, X, Film, Calendar } from "lucide-react";
+import { searchTmdbMovies, getTmdbNowPlaying, getTmdbUpcoming } from "../../../services/api";
 
 const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
   const [tmdbMovies, setTmdbMovies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [activeTab, setActiveTab] = useState("now-playing");
 
   const [formData, setFormData] = useState({
     movieName: initialData.movieName || "",
@@ -24,18 +25,21 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
 
   const [errors, setErrors] = useState({});
 
-  // Fetch Now Playing movies on mount
   useEffect(() => {
-    fetchTmdbMovies();
-  }, []);
+    fetchMovies();
+  }, [activeTab]);
 
-  const fetchTmdbMovies = async () => {
+  const fetchMovies = async () => {
     setLoading(true);
     try {
-      // First try to get Now Playing from TMDB - but this needs auth, so use search instead
-      const searchData = await searchTmdbMovies("Avengers", 1);
-      if (searchData.movies && searchData.movies.length > 0) {
-        setTmdbMovies(searchData.movies);
+      let data;
+      if (activeTab === "now-playing") {
+        data = await getTmdbNowPlaying();
+      } else if (activeTab === "upcoming") {
+        data = await getTmdbUpcoming();
+      }
+      if (data?.movies && data.movies.length > 0) {
+        setTmdbMovies(data.movies);
       }
     } catch (error) {
       console.error("Failed to fetch movies:", error);
@@ -50,7 +54,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
 
     setLoading(true);
     try {
-      console.log("Searching for:", searchQuery);
       const data = await searchTmdbMovies(searchQuery);
       if (data.movies && data.movies.length > 0) {
         setTmdbMovies(data.movies);
@@ -134,112 +137,156 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Movie Selection Section */}
       <div className="rounded-xl bg-gray-800/50 border border-gray-700 p-4">
         <h3 className="text-lg font-semibold text-white mb-4">Select Movie *</h3>
 
-        {/* Search Box */}
-        <div onSubmit={handleSearchTmdb} className="flex gap-2 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchTmdb(e))}
-              placeholder="Search movies to add show..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm"
-            />
-          </div>
+        <div className="flex gap-2 mb-4 border-b border-gray-700 pb-2">
           <button
             type="button"
-            onClick={handleSearchTmdb}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-500"
+            onClick={() => setActiveTab("now-playing")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "now-playing"
+                ? "bg-red-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-700"
+            }`}
           >
+            <Film className="h-4 w-4" />
+            Now Playing
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("upcoming")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "upcoming"
+                ? "bg-red-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-700"
+            }`}
+          >
+            <Calendar className="h-4 w-4" />
+            Upcoming
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("search")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "search"
+                ? "bg-red-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-700"
+            }`}
+          >
+            <Search className="h-4 w-4" />
             Search
           </button>
         </div>
 
-        {/* Loading */}
-        {loading && (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-red-500" />
-          </div>
-        )}
-
-        {/* Movie Cards Grid */}
-        {!loading && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto">
-            {tmdbMovies.map((movie) => (
-              <div
-                key={movie.id}
-                onClick={() => handleSelectMovie(movie)}
-                className={`cursor-pointer group rounded-lg overflow-hidden border-2 transition ${
-                  selectedMovie?.id === movie.id || selectedMovie?.tmdbId === movie.id
-                    ? "border-red-500 bg-red-500/10"
-                    : "border-transparent hover:border-gray-600"
-                }`}
-              >
-                <div className="aspect-[2/3] bg-gray-900">
-                  {movie.poster_path || movie.posterUrl ? (
-                    <img
-                      src={movie.posterUrl || `https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-                      alt={movie.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
-                      No Poster
-                    </div>
-                  )}
-                </div>
-                <div className="p-2 bg-gray-900">
-                  <p className="text-xs text-white truncate font-medium">{movie.title}</p>
-                  <p className="text-xs text-gray-500">{movie.release_date?.split("-")[0]}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Selected Movie Display */}
-        {selectedMovie && (
-          <div className="mt-4 flex items-center gap-4 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
-            <img
-              src={
-                selectedMovie.posterUrl ||
-                (selectedMovie.poster_path
-                  ? `https://image.tmdb.org/t/p/w200${selectedMovie.poster_path}`
-                  : "https://via.placeholder.com/100x150")
-              }
-              alt={selectedMovie.title}
-              className="w-16 h-24 object-cover rounded"
-            />
-            <div className="flex-1">
-              <h4 className="font-semibold text-white text-lg">{selectedMovie.title}</h4>
-              <p className="text-sm text-gray-400">{selectedMovie.release_date?.split("-")[0]} | {selectedMovie.runtime}min</p>
-              <p className="text-xs text-gray-500 line-clamp-2">{selectedMovie.overview}</p>
+        {activeTab === "search" && (
+          <div className="flex gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchTmdb(e))}
+                placeholder="Search movies to add show..."
+                className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm"
+              />
             </div>
             <button
               type="button"
-              onClick={() => { setSelectedMovie(null); setFormData((prev) => ({ ...prev, movieName: "", movieId: "" })); }}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+              onClick={handleSearchTmdb}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-500"
             >
-              <X className="h-5 w-5" />
+              Search
             </button>
           </div>
         )}
 
-        {errors.movieId && (
-          <p className="mt-4 text-sm text-red-400">
-            {errors.movieId}
-          </p>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-red-500" />
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-gray-500 mb-3">
+              {activeTab === "now-playing" ? "Currently in theaters" : 
+               activeTab === "upcoming" ? "Coming soon to theaters" : 
+               "Search results"}
+            </p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto">
+              {tmdbMovies.map((movie) => (
+                <div
+                  key={movie.id}
+                  onClick={() => handleSelectMovie(movie)}
+                  className={`cursor-pointer group rounded-lg overflow-hidden border-2 transition ${
+                    selectedMovie?.id === movie.id || selectedMovie?.tmdbId === movie.id
+                      ? "border-red-500 bg-red-500/10"
+                      : "border-transparent hover:border-gray-600"
+                  }`}
+                >
+                  <div className="aspect-[2/3] bg-gray-900">
+                    {movie.poster_path || movie.posterUrl ? (
+                      <img
+                        src={movie.posterUrl || `https://image.tmdb.org/t/p/w200${movie.poster_path}`}
+                        alt={movie.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+                        No Poster
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2 bg-gray-900">
+                    <p className="text-xs text-white truncate font-medium">{movie.title}</p>
+                    <p className="text-xs text-gray-500">{movie.release_date?.split("-")[0]}</p>
+                  </div>
+                </div>
+              ))}
+              {tmdbMovies.length === 0 && (
+                <div className="col-span-full text-center py-8 text-gray-500">
+                  {activeTab === "search" ? "Search for a movie to add a show" : "No movies found"}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Show Details */}
+      {selectedMovie && (
+        <div className="flex items-center gap-4 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+          <img
+            src={
+              selectedMovie.posterUrl ||
+              (selectedMovie.poster_path
+                ? `https://image.tmdb.org/t/p/w200${selectedMovie.poster_path}`
+                : "https://via.placeholder.com/100x150")
+            }
+            alt={selectedMovie.title}
+            className="w-16 h-24 object-cover rounded"
+          />
+          <div className="flex-1">
+            <h4 className="font-semibold text-white text-lg">{selectedMovie.title}</h4>
+            <p className="text-sm text-gray-400">{selectedMovie.release_date?.split("-")[0]} | {selectedMovie.runtime}min</p>
+            <p className="text-xs text-gray-500 line-clamp-2">{selectedMovie.overview}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setSelectedMovie(null); setFormData((prev) => ({ ...prev, movieName: "", movieId: "" })); }}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
+      {errors.movieId && (
+        <p className="mt-4 text-sm text-red-400">
+          {errors.movieId}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Left Column - Basic Info */}
         <div className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Theater *</label>
@@ -257,8 +304,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
             {errors.theater && <p className="mt-1 text-xs text-red-500">{errors.theater}</p>}
           </div>
 
-          
-
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Screen Type *</label>
             <select
@@ -275,7 +320,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
           </div>
         </div>
 
-        {/* Right Column - Price and Showtimes */}
         <div className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Ticket Price (₹) *</label>
@@ -344,7 +388,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-800">
         <button
           type="button"

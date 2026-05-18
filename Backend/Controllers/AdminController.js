@@ -61,6 +61,28 @@ const TmdbSearchMovies = async (req, res) => {
   }
 };
 
+// TMDB Get Now Playing movies
+const TmdbGetNowPlaying = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const data = await callTmdb(`/movie/now_playing?language=en-US&page=${page}&region=US`);
+    res.json({ movies: data.results, page: data.page, totalPages: data.total_pages });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get now playing movies', error: error.message });
+  }
+};
+
+// TMDB Get Upcoming movies
+const TmdbGetUpcoming = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const data = await callTmdb(`/movie/upcoming?language=en-US&page=${page}&region=US`);
+    res.json({ movies: data.results, page: data.page, totalPages: data.total_pages });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get upcoming movies', error: error.message });
+  }
+};
+
 // TMDB Get Movie Details
 const TmdbGetMovieDetails = async (req, res) => {
   try {
@@ -479,6 +501,8 @@ const GetAllBookings = async (req, res) => {
 module.exports = {
   GetDashboardStats,
   TmdbSearchMovies,
+  TmdbGetNowPlaying,
+  TmdbGetUpcoming,
   TmdbGetMovieDetails,
   ImportMovie,
   GetAllMoviesAdmin,
