@@ -32,7 +32,11 @@ const movieSchema = new mongoose.Schema({
   movieLanguage: { type: String, default: 'English' },
   format: { type: String, default: '2D' },
   status: { type: String, default: 'coming-soon' },
+  
+  // Section placement
   isFeatured: { type: Boolean, default: false },
+  isTrending: { type: Boolean, default: false },
+  isMostPopular: { type: Boolean, default: false },
 
   // Basic fields
   isActive: { type: Boolean, default: true }

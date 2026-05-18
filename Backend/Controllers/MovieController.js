@@ -5,8 +5,13 @@ const ensureDbConnection = require('../Utils/ensureDbConnection');
 const GetAllMovies = async (req, res) => {
   try {
     await ensureDbConnection();
-    const { genre, search, sort, page = 1, limit = 12 } = req.query;
+    const { genre, search, sort, page = 1, limit = 12, section } = req.query;
     let query = { isActive: true };
+
+    // Section filter
+    if (section === 'featured') query.isFeatured = true;
+    else if (section === 'trending') query.isTrending = true;
+    else if (section === 'mostPopular') query.isMostPopular = true;
 
     if (genre && genre !== 'all') {
       query['genres.name'] = genre;
@@ -78,6 +83,34 @@ const GetFeaturedMovies = async (req, res) => {
   }
 };
 
+const GetTrendingMovies = async (req, res) => {
+  try {
+    await ensureDbConnection();
+    const movies = await Movie.find({ isTrending: true, isActive: true })
+      .sort({ rating: -1 })
+      .limit(8)
+      .lean();
+    res.json(movies);
+  } catch (error) {
+    console.error('GetTrendingMovies error:', error.message);
+    res.status(500).json({ message: error.message, movies: [] });
+  }
+};
+
+const GetMostPopularMovies = async (req, res) => {
+  try {
+    await ensureDbConnection();
+    const movies = await Movie.find({ isMostPopular: true, isActive: true })
+      .sort({ voteCount: -1, rating: -1 })
+      .limit(8)
+      .lean();
+    res.json(movies);
+  } catch (error) {
+    console.error('GetMostPopularMovies error:', error.message);
+    res.status(500).json({ message: error.message, movies: [] });
+  }
+};
+
 const GetNowShowingMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -137,4 +170,13 @@ const GetRelatedMovies = async (req, res) => {
   }
 };
 
-module.exports = { GetAllMovies, GetMovieById, GetFeaturedMovies, GetNowShowingMovies, GetUpcomingMovies, GetRelatedMovies };
+module.exports = { 
+  GetAllMovies, 
+  GetMovieById, 
+  GetFeaturedMovies, 
+  GetTrendingMovies, 
+  GetMostPopularMovies,
+  GetNowShowingMovies, 
+  GetUpcomingMovies, 
+  GetRelatedMovies 
+};

@@ -1,9 +1,11 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getMovies } from "../../services/api";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { ChevronDown } from "lucide-react";
 
 const Movies = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -11,14 +13,18 @@ const Movies = () => {
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const section = searchParams.get("section");
 
   useEffect(() => {
     const fetchMovies = async () => {
       setLoading(true);
       try {
-        const data = await getMovies({ genre, search, sort, page, limit: 12 });
+        const data = await getMovies({ genre, search, sort, page, limit: 12, section });
         setMovies(data.movies || []);
         setTotalPages(data.pages || 1);
+        setTotal(data.total || 0);
       } catch (error) {
         console.error('Failed to fetch movies:', error);
       } finally {
@@ -26,7 +32,7 @@ const Movies = () => {
       }
     };
     fetchMovies();
-  }, [search, genre, sort, page]);
+  }, [search, genre, sort, page, section]);
 
   // Extract unique genres from all movies
   const allGenres = useMemo(() => {
@@ -46,15 +52,32 @@ const Movies = () => {
     }
   };
 
+  const handleReset = () => {
+    setSearch("");
+    setGenre("all");
+    setSort("newest");
+    setPage(1);
+    setSearchParams({});
+  };
+
+  const getSectionTitle = () => {
+    switch (section) {
+      case 'featured': return 'Featured Movies';
+      case 'trending': return 'Trending Movies';
+      case 'mostPopular': return 'Most Popular';
+      default: return 'Explore All Films';
+    }
+  };
+
   return (
     <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-3xl font-bold leading-tight text-gray-100 sm:text-4xl">
-            Explore All Films
+            {getSectionTitle()}
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-gray-400 sm:mt-4 sm:text-base">
-            Browse all available shows and find your next favorite film.
+            {section ? `Browse all ${section.replace(/([A-Z])/g, ' $1').toLowerCase()} movies.` : "Browse all available shows and find your next favorite film."}
           </p>
         </div>
 
@@ -112,15 +135,26 @@ const Movies = () => {
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-gray-400">
-              Showing <span className="font-semibold text-gray-200">{movies.length}</span> movies
+              Showing <span className="font-semibold text-gray-200">{movies.length}</span> {section ? 'of ' + total : ''} movies
             </p>
-            <button
-              type="button"
-              onClick={() => { setSearch(""); setGenre("all"); setSort("newest"); setPage(1); }}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-200 transition hover:border-red-500/35 hover:bg-red-500/10"
-            >
-              Reset
-            </button>
+            <div className="flex gap-2">
+              {section && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchParams({}); }}
+                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-200 transition hover:border-red-500/35 hover:bg-red-500/10"
+                >
+                  Clear Filter
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleReset}
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-gray-200 transition hover:border-red-500/35 hover:bg-red-500/10"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
 

@@ -8,14 +8,14 @@ export const getMovies = (params = {}) => {
 
 export const getMovieById = (id, options = {}) => request(`/movies/${id}`, options);
 export const getFeaturedMovies = () => request(`/movies/featured`);
+export const getTrendingMovies = () => request(`/movies/trending`);
+export const getMostPopularMovies = () => request(`/movies/most-popular`);
 export const getNowShowingMovies = () => request(`/movies/now-showing`);
 export const getUpcomingMovies = () => request(`/movies/upcoming`);
 export const getRelatedMovies = (id) => request(`/movies/${id}/related`);
-
-// Public Shows APIs
-export const getShows = (params = {}) => {
+export const getMovies = (params = {}) => {
   const query = new URLSearchParams(params).toString();
-  return request(`/shows?${query}`);
+  return request(`/movies?${query}`);
 };
 export const getShowById = (id) => request(`/shows/${id}`);
 export const getShowsByMovie = (movieId, options = {}) => request(`/shows/movie/${movieId}`, options);
@@ -82,6 +82,8 @@ export default {
   getMovies,
   getMovieById,
   getFeaturedMovies,
+  getTrendingMovies,
+  getMostPopularMovies,
   getNowShowingMovies,
   getUpcomingMovies,
   getRelatedMovies,
@@ -95,6 +97,8 @@ export default {
   toggleFavorite,
   searchTmdbMovies,
   getTmdbMovieDetails,
+  getTmdbNowPlaying,
+  getTmdbUpcoming,
   getAdminMovies,
   importMovie,
   updateMovie,

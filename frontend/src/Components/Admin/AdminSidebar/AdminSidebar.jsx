@@ -105,6 +105,7 @@ const AdminSidebar = () => {
     { icon: PlusCircle, label: "Add Show", path: "/admin/add-show" },
     { icon: Film, label: "List Shows", path: "/admin/list-shows" },
     { icon: Ticket, label: "List Bookings", path: "/admin/list-bookings" },
+    { icon: Film, label: "Manage Movies", path: "/admin/list-movies" },
   ];
 
   // lock body scroll when mobile menu is open
