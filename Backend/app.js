@@ -59,6 +59,59 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Setup admin endpoint - visit this once to make yourself admin
+app.get('/api/setup-admin', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await ensureDbConnection();
+    }
+    const { clerkClient } = require('@clerk/clerk-sdk-node');
+    const User = require('./Models/User');
+
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) {
+      return res.json({
+        step: 1,
+        message: 'Visit this URL while logged in (Clerk auth header present). Current state: no auth token.',
+        instruction: 'Make sure you are logged in via the frontend, then the next visit will auto-detect you.'
+      });
+    }
+
+    let clerkRole = null;
+    try {
+      const cUser = await clerkClient.users.getUser(clerkUserId);
+      clerkRole = cUser?.publicMetadata?.role;
+    } catch (clerkErr) {
+      return res.json({
+        clerkUserId,
+        clerkRoleLookupError: clerkErr.message,
+        message: 'Clerk SDK lookup failed but MongoDB sync will proceed.'
+      });
+    }
+
+    let user = await User.findOne({ clerkId: clerkUserId });
+
+    if (!user) {
+      user = await User.create({ clerkId: clerkUserId, name: '', email: '', role: clerkRole === 'admin' ? 'admin' : 'user' });
+    } else {
+      user.role = clerkRole === 'admin' ? 'admin' : user.role;
+      await user.save();
+    }
+
+    res.json({
+      clerkUserId,
+      clerkMetadataRole: clerkRole,
+      dbUserRole: user.role,
+      isAdmin: user.role === 'admin',
+      message: user.role === 'admin'
+        ? 'SUCCESS! You are now an admin. Log out and log back in to see changes.'
+        : 'Not admin. Clerk metadata role is: ' + clerkRole + '. Set role in Clerk dashboard to admin.'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+
 // Test database endpoint (dev only)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/test-db', async (req, res) => {
