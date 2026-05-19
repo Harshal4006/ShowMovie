@@ -1,6 +1,4 @@
-const { requireAuth } = require('@clerk/express');
 const User = require('../Models/User');
-const { clerkClient } = require('@clerk/clerk-sdk-node');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 const VerifyAdmin = async (req, res, next) => {
@@ -12,17 +10,9 @@ const VerifyAdmin = async (req, res, next) => {
       return res.status(401).json({ message: 'Unauthorized. Please sign in.' });
     }
 
-    let isClerkAdmin = false;
-    try {
-      const clerkUser = await clerkClient.users.getUser(clerkUserId);
-      isClerkAdmin = clerkUser?.publicMetadata?.role === 'admin';
-    } catch {
-      // Fall back to DB if Clerk lookup fails
-    }
-
     const user = await User.findOne({ clerkId: clerkUserId });
 
-    if (isClerkAdmin || user?.role === 'admin') {
+    if (user?.role === 'admin') {
       req.user = user;
       return next();
     }
