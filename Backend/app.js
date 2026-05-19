@@ -59,54 +59,6 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Setup admin endpoint - called by frontend with Clerk token
-app.get('/api/setup-admin', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      await ensureDbConnection();
-    }
-    const { clerkClient } = require('@clerk/clerk-sdk-node');
-    const User = require('./Models/User');
-
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) {
-      return res.json({
-        error: 'no_auth',
-        message: 'No auth. Make sure you are logged in via the frontend first.'
-      });
-    }
-
-    let clerkRole = null;
-    try {
-      const cUser = await clerkClient.users.getUser(clerkUserId);
-      clerkRole = cUser?.publicMetadata?.role;
-    } catch (clerkErr) {
-      return res.json({ clerkUserId, clerkRoleLookupError: clerkErr.message });
-    }
-
-    let user = await User.findOne({ clerkId: clerkUserId });
-
-    if (!user) {
-      user = await User.create({ clerkId: clerkUserId, name: '', email: '', role: clerkRole === 'admin' ? 'admin' : 'user' });
-    } else {
-      if (clerkRole === 'admin') user.role = 'admin';
-      await user.save();
-    }
-
-    res.json({
-      clerkUserId,
-      clerkMetadataRole: clerkRole,
-      dbUserRole: user.role,
-      isAdmin: user.role === 'admin',
-      message: user.role === 'admin'
-        ? 'SUCCESS! Refresh the page to access admin dashboard.'
-        : 'Not admin. Clerk metadata role is: ' + clerkRole + '. Set role to admin in Clerk dashboard first.'
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Test database endpoint (dev only)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/test-db', async (req, res) => {
@@ -130,38 +82,6 @@ if (process.env.NODE_ENV !== 'production') {
     }
   });
 }
-
-// Debug user status endpoint (always available for debugging)
-app.get('/api/debug/user', require('@clerk/express').requireAuth(), async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      await ensureDbConnection();
-    }
-    const { clerkClient } = require('@clerk/clerk-sdk-node');
-    const User = require('./Models/User');
-
-    const clerkUserId = req.auth.userId;
-
-    let clerkRole = null;
-    try {
-      const clerkUser = await clerkClient.users.getUser(clerkUserId);
-      clerkRole = clerkUser?.publicMetadata?.role;
-    } catch {
-      // ignore
-    }
-
-    const dbUser = await User.findOne({ clerkId: clerkUserId });
-
-    res.json({
-      clerkUserId,
-      clerkMetadataRole: clerkRole,
-      dbUser: dbUser ? { role: dbUser.role, name: dbUser.name, email: dbUser.email } : null,
-      wouldPassAdmin: clerkRole === 'admin' || dbUser?.role === 'admin'
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // Mount Inngest handler
 app.use('/api/inngest', serve({ client: inngest, functions }));
