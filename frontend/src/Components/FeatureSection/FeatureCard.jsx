@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Play, Star } from "lucide-react";
 import toast from "react-hot-toast";
+import { useUser } from "@clerk/clerk-react";
 import { formatRuntime } from "../../lib/formatRuntime.js";
-import { isFavoriteShow, toggleFavoriteShow } from "../../lib/favorites.js";
+import { getFavoriteIds, toggleFavoriteShow } from "../../lib/favorites.js";
 
 const FeatureCard = ({ movie, schedule }) => {
+  const { getToken, isSignedIn } = useUser();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Handle both old dummy data format and new API format
   const movieId = movie?._id || movie?.id || movie?.tmdbId;
   const title = movie?.title || movie?.title;
 
@@ -37,8 +39,17 @@ const FeatureCard = ({ movie, schedule }) => {
   useEffect(() => {
     if (!movieId) return;
 
-    const syncFavoriteState = () => {
-      setIsFavorite(isFavoriteShow(movieId));
+    const syncFavoriteState = async () => {
+      setIsLoading(true);
+      try {
+        const tokenFn = isSignedIn ? getToken : null;
+        const favorites = await getFavoriteIds(tokenFn);
+        setIsFavorite(favorites.includes(String(movieId)));
+      } catch (error) {
+        console.error("Failed to sync favorite state:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     syncFavoriteState();
@@ -47,7 +58,7 @@ const FeatureCard = ({ movie, schedule }) => {
     return () => {
       window.removeEventListener("favorites:changed", syncFavoriteState);
     };
-  }, [movieId]);
+  }, [movieId, isSignedIn]);
 
   if (!movie) return null;
 
@@ -65,10 +76,11 @@ const FeatureCard = ({ movie, schedule }) => {
   };
   const showTimeLabel = formatShowTime(schedule?.dateTime);
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = async () => {
     if (!movieId) return;
 
-    const result = toggleFavoriteShow(movieId);
+    const tokenFn = isSignedIn ? getToken : null;
+    const result = await toggleFavoriteShow(movieId, tokenFn);
     setIsFavorite(result.isFavorite);
 
     toast.success(
@@ -97,11 +109,12 @@ const FeatureCard = ({ movie, schedule }) => {
         <button
           type="button"
           onClick={handleFavoriteToggle}
+          disabled={isLoading}
           className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur transition duration-300 ${
             isFavorite
               ? "border-red-400/60 bg-red-500/25 text-red-200"
               : "border-white/10 bg-black/45 text-white/80 hover:border-red-500/40 hover:bg-red-500/20 hover:text-white"
-          }`}
+          } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${title} ${isFavorite ? "from" : "to"} favorites`}
           aria-pressed={isFavorite}
         >

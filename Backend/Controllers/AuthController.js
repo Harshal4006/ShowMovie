@@ -67,7 +67,7 @@ const UpdateUserRole = async (req, res) => {
 // Toggle favorite
 const ToggleFavorite = async (req, res) => {
   try {
-    const { movieId } = req.body;
+    const { movieId, tmdbId } = req.body;
     await ensureDbConnection();
     const clerkUserId = req.auth?.userId;
     if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
@@ -75,12 +75,27 @@ const ToggleFavorite = async (req, res) => {
     const user = await User.findOne({ clerkId: clerkUserId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const movieIdString = String(movieId || '');
+    // Find movie by tmdbId if provided, otherwise use movieId as ObjectId
+    let movieObjectId = null;
+    if (tmdbId) {
+      const movie = await require('../Models/Movie').findOne({ tmdbId: Number(tmdbId) });
+      if (movie) {
+        movieObjectId = movie._id;
+      }
+    } else if (movieId) {
+      movieObjectId = movieId;
+    }
+
+    if (!movieObjectId) {
+      return res.status(404).json({ message: 'Movie not found' });
+    }
+
+    const movieIdString = String(movieObjectId);
     const index = user.favorites.findIndex((id) => String(id) === movieIdString);
     if (index > -1) {
       user.favorites.splice(index, 1);
     } else {
-      user.favorites.push(movieId);
+      user.favorites.push(movieObjectId);
     }
 
     await user.save();
@@ -90,4 +105,23 @@ const ToggleFavorite = async (req, res) => {
   }
 };
 
-module.exports = { SyncUser, GetCurrentUser, UpdateUserRole, ToggleFavorite };
+// Get user favorites
+const GetUserFavorites = async (req, res) => {
+  try {
+    await ensureDbConnection();
+    const clerkUserId = req.auth?.userId;
+    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findOne({ clerkId: clerkUserId }).populate({
+      path: 'favorites',
+      select: 'tmdbId title posterUrl backdropUrl overview releaseDate runtime rating language'
+    });
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ favorites: user.favorites });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { SyncUser, GetCurrentUser, UpdateUserRole, ToggleFavorite, GetUserFavorites };

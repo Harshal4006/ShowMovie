@@ -1,26 +1,46 @@
 import React, { useEffect, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
-import { getFavoriteIds } from "../../lib/favorites.js";
+import { getFavoriteIds, fetchBackendFavorites } from "../../lib/favorites.js";
 import { getMovies } from "../../services/api";
 
 const Favorite = () => {
+  const { getToken, isSignedIn } = useUser();
   const [favoriteShows, setFavoriteShows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const syncFavorites = () => {
-      const favoriteIds = new Set(getFavoriteIds());
       setIsLoading(true);
       setError(null);
 
       (async () => {
         try {
-          const data = await getMovies({ limit: 100 });
-          const movies = data?.movies || [];
-          const nextFavoriteShows = movies.filter((m) => favoriteIds.has(m.tmdbId));
-          setFavoriteShows(nextFavoriteShows);
+          let favoriteMovies = [];
+          let favoriteIds = [];
+
+          if (isSignedIn) {
+            const backendFavorites = await fetchBackendFavorites(getToken);
+            if (backendFavorites.length > 0) {
+              favoriteMovies = backendFavorites;
+              favoriteIds = backendFavorites.map((m) => String(m.tmdbId));
+            }
+          }
+
+          if (favoriteIds.length === 0) {
+            const tokenFn = isSignedIn ? getToken : null;
+            favoriteIds = await getFavoriteIds(tokenFn);
+          }
+
+          if (favoriteIds.length > 0 && favoriteMovies.length === 0) {
+            const data = await getMovies({ limit: 100 });
+            const movies = data?.movies || [];
+            favoriteMovies = movies.filter((m) => favoriteIds.includes(String(m.tmdbId)));
+          }
+
+          setFavoriteShows(favoriteMovies);
         } catch (e) {
           setError(e?.message || "Failed to load favorites");
           setFavoriteShows([]);
@@ -36,7 +56,7 @@ const Favorite = () => {
     return () => {
       window.removeEventListener("favorites:changed", syncFavorites);
     };
-  }, []);
+  }, [isSignedIn]);
 
   return (
     <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">

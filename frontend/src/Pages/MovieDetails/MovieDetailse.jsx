@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import { useUser } from "@clerk/clerk-react";
 import { getMovieById, getRelatedMovies, getShowsByMovie } from "../../services/api";
-import { isFavoriteShow, toggleFavoriteShow } from "../../lib/favorites.js";
+import { getFavoriteIds, toggleFavoriteShow } from "../../lib/favorites.js";
 import { MovieDetailsSkeleton } from "../../Components/Skeletons";
 
 import MovieHeader from "../../Components/MovieDetailse/MovieHeader.jsx";
@@ -33,6 +34,7 @@ const formatTimeLabel = (iso) => {
 
 const MovieDetailse = () => {
   const { id } = useParams();
+  const { getToken, isSignedIn } = useUser();
   const [movie, setMovie] = useState(null);
   const [relatedMovies, setRelatedMovies] = useState([]);
   const [showDates, setShowDates] = useState([]);
@@ -106,11 +108,15 @@ const MovieDetailse = () => {
   // Sync favorite status
   useEffect(() => {
     if (!movie?.tmdbId) return;
-    const syncFavoriteState = () => setFavorite(isFavoriteShow(movie.tmdbId));
+    const syncFavoriteState = async () => {
+      const tokenFn = isSignedIn ? getToken : null;
+      const favorites = await getFavoriteIds(tokenFn);
+      setFavorite(favorites.includes(String(movie.tmdbId)));
+    };
     syncFavoriteState();
     window.addEventListener("favorites:changed", syncFavoriteState);
     return () => window.removeEventListener("favorites:changed", syncFavoriteState);
-  }, [movie]);
+  }, [movie, isSignedIn]);
 
   const handleTrailerClick = () => {
     if (movie?.trailerKey) {
@@ -118,9 +124,10 @@ const MovieDetailse = () => {
     }
   };
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = async () => {
     if (!movie?.tmdbId) return;
-    const result = toggleFavoriteShow(movie.tmdbId);
+    const tokenFn = isSignedIn ? getToken : null;
+    const result = await toggleFavoriteShow(movie.tmdbId, tokenFn);
     setFavorite(result.isFavorite);
     toast.success(result.isFavorite ? `${movie.title} added to favorites` : `${movie.title} removed from favorites`);
   };

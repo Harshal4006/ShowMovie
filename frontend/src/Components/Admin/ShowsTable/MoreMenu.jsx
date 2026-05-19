@@ -1,14 +1,14 @@
 import { Eye, Edit2, Copy, Trash2 } from "lucide-react";
 
-const MoreMenu = ({ show, onView, onEdit, onDuplicate, onDelete }) => {
-  if (!show) return null;
+const MoreMenu = ({ show, anchorRect, onView, onEdit, onDuplicate, onDelete }) => {
+  if (!show || !anchorRect) return null;
 
   return (
     <div
       className="fixed z-50 w-48 rounded-xl border border-gray-800 bg-gray-950 shadow-xl overflow-hidden"
       style={{
-        top: show.anchorRect.bottom + 8,
-        left: show.anchorRect.right - 192,
+        top: anchorRect.bottom + 8,
+        left: anchorRect.right - 192,
       }}
     >
       <button

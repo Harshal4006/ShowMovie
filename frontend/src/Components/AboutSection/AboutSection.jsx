@@ -32,7 +32,7 @@ const AboutSection = () => {
   return (
     <section
       data-reveal
-      className="relative w-full px-4 pb-14 pt-4 sm:px-6 sm:pb-16 sm:pt-6 lg:px-10 xl:px-16"
+      className="relative w-full px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-10 xl:px-16"
     >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">

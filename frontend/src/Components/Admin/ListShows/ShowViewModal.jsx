@@ -6,7 +6,7 @@ const ShowViewModal = ({ show, onClose, onEdit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-gray-800 bg-gray-950 shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] rounded-2xl border border-gray-800 bg-gray-950 shadow-2xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-5 border-b border-gray-800">
           <div>
             <h3 className="text-xl font-bold">{show.movieName}</h3>
@@ -19,7 +19,7 @@ const ShowViewModal = ({ show, onClose, onEdit }) => {
             <X size={20} />
           </button>
         </div>
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div className="sm:col-span-1">
               <div className="aspect-[2/3] rounded-xl overflow-hidden bg-gray-900">

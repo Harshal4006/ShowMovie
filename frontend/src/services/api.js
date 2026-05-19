@@ -30,8 +30,9 @@ export const createBooking = (token, bookingData) =>
 export const syncUser = (token, userData) =>
   request(`/auth/sync`, { method: "POST", token, body: userData });
 export const getMe = (token) => request(`/auth/me`, { token });
-export const toggleFavorite = (token, movieId) =>
-  request(`/auth/favorites`, { method: "POST", token, body: { movieId } });
+export const toggleFavorite = (token, tmdbId) =>
+  request(`/auth/favorites`, { method: "POST", token, body: { tmdbId } });
+export const getUserFavorites = (token) => request(`/auth/favorites`, { token });
 
 // TMDB Search (Admin)
 export const searchTmdbMovies = (query, page = 1) =>
@@ -98,6 +99,7 @@ export default {
   syncUser,
   getMe,
   toggleFavorite,
+  getUserFavorites,
   searchTmdbMovies,
   getTmdbMovieDetails,
   getTmdbNowPlaying,

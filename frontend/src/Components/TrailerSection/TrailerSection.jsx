@@ -70,12 +70,12 @@ const TrailerSection = () => {
   if (trailers.length === 0) return null;
 
   return (
-    <section data-reveal className="relative w-full overflow-hidden px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6 lg:overflow-visible lg:px-10 xl:px-16">
+    <section data-reveal className="relative w-full overflow-hidden px-4 pb-8 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:overflow-visible lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">
         <h2 className="text-center text-3xl font-bold leading-tight text-gray-100 sm:text-4xl">
           Trending Trailers
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-7 text-gray-400 sm:mt-4 sm:text-base">
+        <p className="mx-auto mt-2 max-w-2xl text-center text-sm leading-7 text-gray-400 sm:mt-3 sm:text-base">
           Watch the latest previews and get a quick taste of the biggest stories heading to the big screen.
         </p>
 

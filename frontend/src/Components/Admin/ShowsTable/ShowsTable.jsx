@@ -123,6 +123,7 @@ const ShowsTable = ({
       {openMore && (
         <MoreMenu
           show={shows.find((s) => s.id === openMore.id)}
+          anchorRect={openMore.anchorRect}
           onView={onView}
           onEdit={onEdit}
           onDuplicate={onDuplicate}

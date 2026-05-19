@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import FeatureCard from "./FeatureCard.jsx";
+import { MovieGridSkeleton } from "../Skeletons";
 import { getNowShowingMovies } from "../../services/api";
 
 const FeatureSection = () => {
@@ -32,11 +33,7 @@ const FeatureSection = () => {
           <h2 className="text-center text-3xl font-bold leading-tight text-gray-100 sm:text-4xl">
             Featured Movies
           </h2>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl bg-white/5 h-80"></div>
-            ))}
-          </div>
+          <MovieGridSkeleton count={8} />
         </div>
       </section>
     );

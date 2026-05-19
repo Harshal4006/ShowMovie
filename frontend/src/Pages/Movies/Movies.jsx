@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getMovies } from "../../services/api";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
+import { MovieGridSkeleton } from "../../Components/Skeletons";
 import { ChevronDown } from "lucide-react";
 
 const Movies = () => {

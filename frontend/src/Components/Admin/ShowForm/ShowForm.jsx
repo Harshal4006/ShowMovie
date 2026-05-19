@@ -7,7 +7,19 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
   const [tmdbMovies, setTmdbMovies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedMovie, setSelectedMovie] = useState(() => {
+    if (isEditing && initialData.movieId) {
+      return {
+        id: initialData.movieId,
+        tmdbId: initialData.movieId,
+        title: initialData.movieName,
+        poster_path: initialData.poster,
+        backdrop_path: initialData.poster2,
+        overview: initialData.description,
+      };
+    }
+    return null;
+  });
   const [activeTab, setActiveTab] = useState("now-playing");
 
   const [formData, setFormData] = useState({
@@ -97,7 +109,7 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.movieName.trim()) newErrors.movieName = "Movie name is required";
-    if (!formData.movieId) newErrors.movieId = "Please select the movie from TMDB search";
+    if (!isEditing && !formData.movieId) newErrors.movieId = "Please select the movie from TMDB search";
     if (!formData.theater) newErrors.theater = "Theater is required";
 
     const invalidShowtimes = formData.showtimes.filter(st => !st.date || !st.time);
