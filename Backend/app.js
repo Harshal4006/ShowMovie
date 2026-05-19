@@ -86,8 +86,7 @@ if (process.env.NODE_ENV !== 'production') {
 // Mount Inngest handler
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
-// Mount TMDB routes (public proxy - used for seeding/admin import)
-// NOTE: Frontend accesses TMDB via /api/admin/tmdb/* which is in AdminRoutes
+// Mount TMDB routes
 const TMDBRoutes = require('./Routes/TMDBRoutes');
 app.use('/api/tmdb', TMDBRoutes);
 

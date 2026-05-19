@@ -1,10 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import useIsAdmin from '../hooks/useIsAdmin';
 import PageLoader from './PageLoader/PageLoader';
-import UnauthorizedPage from './AdminRoute/UnauthorizedPage';
 
 const AdminRoute = ({ children }) => {
-  const { isAdmin, isLoading, error, isSignedIn } = useIsAdmin();
+  const { isAdmin, isLoading, isSignedIn } = useIsAdmin();
 
   if (isLoading) {
     return <PageLoader />;
@@ -14,8 +13,8 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  if (error || !isAdmin) {
-    return <UnauthorizedPage />;
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return children;

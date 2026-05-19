@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth, useUser } from '@clerk/clerk-react';
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/clerk-react';
 
 const useIsAdmin = () => {
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
-  const { user } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const checkAdminStatus = useCallback(async () => {
-    if (!clerkLoaded) return;
+  useEffect(() => {
+    if (!isLoaded) return;
 
     if (!isSignedIn || !user) {
       setIsAdmin(false);
@@ -16,20 +15,12 @@ const useIsAdmin = () => {
       return;
     }
 
-    const clerkRole = user.publicMetadata?.role;
-    if (clerkRole === 'admin') {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
+    const role = user.publicMetadata?.role;
+    setIsAdmin(role === 'admin');
     setIsLoading(false);
-  }, [isSignedIn, clerkLoaded, user]);
+  }, [isLoaded, isSignedIn, user]);
 
-  useEffect(() => {
-    checkAdminStatus();
-  }, [checkAdminStatus]);
-
-  return { isAdmin, isLoading, error: null, isSignedIn, checkAdminStatus };
+  return { isAdmin, isLoading, isSignedIn };
 };
 
 export default useIsAdmin;
