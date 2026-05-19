@@ -81,39 +81,39 @@ if (process.env.NODE_ENV !== 'production') {
       });
     }
   });
-
-  // Debug user status endpoint
-  app.get('/api/debug/user', require('@clerk/express').requireAuth(), async (req, res) => {
-    try {
-      if (mongoose.connection.readyState !== 1) {
-        await ensureDbConnection();
-      }
-      const { clerkClient } = require('@clerk/clerk-sdk-node');
-      const User = require('./Models/User');
-
-      const clerkUserId = req.auth.userId;
-
-      let clerkRole = null;
-      try {
-        const clerkUser = await clerkClient.users.getUser(clerkUserId);
-        clerkRole = clerkUser?.publicMetadata?.role;
-      } catch {
-        // ignore
-      }
-
-      const dbUser = await User.findOne({ clerkId: clerkUserId });
-
-      res.json({
-        clerkUserId,
-        clerkMetadataRole: clerkRole,
-        dbUser: dbUser ? { role: dbUser.role, name: dbUser.name, email: dbUser.email } : null,
-        wouldPassAdmin: clerkRole === 'admin' || dbUser?.role === 'admin'
-      });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
 }
+
+// Debug user status endpoint (always available for debugging)
+app.get('/api/debug/user', require('@clerk/express').requireAuth(), async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await ensureDbConnection();
+    }
+    const { clerkClient } = require('@clerk/clerk-sdk-node');
+    const User = require('./Models/User');
+
+    const clerkUserId = req.auth.userId;
+
+    let clerkRole = null;
+    try {
+      const clerkUser = await clerkClient.users.getUser(clerkUserId);
+      clerkRole = clerkUser?.publicMetadata?.role;
+    } catch {
+      // ignore
+    }
+
+    const dbUser = await User.findOne({ clerkId: clerkUserId });
+
+    res.json({
+      clerkUserId,
+      clerkMetadataRole: clerkRole,
+      dbUser: dbUser ? { role: dbUser.role, name: dbUser.name, email: dbUser.email } : null,
+      wouldPassAdmin: clerkRole === 'admin' || dbUser?.role === 'admin'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Mount Inngest handler
 app.use('/api/inngest', serve({ client: inngest, functions }));
