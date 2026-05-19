@@ -16,6 +16,15 @@ const {
 
 // User routes (auth required)
 router.get('/me', VerifyToken, GetCurrentUser);
+
+// Debug - remove this after testing
+router.get('/debug', VerifyToken, async (req, res) => {
+  res.json({
+    auth: req.auth,
+    message: 'Auth working! If you see this, Clerk is configured correctly.'
+  });
+});
+
 router.put('/me', VerifyToken, UpdateUserProfile);
 router.post('/favorites', VerifyToken, ToggleFavorite);
 router.get('/favorites', VerifyToken, GetUserFavorites);
