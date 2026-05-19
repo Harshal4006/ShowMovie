@@ -59,7 +59,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Setup admin endpoint - visit this once to make yourself admin
+// Setup admin endpoint - called by frontend with Clerk token
 app.get('/api/setup-admin', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
@@ -71,9 +71,8 @@ app.get('/api/setup-admin', async (req, res) => {
     const clerkUserId = req.auth?.userId;
     if (!clerkUserId) {
       return res.json({
-        step: 1,
-        message: 'Visit this URL while logged in (Clerk auth header present). Current state: no auth token.',
-        instruction: 'Make sure you are logged in via the frontend, then the next visit will auto-detect you.'
+        error: 'no_auth',
+        message: 'No auth. Make sure you are logged in via the frontend first.'
       });
     }
 
@@ -82,11 +81,7 @@ app.get('/api/setup-admin', async (req, res) => {
       const cUser = await clerkClient.users.getUser(clerkUserId);
       clerkRole = cUser?.publicMetadata?.role;
     } catch (clerkErr) {
-      return res.json({
-        clerkUserId,
-        clerkRoleLookupError: clerkErr.message,
-        message: 'Clerk SDK lookup failed but MongoDB sync will proceed.'
-      });
+      return res.json({ clerkUserId, clerkRoleLookupError: clerkErr.message });
     }
 
     let user = await User.findOne({ clerkId: clerkUserId });
@@ -94,7 +89,7 @@ app.get('/api/setup-admin', async (req, res) => {
     if (!user) {
       user = await User.create({ clerkId: clerkUserId, name: '', email: '', role: clerkRole === 'admin' ? 'admin' : 'user' });
     } else {
-      user.role = clerkRole === 'admin' ? 'admin' : user.role;
+      if (clerkRole === 'admin') user.role = 'admin';
       await user.save();
     }
 
@@ -104,11 +99,11 @@ app.get('/api/setup-admin', async (req, res) => {
       dbUserRole: user.role,
       isAdmin: user.role === 'admin',
       message: user.role === 'admin'
-        ? 'SUCCESS! You are now an admin. Log out and log back in to see changes.'
-        : 'Not admin. Clerk metadata role is: ' + clerkRole + '. Set role in Clerk dashboard to admin.'
+        ? 'SUCCESS! Refresh the page to access admin dashboard.'
+        : 'Not admin. Clerk metadata role is: ' + clerkRole + '. Set role to admin in Clerk dashboard first.'
     });
   } catch (err) {
-    res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: err.message });
   }
 });
 
