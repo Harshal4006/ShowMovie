@@ -3,27 +3,18 @@ import { useMemo } from "react";
 import CountdownTimer from "../CountdownTimer/CountdownTimer.jsx";
 
 const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
-  if (!Array.isArray(showDates) || showDates.length === 0) {
-    return (
-      <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-gray-200 backdrop-blur-sm">
-        <h2 className="mb-2 text-2xl font-semibold text-white">Showtimes</h2>
-        <p className="text-sm text-gray-400">No active shows available for this movie right now.</p>
-      </div>
-    );
-  }
-
   const nextShowTime = useMemo(() => {
-    if (!selectedDate) return null;
-    
+    if (!selectedDate || !showDates) return null;
+
     const selectedShow = showDates.find((d) => d.date === selectedDate);
     if (!selectedShow || !selectedShow.timeSlots || selectedShow.timeSlots.length === 0) return null;
-    
+
     const now = new Date();
     const today = now.toISOString().split('T')[0];
-    
+
     if (selectedDate === today) {
       const currentMs = now.getTime();
-      
+
       for (const slot of selectedShow.timeSlots) {
         if (!slot || !slot.showId) continue;
         const slotDate = new Date(slot.showDateTime || selectedDate);
@@ -32,13 +23,22 @@ const ShowTimes = ({ showDates, selectedDate, setSelectedDate, movie }) => {
         }
       }
     }
-    
-    return selectedShow.timeSlots[0]?.showDateTime 
+
+    return selectedShow.timeSlots[0]?.showDateTime
       ? new Date(selectedShow.timeSlots[0].showDateTime)
       : null;
   }, [selectedDate, showDates]);
 
   const movieId = movie?._id || movie?.id || movie?.tmdbId;
+
+  if (!Array.isArray(showDates) || showDates.length === 0) {
+    return (
+      <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-gray-200 backdrop-blur-sm">
+        <h2 className="mb-2 text-2xl font-semibold text-white">Showtimes</h2>
+        <p className="text-sm text-gray-400">No active shows available for this movie right now.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">

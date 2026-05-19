@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
+import { getMovieById } from "../../services/api";
 import { getFavoriteIds, fetchBackendFavorites } from "../../lib/favorites.js";
-import { getMovies } from "../../services/api";
 
 const Favorite = () => {
   const { getToken, isSignedIn } = useUser();
@@ -18,30 +18,36 @@ const Favorite = () => {
 
       (async () => {
         try {
-          let favoriteMovies = [];
-          let favoriteIds = [];
-
           if (isSignedIn) {
             const backendFavorites = await fetchBackendFavorites(getToken);
             if (backendFavorites.length > 0) {
-              favoriteMovies = backendFavorites;
-              favoriteIds = backendFavorites.map((m) => String(m.tmdbId));
+              setFavoriteShows(backendFavorites);
+              setIsLoading(false);
+              return;
             }
           }
 
-          if (favoriteIds.length === 0) {
-            const tokenFn = isSignedIn ? getToken : null;
-            favoriteIds = await getFavoriteIds(tokenFn);
+          const localIds = await getFavoriteIds(null);
+          if (localIds.length === 0) {
+            setFavoriteShows([]);
+            setIsLoading(false);
+            return;
           }
 
-          if (favoriteIds.length > 0 && favoriteMovies.length === 0) {
-            const data = await getMovies({ limit: 100 });
-            const movies = data?.movies || [];
-            favoriteMovies = movies.filter((m) => favoriteIds.includes(String(m.tmdbId)));
+          const favoriteMovies = [];
+          for (const tmdbId of localIds) {
+            try {
+              const movie = await getMovieById(String(tmdbId));
+              if (movie && !movie.message) {
+                favoriteMovies.push(movie);
+              }
+            } catch {
+              // Movie may not exist in DB - skip
+            }
           }
-
           setFavoriteShows(favoriteMovies);
         } catch (e) {
+          console.error("Failed to load favorites:", e);
           setError(e?.message || "Failed to load favorites");
           setFavoriteShows([]);
         } finally {
@@ -51,12 +57,13 @@ const Favorite = () => {
     };
 
     syncFavorites();
-    window.addEventListener("favorites:changed", syncFavorites);
+    const handleChange = () => syncFavorites();
+    window.addEventListener("favorites:changed", handleChange);
 
     return () => {
-      window.removeEventListener("favorites:changed", syncFavorites);
+      window.removeEventListener("favorites:changed", handleChange);
     };
-  }, [isSignedIn]);
+  }, [isSignedIn, getToken]);
 
   return (
     <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">

@@ -126,6 +126,12 @@ const MovieDetailse = () => {
 
   const handleFavoriteToggle = async () => {
     if (!movie?.tmdbId) return;
+    
+    if (!isSignedIn) {
+      toast.error("Please login to add favorites");
+      return;
+    }
+    
     const tokenFn = isSignedIn ? getToken : null;
     const result = await toggleFavoriteShow(movie.tmdbId, tokenFn);
     setFavorite(result.isFavorite);

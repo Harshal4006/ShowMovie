@@ -160,11 +160,7 @@ const Movies = () => {
         </div>
 
         {loading ? (
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl bg-white/5 h-96"></div>
-            ))}
-          </div>
+          <MovieGridSkeleton count={8} />
         ) : movies.length > 0 ? (
           <>
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">

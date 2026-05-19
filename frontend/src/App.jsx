@@ -3,6 +3,8 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import ToastProvider from "./Components/ToastProvider/ToastProvider";
 import PageLoader from "./Components/PageLoader/PageLoader.jsx";
 import ErrorBoundary from "./Components/ErrorBoundary/ErrorBoundary.jsx";
+import AdminRoute from "./Components/AdminRoute.jsx";
+import useUserSync from "./hooks/useUserSync";
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import("./Pages/Home/Home.jsx"));
@@ -28,6 +30,8 @@ const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
 
+  useUserSync();
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#050505] text-white">
       <AnimatedBackground />
@@ -46,12 +50,48 @@ const App = () => {
               <Route path="/movies/:id/:date" element={<SeatLayout />} />
               <Route path="/my-booking" element={<MyBooking />} />
               <Route path="/favorite" element={<Favorite />} />
-                {/* Admin Routes */}
-                <Route path="/admin" element={<Dashboard />} />
-                <Route path="/admin/add-show" element={<AddShow />} />
-                <Route path="/admin/list-shows" element={<ListShows />} />
-                <Route path="/admin/list-bookings" element={<ListBookings />} />
-                <Route path="/admin/list-movies" element={<ListMovies />} />
+              
+              {/* Admin Routes - Protected */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <Dashboard />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/add-show"
+                element={
+                  <AdminRoute>
+                    <AddShow />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/list-shows"
+                element={
+                  <AdminRoute>
+                    <ListShows />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/list-bookings"
+                element={
+                  <AdminRoute>
+                    <ListBookings />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/list-movies"
+                element={
+                  <AdminRoute>
+                    <ListMovies />
+                  </AdminRoute>
+                }
+              />
             </Routes>
           </ErrorBoundary>
         </Suspense>

@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import ShowsTable from "../../Components/Admin/ShowsTable/ShowsTable";
 import ShowsHeader from "../../Components/Admin/ListShows/ShowsHeader";
@@ -11,7 +12,7 @@ import ShowsFooter from "../../Components/Admin/ListShows/ShowsFooter";
 import ShowViewModal from "../../Components/Admin/ListShows/ShowViewModal";
 import ShowEditModal from "../../Components/Admin/ListShows/ShowEditModal";
 import { adminShowsQuickActions, adminShowsRecentActivity } from "../../assets/assets";
-import { getAdminShows, updateShow, deleteShow } from "../../services/api";
+import { getAdminShows, deleteShow } from "../../services/api";
 
 const ListShows = () => {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ const ListShows = () => {
           };
         });
         setShows(mapped);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load shows");
       } finally {
         setLoading(false);
@@ -103,7 +104,7 @@ const ListShows = () => {
       setShows((prev) => prev.filter((s) => (s._id || s.id) !== id));
       setSelectedShowIds((prev) => prev.filter((x) => x !== id));
       toast.success("Show deleted");
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete show");
     }
   };
@@ -222,19 +223,25 @@ const ListShows = () => {
           />
 
           <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden mb-6 lg:mb-8">
-            <ShowsTable
-              shows={filteredShows}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-              selectedIds={selectedShowIds}
-              onSelectedIdsChange={(next) => {
-                setSelectedShowIds(next);
-                if (next.length === 0) setBulkOpen(false);
-              }}
-              onBulkDelete={handleBulkDelete}
-              onDuplicate={handleDuplicate}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-red-500" />
+              </div>
+            ) : (
+              <ShowsTable
+                shows={filteredShows}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onView={handleView}
+                selectedIds={selectedShowIds}
+                onSelectedIdsChange={(next) => {
+                  setSelectedShowIds(next);
+                  if (next.length === 0) setBulkOpen(false);
+                }}
+                onBulkDelete={handleBulkDelete}
+                onDuplicate={handleDuplicate}
+              />
+            )}
           </div>
 
           <ShowsFooter quickActions={adminShowsQuickActions} recentActivity={adminShowsRecentActivity} />

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { IndianRupee } from "lucide-react";
+import { IndianRupee, Loader2 } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import BookingsTable from "../../Components/Admin/BookingsTable/BookingsTable";
@@ -9,6 +9,7 @@ import BookingsActionBar from "../../Components/Admin/ListBookings/BookingsActio
 import BookingsInsights from "../../Components/Admin/ListBookings/BookingsInsights";
 import BookingsFooter from "../../Components/Admin/ListBookings/BookingsFooter";
 import BookingModal from "../../Components/Admin/ListBookings/BookingModal";
+import { TableRowSkeleton } from "../../Components/Skeletons";
 import { adminBookingsHelpActions, adminBookingsRecentNotifications } from "../../assets/assets";
 import { getAdminBookings } from "../../services/api";
 
@@ -135,11 +136,17 @@ const ListBookings = () => {
           />
 
           <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden mb-6 lg:mb-8">
-            <BookingsTable
-              bookings={filteredBookings}
-              onView={handleView}
-              onUpdateStatus={handleUpdateStatus}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-red-500" />
+              </div>
+            ) : (
+              <BookingsTable
+                bookings={filteredBookings}
+                onView={handleView}
+                onUpdateStatus={handleUpdateStatus}
+              />
+            )}
           </div>
 
           <BookingsInsights />

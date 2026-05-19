@@ -81,12 +81,45 @@ if (process.env.NODE_ENV !== 'production') {
       });
     }
   });
+
+  // Debug user status endpoint
+  app.get('/api/debug/user', require('@clerk/express').requireAuth(), async (req, res) => {
+    try {
+      if (mongoose.connection.readyState !== 1) {
+        await ensureDbConnection();
+      }
+      const { clerkClient } = require('@clerk/clerk-sdk-node');
+      const User = require('./Models/User');
+
+      const clerkUserId = req.auth.userId;
+
+      let clerkRole = null;
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkUserId);
+        clerkRole = clerkUser?.publicMetadata?.role;
+      } catch {
+        // ignore
+      }
+
+      const dbUser = await User.findOne({ clerkId: clerkUserId });
+
+      res.json({
+        clerkUserId,
+        clerkMetadataRole: clerkRole,
+        dbUser: dbUser ? { role: dbUser.role, name: dbUser.name, email: dbUser.email } : null,
+        wouldPassAdmin: clerkRole === 'admin' || dbUser?.role === 'admin'
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 }
 
 // Mount Inngest handler
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
-// Mount TMDB routes
+// Mount TMDB routes (public proxy - used for seeding/admin import)
+// NOTE: Frontend accesses TMDB via /api/admin/tmdb/* which is in AdminRoutes
 const TMDBRoutes = require('./Routes/TMDBRoutes');
 app.use('/api/tmdb', TMDBRoutes);
 
@@ -105,6 +138,10 @@ app.use('/api/bookings', BookingRoutes);
 // Mount Auth routes
 const AuthRoutes = require('./Routes/AuthRoutes');
 app.use('/api/auth', AuthRoutes);
+
+// Mount User routes
+const UserRoutes = require('./Routes/UserRoutes');
+app.use('/api/users', UserRoutes);
 
 // Mount Notification routes
 const NotificationRoutes = require('./Routes/NotificationRoutes');

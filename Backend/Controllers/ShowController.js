@@ -65,4 +65,20 @@ const GetAllShows = async (req, res) => {
   }
 };
 
-module.exports = { GetShowsByMovie, GetShowById, GetAllShows };
+const GetOccupiedSeats = async (req, res) => {
+  try {
+    await ensureDbConnection();
+    const show = await Show.findById(req.params.id).select('occupiedSeats');
+    if (!show) return res.status(404).json({ message: 'Show not found' });
+    
+    const occupiedSeats = show.occupiedSeats 
+      ? Object.keys(show.occupiedSeats) 
+      : [];
+    
+    res.json({ occupiedSeats });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { GetShowsByMovie, GetShowById, GetAllShows, GetOccupiedSeats };

@@ -23,8 +23,8 @@ const ListMovies = () => {
       }
       const data = await getAdminMovies(token);
       setMovies(data.movies || []);
-    } catch (error) {
-      console.error("Failed to load movies:", error);
+    } catch (err) {
+      console.error("Failed to load movies:", err);
       toast.error("Failed to load movies");
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ const ListMovies = () => {
       await deleteMovie(token, id);
       setMovies((prev) => prev.filter((m) => m._id !== id));
       toast.success("Movie deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete movie");
     }
   };

@@ -20,6 +20,7 @@ export const getShows = (params = {}) => {
   return request(`/shows?${query}`);
 };
 export const getShowsByMovie = (movieId, options = {}) => request(`/shows/movie/${movieId}`, options);
+export const getOccupiedSeats = (showId) => request(`/shows/${showId}/occupied-seats`);
 
 // Bookings (auth)
 export const getMyBookings = (token) => request(`/bookings/my-bookings`, { token });
@@ -29,10 +30,26 @@ export const createBooking = (token, bookingData) =>
 // Auth (Clerk)
 export const syncUser = (token, userData) =>
   request(`/auth/sync`, { method: "POST", token, body: userData });
-export const getMe = (token) => request(`/auth/me`, { token });
+
+// User (auth)
+export const getMe = (token) => request(`/users/me`, { token });
+export const updateUserProfile = (token, profileData) =>
+  request(`/users/me`, { method: "PUT", token, body: profileData });
 export const toggleFavorite = (token, tmdbId) =>
-  request(`/auth/favorites`, { method: "POST", token, body: { tmdbId } });
-export const getUserFavorites = (token) => request(`/auth/favorites`, { token });
+  request(`/users/favorites`, { method: "POST", token, body: { tmdbId } });
+export const getUserFavorites = (token) => request(`/users/favorites`, { token });
+
+// Admin Users (auth)
+export const getAllUsers = (token, params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return request(`/users?${query}`, { token });
+};
+export const getUserById = (token, id) => request(`/users/${id}`, { token });
+export const updateUserRole = (token, id, role) =>
+  request(`/users/${id}/role`, { method: "PUT", token, body: { role } });
+export const deleteUser = (token, id) =>
+  request(`/users/${id}`, { method: "DELETE", token });
+export const getUserStats = (token, id) => request(`/users/${id}/stats`, { token });
 
 // TMDB Search (Admin)
 export const searchTmdbMovies = (query, page = 1) =>
@@ -94,12 +111,19 @@ export default {
   getShows,
   getShowById,
   getShowsByMovie,
+  getOccupiedSeats,
   getMyBookings,
   createBooking,
   syncUser,
   getMe,
+  updateUserProfile,
   toggleFavorite,
   getUserFavorites,
+  getAllUsers,
+  getUserById,
+  updateUserRole,
+  deleteUser,
+  getUserStats,
   searchTmdbMovies,
   getTmdbMovieDetails,
   getTmdbNowPlaying,

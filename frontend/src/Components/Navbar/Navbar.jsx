@@ -1,16 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, X, Menu, TicketPlus, Check, Trash2, BellOff, Loader2 } from "lucide-react";
+import { Bell, X, Menu, TicketPlus, Check, Trash2, BellOff, Loader2, LayoutDashboard } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
 import "./Navbar.css";
 import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification, clearAllNotifications } from "../../services/api";
-
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
+import useIsAdmin from "../../hooks/useIsAdmin";
 
 const NavItem = ({ text, to }) => (
   <Link
@@ -95,6 +89,7 @@ const Navbar = () => {
   const notificationRef = useRef(null);
   const navigate = useNavigate();
   const { getToken, isSignedIn } = useUser();
+  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
 
   const fetchNotifications = async () => {
     if (!isSignedIn) return;
@@ -106,7 +101,7 @@ const Navbar = () => {
       const data = await getNotifications(token);
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
-    } catch (err) {
+    } catch {
       setError("Failed to load notifications");
     } finally {
       setIsLoading(false);
@@ -309,6 +304,13 @@ const Navbar = () => {
                 labelIcon={<TicketPlus size={16} />}
                 onClick={() => navigate("/my-booking")}
               />
+              {!isAdminLoading && isAdmin && (
+                <UserButton.Action
+                  label="Admin Dashboard"
+                  labelIcon={<LayoutDashboard size={16} />}
+                  onClick={() => navigate("/admin")}
+                />
+              )}
             </UserButton.MenuItems>
           </UserButton>
         </SignedIn>

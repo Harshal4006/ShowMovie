@@ -12,6 +12,7 @@ const FeatureCard = ({ movie, schedule }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const movieId = movie?._id || movie?.id || movie?.tmdbId;
+  const favoriteId = movie?.tmdbId || movie?.id || movie?._id;
   const title = movie?.title || movie?.title;
 
   const normalizeTmdbImage = (value, size) => {
@@ -37,14 +38,14 @@ const FeatureCard = ({ movie, schedule }) => {
   const genres = movie?.genres;
 
   useEffect(() => {
-    if (!movieId) return;
+    if (!favoriteId) return;
 
     const syncFavoriteState = async () => {
       setIsLoading(true);
       try {
         const tokenFn = isSignedIn ? getToken : null;
         const favorites = await getFavoriteIds(tokenFn);
-        setIsFavorite(favorites.includes(String(movieId)));
+        setIsFavorite(favorites.includes(String(favoriteId)));
       } catch (error) {
         console.error("Failed to sync favorite state:", error);
       } finally {
@@ -58,7 +59,7 @@ const FeatureCard = ({ movie, schedule }) => {
     return () => {
       window.removeEventListener("favorites:changed", syncFavoriteState);
     };
-  }, [movieId, isSignedIn]);
+  }, [favoriteId, isSignedIn]);
 
   if (!movie) return null;
 
@@ -77,10 +78,15 @@ const FeatureCard = ({ movie, schedule }) => {
   const showTimeLabel = formatShowTime(schedule?.dateTime);
 
   const handleFavoriteToggle = async () => {
-    if (!movieId) return;
+    if (!favoriteId) return;
+
+    if (!isSignedIn) {
+      toast.error("Please login to add favorites");
+      return;
+    }
 
     const tokenFn = isSignedIn ? getToken : null;
-    const result = await toggleFavoriteShow(movieId, tokenFn);
+    const result = await toggleFavoriteShow(favoriteId, tokenFn);
     setIsFavorite(result.isFavorite);
 
     toast.success(
@@ -117,6 +123,7 @@ const FeatureCard = ({ movie, schedule }) => {
           } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${title} ${isFavorite ? "from" : "to"} favorites`}
           aria-pressed={isFavorite}
+          data-favorite-id={favoriteId}
         >
           <Heart className={`h-4 w-4 transition duration-300 ${isFavorite ? "fill-current" : ""}`} />
         </button>
