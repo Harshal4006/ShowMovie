@@ -1,3 +1,4 @@
+const { getAuth } = require('@clerk/express');
 const Notification = require('../Models/Notification');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
@@ -5,15 +6,17 @@ const ensureDbConnection = require('../Utils/ensureDbConnection');
 const GetNotifications = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
     
-    console.log('[GetNotifications] Request received for user:', clerkUserId);
+    console.log('[GetNotifications] req.auth:', req.auth);
+    const { userId } = getAuth(req);
+    console.log('[GetNotifications] userId from getAuth:', userId);
     
-    if (!clerkUserId) {
+    if (!userId) {
+      console.log('[GetNotifications] No userId - returning 401');
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) {
       console.log('[GetNotifications] User not found in database');
       return res.status(404).json({ message: 'User not found' });
@@ -35,10 +38,10 @@ const GetNotifications = async (req, res) => {
 const MarkAsRead = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const notification = await Notification.findOne({ _id: req.params.id, user: user._id });
@@ -56,10 +59,10 @@ const MarkAsRead = async (req, res) => {
 const MarkAllAsRead = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     await Notification.updateMany({ user: user._id, isRead: false }, { isRead: true });
@@ -73,10 +76,10 @@ const MarkAllAsRead = async (req, res) => {
 const DeleteNotification = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const notification = await Notification.findOneAndDelete({ _id: req.params.id, user: user._id });
@@ -91,10 +94,10 @@ const DeleteNotification = async (req, res) => {
 const ClearAllNotifications = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     await Notification.deleteMany({ user: user._id });

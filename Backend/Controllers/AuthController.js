@@ -1,3 +1,4 @@
+const { getAuth } = require('@clerk/express');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { getClerkUserMetadata, extractRoleFromClerk } = require('../Utils/clerkSync');
@@ -5,6 +6,10 @@ const { getClerkUserMetadata, extractRoleFromClerk } = require('../Utils/clerkSy
 const SyncUser = async (req, res) => {
   try {
     await ensureDbConnection();
+    
+    const { userId } = getAuth(req);
+    console.log('[SyncUser] userId from getAuth:', userId);
+    
     const { clerkId, name, email } = req.body;
 
     if (!clerkId) {

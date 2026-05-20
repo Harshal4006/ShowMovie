@@ -1,3 +1,4 @@
+const { getAuth } = require('@clerk/express');
 const Booking = require('../Models/Booking');
 const Show = require('../Models/Show');
 const User = require('../Models/User');
@@ -8,13 +9,15 @@ const CreateBooking = async (req, res) => {
   try {
     await ensureDbConnection();
     const { showId, bookedSeats, amount } = req.body;
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    
+    console.log('[CreateBooking] userId from getAuth:', userId);
+    
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found. Please sign in again.' });
 
-    // Check seat availability
     const show = await Show.findById(showId);
     if (!show) return res.status(404).json({ message: 'Show not found' });
 
@@ -25,7 +28,6 @@ const CreateBooking = async (req, res) => {
       }
     }
 
-    // Create booking
     const booking = await Booking.create({
       user: user._id,
       show: showId,
@@ -34,7 +36,6 @@ const CreateBooking = async (req, res) => {
       isPaid: false
     });
 
-    // Update show occupied seats
     const newOccupied = new Map(occupiedSeats);
     for (const seat of bookedSeats) {
       newOccupied.set(seat, user._id.toString());
@@ -47,7 +48,6 @@ const CreateBooking = async (req, res) => {
 
     await User.findByIdAndUpdate(user._id, { $addToSet: { bookings: booking._id } });
 
-    // Create notification for the user
     await CreateNotification(
       user._id,
       'booking_confirmed',
@@ -66,10 +66,10 @@ const CreateBooking = async (req, res) => {
 const GetUserBookings = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.json([]);
 
     const bookings = await Booking.find({ user: user._id })
@@ -84,17 +84,19 @@ const GetUserBookings = async (req, res) => {
 const GetBookingById = async (req, res) => {
   try {
     await ensureDbConnection();
+    const { userId } = getAuth(req);
+    
+    console.log('[GetBookingById] userId from getAuth:', userId);
+    
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
     const booking = await Booking.findById(req.params.id)
       .populate('show')
       .populate('user', 'name email');
 
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-    // Only allow user or admin to view
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
-
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
     if (booking.user._id.toString() !== user._id.toString() && user.role !== 'admin') {

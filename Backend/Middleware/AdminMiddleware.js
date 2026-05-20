@@ -1,3 +1,4 @@
+const { getAuth } = require('@clerk/express');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
@@ -5,16 +6,16 @@ const VerifyAdmin = async (req, res, next) => {
   try {
     await ensureDbConnection();
 
-    const clerkUserId = req.auth?.userId;
+    const { userId } = getAuth(req);
     
-    console.log('[VerifyAdmin] Checking admin access for:', clerkUserId);
+    console.log('[VerifyAdmin] userId from getAuth:', userId);
     
-    if (!clerkUserId) {
-      console.log('[VerifyAdmin] No user ID in request');
+    if (!userId) {
+      console.log('[VerifyAdmin] No userId - returning 401');
       return res.status(401).json({ message: 'Unauthorized. Please sign in.' });
     }
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     
     console.log('[VerifyAdmin] User found:', user?._id, 'role:', user?.role);
 

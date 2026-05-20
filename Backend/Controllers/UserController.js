@@ -1,3 +1,4 @@
+const { getAuth } = require('@clerk/express');
 const User = require('../Models/User');
 const Booking = require('../Models/Booking');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
@@ -5,20 +6,23 @@ const ensureDbConnection = require('../Utils/ensureDbConnection');
 const GetCurrentUser = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
     
-    console.log('[GetCurrentUser] Request received for user:', clerkUserId);
+    console.log('[GetCurrentUser] req.auth:', req.auth);
     
-    if (!clerkUserId) {
+    const { userId } = getAuth(req);
+    console.log('[GetCurrentUser] userId from getAuth:', userId);
+    
+    if (!userId) {
+      console.log('[GetCurrentUser] No userId - returning 401');
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const user = await User.findOne({ clerkId: clerkUserId })
+    const user = await User.findOne({ clerkId: userId })
       .populate('bookings')
       .populate('favorites');
 
     if (!user) {
-      console.log('[GetCurrentUser] User not found in database for clerkId:', clerkUserId);
+      console.log('[GetCurrentUser] User not found in database for clerkId:', userId);
       return res.status(404).json({ message: 'User not found' });
     }
     
@@ -30,15 +34,14 @@ const GetCurrentUser = async (req, res) => {
   }
 };
 
-// Update current user profile
 const UpdateUserProfile = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
     const { name, email, img } = req.body;
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     if (name) user.name = name;
@@ -52,15 +55,14 @@ const UpdateUserProfile = async (req, res) => {
   }
 };
 
-// Toggle favorite movie
 const ToggleFavorite = async (req, res) => {
   try {
     const { movieId, tmdbId } = req.body;
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId });
+    const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     let movieObjectId = null;
@@ -92,14 +94,13 @@ const ToggleFavorite = async (req, res) => {
   }
 };
 
-// Get user favorites
 const GetUserFavorites = async (req, res) => {
   try {
     await ensureDbConnection();
-    const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: clerkUserId }).populate({
+    const user = await User.findOne({ clerkId: userId }).populate({
       path: 'favorites',
       select: 'tmdbId title posterUrl backdropUrl overview releaseDate runtime rating language'
     });
@@ -111,7 +112,6 @@ const GetUserFavorites = async (req, res) => {
   }
 };
 
-// ADMIN: Get all users (paginated)
 const GetAllUsers = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -139,7 +139,6 @@ const GetAllUsers = async (req, res) => {
   }
 };
 
-// ADMIN: Get user by ID
 const GetUserById = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -154,7 +153,6 @@ const GetUserById = async (req, res) => {
   }
 };
 
-// ADMIN: Update user role
 const UpdateUserRole = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -171,14 +169,12 @@ const UpdateUserRole = async (req, res) => {
   }
 };
 
-// ADMIN: Delete user
 const DeleteUser = async (req, res) => {
   try {
     await ensureDbConnection();
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    // Remove user from bookings
     await Booking.deleteMany({ user: req.params.id });
     
     res.json({ message: 'User deleted successfully' });
@@ -187,7 +183,6 @@ const DeleteUser = async (req, res) => {
   }
 };
 
-// ADMIN: Get user statistics
 const GetUserStats = async (req, res) => {
   try {
     await ensureDbConnection();
