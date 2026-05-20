@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { SignedIn, SignedOut, SignInButton, UserButton, useAuth } from "@clerk/clerk-react";
 import "./Navbar.css";
 import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification, clearAllNotifications } from "../../services/api";
-import useIsAdmin from "../../hooks/useIsAdmin";
+import { useUserContext } from "../../hooks/UserContext";
 
 const NavItem = ({ text, to }) => (
   <Link
@@ -89,7 +89,7 @@ const Navbar = () => {
   const notificationRef = useRef(null);
   const navigate = useNavigate();
   const { isSignedIn, getToken } = useAuth();
-  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const { isAdmin, isLoading: isUserLoading } = useUserContext();
 
   const fetchNotifications = async () => {
     if (!isSignedIn) return;
@@ -304,7 +304,7 @@ const Navbar = () => {
                 labelIcon={<TicketPlus size={16} />}
                 onClick={() => navigate("/my-booking")}
               />
-              {!isAdminLoading && isAdmin && (
+              {!isUserLoading && isAdmin && (
                 <UserButton.Action
                   label="Admin Dashboard"
                   labelIcon={<LayoutDashboard size={16} />}
