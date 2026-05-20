@@ -2,10 +2,11 @@ import { Link } from "react-router-dom";
 import { formatRuntime } from "../../lib/formatRuntime.js";
 
 const MovieInfo = ({ movie }) => {
+  const movieId = movie?.tmdbId || movie?._id || movie?.id || '';
   return (
-    <Link to={`/movies/${movie?._id || movie?.id}`} className="block">
+    <Link to={`/movies/${movieId}`} className="block">
       <h3 className="line-clamp-2 text-[1.35rem] font-semibold leading-7 text-white">
-        {movie?.title}
+        {movie?.title || "Unknown Movie"}
       </h3>
     </Link>
   );

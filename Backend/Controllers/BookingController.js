@@ -41,7 +41,10 @@ const CreateBooking = async (req, res) => {
     await Show.findByIdAndUpdate(showId, { occupiedSeats: newOccupied });
 
     const populated = await Booking.findById(booking._id)
-      .populate('show')
+      .populate({
+        path: 'show',
+        populate: { path: 'movie', model: 'Movie' }
+      })
       .populate('user', 'name email');
 
     await User.findByIdAndUpdate(user._id, { $addToSet: { bookings: booking._id } });
@@ -55,7 +58,39 @@ const CreateBooking = async (req, res) => {
       'Booking'
     );
 
-    res.status(201).json(populated);
+    const enriched = {
+      _id: populated._id,
+      bookedSeats: populated.bookedSeats,
+      amount: populated.amount,
+      isPaid: populated.isPaid,
+      status: populated.status,
+      createdAt: populated.createdAt,
+      show: populated.show ? {
+        _id: populated.show._id,
+        showDateTime: populated.show.showDateTime,
+        showPrice: populated.show.showPrice,
+        theater: populated.show.theater,
+        screenType: populated.show.screenType,
+        language: populated.show.language,
+        movie: populated.show.movie ? {
+          _id: populated.show.movie._id,
+          tmdbId: populated.show.movie.tmdbId,
+          title: populated.show.movie.title,
+          posterPath: populated.show.movie.posterPath,
+          backdropPath: populated.show.movie.backdropPath,
+          posterUrl: populated.show.movie.posterUrl,
+          backdropUrl: populated.show.movie.backdropUrl,
+          releaseDate: populated.show.movie.releaseDate,
+          runtime: populated.show.movie.runtime,
+          genres: populated.show.movie.genres,
+          rating: populated.show.movie.rating,
+          language: populated.show.movie.language,
+          status: populated.show.movie.status
+        } : null
+      } : null
+    };
+
+    res.status(201).json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -71,9 +106,55 @@ const GetUserBookings = async (req, res) => {
     if (!user) return res.json([]);
 
     const bookings = await Booking.find({ user: user._id })
-      .populate('show')
+      .populate({
+        path: 'show',
+        populate: {
+          path: 'movie',
+          model: 'Movie'
+        }
+      })
       .sort({ createdAt: -1 });
-    res.json(bookings);
+
+    const enriched = bookings.map((booking) => ({
+      _id: booking._id,
+      bookedSeats: booking.bookedSeats,
+      amount: booking.amount,
+      isPaid: booking.isPaid,
+      paymentId: booking.paymentId,
+      status: booking.status,
+      createdAt: booking.createdAt,
+      show: booking.show ? {
+        _id: booking.show._id,
+        showDateTime: booking.show.showDateTime,
+        showPrice: booking.show.showPrice,
+        theater: booking.show.theater,
+        screenType: booking.show.screenType,
+        language: booking.show.language,
+        movie: booking.show.movie ? {
+          _id: booking.show.movie._id,
+          tmdbId: booking.show.movie.tmdbId,
+          title: booking.show.movie.title,
+          originalTitle: booking.show.movie.originalTitle,
+          overview: booking.show.movie.overview,
+          posterPath: booking.show.movie.posterPath,
+          backdropPath: booking.show.movie.backdropPath,
+          posterUrl: booking.show.movie.posterUrl,
+          backdropUrl: booking.show.movie.backdropUrl,
+          releaseDate: booking.show.movie.releaseDate,
+          runtime: booking.show.movie.runtime,
+          genres: booking.show.movie.genres,
+          rating: booking.show.movie.rating,
+          voteCount: booking.show.movie.voteCount,
+          language: booking.show.movie.language,
+          tagline: booking.show.movie.tagline,
+          status: booking.show.movie.status,
+          movieLanguage: booking.show.movie.movieLanguage,
+          format: booking.show.movie.format
+        } : null
+      } : null
+    }));
+
+    res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

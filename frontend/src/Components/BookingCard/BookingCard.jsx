@@ -6,10 +6,12 @@ import BookingDetails from "./BookingDetails";
 import BookingFooter from "./BookingFooter";
 
 const BookingCard = ({ booking }) => {
-  const { show, amount, bookedSeats, isPaid } = booking;
+  const { show, amount, bookedSeats, isPaid, status } = booking;
   const movie = show?.movie;
   const showDateTime = show?.showDateTime;
   const showPrice = show?.showPrice;
+  const theater = show?.theater;
+  const screenType = show?.screenType;
 
   return (
     <div
@@ -24,15 +26,16 @@ const BookingCard = ({ booking }) => {
         <MovieInfo movie={movie} />
         <MovieMeta movie={movie} />
 
-        <DateTimeInfo showDateTime={showDateTime} />
+        <DateTimeInfo showDateTime={showDateTime} theater={theater} screenType={screenType} />
 
         <BookingDetails
           bookedSeats={bookedSeats}
           amount={amount}
           showPrice={showPrice}
+          status={status}
         />
 
-        <BookingFooter movieId={movie?._id || movie?.id} bookingId={booking._id} />
+        <BookingFooter movieId={movie?.tmdbId || movie?._id || movie?.id} bookingId={booking._id} />
       </div>
     </div>
   );

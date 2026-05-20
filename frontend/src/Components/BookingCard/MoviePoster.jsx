@@ -1,11 +1,34 @@
 import { Link } from "react-router-dom";
-import { Ticket } from "lucide-react";
+import { Ticket, Star } from "lucide-react";
+
+const PLACEHOLDER = "https://via.placeholder.com/500x300?text=No+Image";
+
+const normalizePoster = (movie) => {
+  if (!movie) return PLACEHOLDER;
+  if (movie.posterUrl) return movie.posterUrl;
+  if (movie.posterPath) return `https://image.tmdb.org/t/p/w500${movie.posterPath}`;
+  if (movie.poster_path) return `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+  return PLACEHOLDER;
+};
+
+const normalizeBackdrop = (movie) => {
+  if (!movie) return PLACEHOLDER;
+  if (movie.backdropUrl) return movie.backdropUrl;
+  if (movie.backdropPath) return `https://image.tmdb.org/t/p/w1280${movie.backdropPath}`;
+  if (movie.backdrop_path) return `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`;
+  return PLACEHOLDER;
+};
 
 const MoviePoster = ({ movie, isPaid }) => {
+  const posterSrc = normalizePoster(movie);
+  const backdropSrc = normalizeBackdrop(movie);
+  const language = movie?.language?.toUpperCase() || movie?.original_language?.toUpperCase() || "EN";
+  const rating = movie?.rating ?? movie?.vote_average;
+
   return (
     <div className="relative overflow-hidden rounded-[1.35rem] border border-white/8 bg-[#0f1117]">
       <img
-        src={movie?.backdrop_path}
+        src={backdropSrc}
         alt=""
         aria-hidden="true"
         loading="lazy"
@@ -14,7 +37,7 @@ const MoviePoster = ({ movie, isPaid }) => {
       <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/35" />
 
       <div className="absolute left-3 top-3 z-10 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/85 backdrop-blur">
-        {movie?.original_language?.toUpperCase() || "EN"}
+        {language}
       </div>
 
       <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
@@ -44,12 +67,12 @@ const MoviePoster = ({ movie, isPaid }) => {
       </div>
 
       <Link
-        to={`/movies/${movie?.id}`}
+        to={`/movies/${movie?.tmdbId || movie?._id || movie?.id || ''}`}
         className="relative block aspect-16/10 overflow-hidden p-3"
       >
         <img
-          src={movie?.backdrop_path}
-          alt={movie?.title}
+          src={posterSrc}
+          alt={movie?.title || "Movie"}
           loading="lazy"
           className="h-full w-full rounded-[1.05rem] object-contain transition duration-500 group-hover:scale-[1.04]"
         />
@@ -63,6 +86,13 @@ const MoviePoster = ({ movie, isPaid }) => {
           </span>
         </div>
       </Link>
+
+      {rating != null && (
+        <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 text-sm font-medium text-white backdrop-blur">
+          <Star className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+          {Number(rating).toFixed(1)}
+        </div>
+      )}
     </div>
   );
 };
