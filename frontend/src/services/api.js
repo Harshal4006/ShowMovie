@@ -7,7 +7,7 @@ export const toggleFavorite = (token, tmdbId) =>
   request('/users/favorites', { method: 'POST', token, body: { tmdbId } });
 export const getUserFavorites = (token) => request('/users/favorites', { token });
 
-export const getMyBookings = (token) => request('/bookings/my-bookings', { token });
+export const getMyBookings = (token) => request('/bookings', { token });
 export const createBooking = (token, bookingData) =>
   request('/bookings', { method: 'POST', token, body: bookingData });
 

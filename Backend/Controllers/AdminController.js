@@ -513,8 +513,48 @@ const DeleteShow = async (req, res) => {
 const GetAllBookings = async (req, res) => {
   try {
     await ensureDbConnection();
-    const bookings = await Booking.find().populate('show').populate('user', 'name email').sort({ createdAt: -1 });
-    res.json(bookings);
+    const bookings = await Booking.find()
+      .populate({
+        path: 'show',
+        populate: { path: 'movie', model: 'Movie' }
+      })
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    const enriched = bookings.map((booking) => ({
+      _id: booking._id,
+      bookedSeats: booking.bookedSeats,
+      amount: booking.amount,
+      isPaid: booking.isPaid,
+      paymentId: booking.paymentId,
+      status: booking.status,
+      createdAt: booking.createdAt,
+      show: booking.show ? {
+        _id: booking.show._id,
+        showDateTime: booking.show.showDateTime,
+        showPrice: booking.show.showPrice,
+        theater: booking.show.theater,
+        screenType: booking.show.screenType,
+        language: booking.show.language,
+        movie: booking.show.movie ? {
+          _id: booking.show.movie._id,
+          tmdbId: booking.show.movie.tmdbId,
+          title: booking.show.movie.title,
+          posterPath: booking.show.movie.posterPath,
+          backdropPath: booking.show.movie.backdropPath,
+          posterUrl: booking.show.movie.posterUrl,
+          backdropUrl: booking.show.movie.backdropUrl,
+          releaseDate: booking.show.movie.releaseDate,
+          runtime: booking.show.movie.runtime,
+          genres: booking.show.movie.genres,
+          rating: booking.show.movie.rating,
+          language: booking.show.movie.language,
+          status: booking.show.movie.status
+        } : null
+      } : null
+    }));
+
+    res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
