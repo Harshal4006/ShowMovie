@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
 import { useUserContext } from "../../hooks/UserContext";
 
 const Favorite = () => {
-  const { isLoading: userLoading } = useUserContext();
+  const { favorites, isLoading: userLoading } = useUserContext();
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
+    setIsLoading(userLoading);
     if (!userLoading) {
-      setIsLoading(false);
+      setMovies([]);
     }
   }, [userLoading]);
 
-  if (userLoading || isLoading) {
+  if (isLoading) {
     return (
       <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
@@ -44,13 +44,16 @@ const Favorite = () => {
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          {movies.map((movie) => (
-            <FeatureCard key={movie.tmdbId} movie={movie} />
-          ))}
-        </div>
-
-        {movies.length === 0 && (
+        {favorites.length > 0 ? (
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            {favorites.map((tmdbId) => (
+              <FeatureCard
+                key={tmdbId}
+                movie={{ tmdbId, _id: tmdbId, title: "Movie" }}
+              />
+            ))}
+          </div>
+        ) : (
           <div className="mt-10 flex flex-col items-center justify-center rounded-4xl border border-white/10 bg-white/4 px-6 py-16 text-center backdrop-blur-sm">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
               <Heart className="h-8 w-8 text-gray-500" />

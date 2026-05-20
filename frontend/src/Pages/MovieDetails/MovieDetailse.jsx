@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import { useUser } from "@clerk/clerk-react";
-import { getMovieById, getRelatedMovies, getShowsByMovie } from "../../services/api";
-import { getFavoriteIds, toggleFavoriteShow } from "../../lib/favorites.js";
+import { useAuth } from "@clerk/clerk-react";
+import { getMovieById, getRelatedMovies, getShowsByMovie, toggleFavorite } from "../../services/api";
+import { useUserContext } from "../../hooks/UserContext";
 import { MovieDetailsSkeleton } from "../../Components/Skeletons";
 
 import MovieHeader from "../../Components/MovieDetailse/MovieHeader.jsx";
@@ -34,14 +34,18 @@ const formatTimeLabel = (iso) => {
 
 const MovieDetailse = () => {
   const { id } = useParams();
-  const { getToken, isSignedIn } = useUser();
+  const { getToken, isSignedIn } = useAuth();
+  const { favorites, refreshUser } = useUserContext();
+  
   const [movie, setMovie] = useState(null);
   const [relatedMovies, setRelatedMovies] = useState([]);
   const [showDates, setShowDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [favorite, setFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const tmdbId = movie?.tmdbId || id;
+  const isFavorite = favorites.includes(Number(tmdbId));
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -53,11 +57,9 @@ const MovieDetailse = () => {
           setError('Movie not found');
         } else {
           setMovie(data);
-          // Fetch related movies
           const related = await getRelatedMovies(id);
           setRelatedMovies(related.movies || related || []);
 
-          // Fetch shows for this movie
           const movieId = data?._id || id;
           const nextShows = await getShowsByMovie(movieId);
           const showList = Array.isArray(nextShows) ? nextShows : (nextShows?.shows || []);
@@ -84,11 +86,11 @@ const MovieDetailse = () => {
               day: new Date(date).toLocaleDateString("en-IN", { weekday: "short" }),
               timeSlots: [...timeMap.entries()]
                 .sort((a, b) => a[1].ms - b[1].ms)
-                .flatMap(([label, data]) => data.shows.map((show) => ({ 
-                  label, 
-                  showId: show._id, 
+                .flatMap(([label, data]) => data.shows.map((show) => ({
+                  label,
+                  showId: show._id,
                   price: show.showPrice,
-                  showDateTime: show.showDateTime 
+                  showDateTime: show.showDateTime
                 }))),
             }));
 
@@ -96,7 +98,6 @@ const MovieDetailse = () => {
           setSelectedDate((prev) => prev || nextShowDates[0]?.date || null);
         }
       } catch (err) {
-        console.error('Failed to fetch movie:', err);
         setError('Failed to load movie');
       } finally {
         setIsLoading(false);
@@ -104,19 +105,6 @@ const MovieDetailse = () => {
     };
     fetchMovie();
   }, [id]);
-
-  // Sync favorite status
-  useEffect(() => {
-    if (!movie?.tmdbId) return;
-    const syncFavoriteState = async () => {
-      const tokenFn = isSignedIn ? getToken : null;
-      const favorites = await getFavoriteIds(tokenFn);
-      setFavorite(favorites.includes(String(movie.tmdbId)));
-    };
-    syncFavoriteState();
-    window.addEventListener("favorites:changed", syncFavoriteState);
-    return () => window.removeEventListener("favorites:changed", syncFavoriteState);
-  }, [movie, isSignedIn]);
 
   const handleTrailerClick = () => {
     if (movie?.trailerKey) {
@@ -126,16 +114,27 @@ const MovieDetailse = () => {
 
   const handleFavoriteToggle = async () => {
     if (!movie?.tmdbId) return;
-    
+
     if (!isSignedIn) {
       toast.error("Please login to add favorites");
       return;
     }
-    
-    const tokenFn = isSignedIn ? getToken : null;
-    const result = await toggleFavoriteShow(movie.tmdbId, tokenFn);
-    setFavorite(result.isFavorite);
-    toast.success(result.isFavorite ? `${movie.title} added to favorites` : `${movie.title} removed from favorites`);
+
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      await toggleFavorite(token, String(movie.tmdbId));
+      await refreshUser();
+
+      toast.success(
+        !isFavorite
+          ? `${movie.title} added to favorites`
+          : `${movie.title} removed from favorites`
+      );
+    } catch (err) {
+      toast.error(err?.message || "Failed to update favorites");
+    }
   };
 
   if (isLoading) return <MovieDetailsSkeleton />;
@@ -171,7 +170,7 @@ const MovieDetailse = () => {
           <div className="lg:col-span-1">
             <MovieStats
               movie={movie}
-              favorite={favorite}
+              favorite={isFavorite}
               handleFavoriteToggle={handleFavoriteToggle}
               onTrailerClick={handleTrailerClick}
               language={language}
