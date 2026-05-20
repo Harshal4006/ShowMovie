@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { requireAuth } = require('@clerk/express');
+const VerifyToken = require('../Middleware/AuthMiddleware');
 const { SyncUser } = require('../Controllers/AuthController');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { getClerkUserMetadata, extractRoleFromClerk } = require('../Utils/clerkSync');
 
-router.post('/sync', requireAuth(), SyncUser);
+router.post('/sync', VerifyToken, SyncUser);
 
-router.get('/sync-role', requireAuth(), async (req, res) => {
+router.get('/sync-role', VerifyToken, async (req, res) => {
   try {
     await ensureDbConnection();
     const clerkUserId = req.auth.userId;

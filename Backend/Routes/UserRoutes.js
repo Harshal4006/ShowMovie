@@ -14,14 +14,11 @@ const {
   GetUserStats
 } = require('../Controllers/UserController');
 
-// User routes (auth required)
 router.get('/me', VerifyToken, GetCurrentUser);
-
 router.put('/me', VerifyToken, UpdateUserProfile);
 router.post('/favorites', VerifyToken, ToggleFavorite);
 router.get('/favorites', VerifyToken, GetUserFavorites);
 
-// Admin routes (admin only)
 router.get('/', VerifyToken, VerifyAdmin, GetAllUsers);
 router.get('/:id', VerifyToken, VerifyAdmin, GetUserById);
 router.put('/:id/role', VerifyToken, VerifyAdmin, UpdateUserRole);

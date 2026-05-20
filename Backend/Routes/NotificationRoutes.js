@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { requireAuth } = require('@clerk/express');
+const VerifyToken = require('../Middleware/AuthMiddleware');
 const NotificationController = require('../Controllers/NotificationController');
 
-router.get('/', requireAuth(), NotificationController.GetNotifications);
-router.patch('/:id/read', requireAuth(), NotificationController.MarkAsRead);
-router.patch('/read-all', requireAuth(), NotificationController.MarkAllAsRead);
-router.delete('/:id', requireAuth(), NotificationController.DeleteNotification);
-router.delete('/', requireAuth(), NotificationController.ClearAllNotifications);
+router.get('/', VerifyToken, NotificationController.GetNotifications);
+router.patch('/:id/read', VerifyToken, NotificationController.MarkAsRead);
+router.patch('/read-all', VerifyToken, NotificationController.MarkAllAsRead);
+router.delete('/:id', VerifyToken, NotificationController.DeleteNotification);
+router.delete('/', VerifyToken, NotificationController.ClearAllNotifications);
 
 module.exports = router;
