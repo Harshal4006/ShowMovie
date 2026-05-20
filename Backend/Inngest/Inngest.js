@@ -1,5 +1,6 @@
 const { Inngest } = require("inngest");
 const mongoose = require("mongoose");
+const { getClerkUserMetadata, extractRoleFromClerk } = require("../Utils/clerkSync");
 
 mongoose.set("strictQuery", true);
 
@@ -65,19 +66,30 @@ const syncUserCreation = inngest.createFunction(
       };
     }
 
+    let role = 'user';
+    try {
+      const userMetadata = await getClerkUserMetadata(id);
+      role = extractRoleFromClerk(userMetadata);
+      console.log(`Clerk metadata for ${id}: role = ${role}`);
+    } catch (err) {
+      console.warn(`Failed to fetch Clerk metadata for ${id}, defaulting to user role`);
+    }
+
     const user = await User.create({
       clerkId: id,
       name: `${first_name || ""} ${last_name || ""}`.trim(),
       email: email_addresses?.[0]?.email_address || "",
       img: image_url || "",
+      role: role,
     });
 
-    console.log('User created via Clerk sync:', user._id);
+    console.log('User created via Clerk sync:', user._id, 'with role:', role);
 
     return {
       success: true,
       message: "User created",
       userId: user._id.toString(),
+      role: role,
     };
   }
 );
@@ -119,14 +131,29 @@ const syncUserUpdate = inngest.createFunction(
       user.img = image_url;
     }
 
+    let roleUpdated = false;
+    try {
+      const userMetadata = await getClerkUserMetadata(id);
+      const newRole = extractRoleFromClerk(userMetadata);
+
+      if (newRole !== user.role) {
+        console.log(`Role change detected for ${id}: ${user.role} -> ${newRole}`);
+        user.role = newRole;
+        roleUpdated = true;
+      }
+    } catch (err) {
+      console.warn(`Failed to fetch Clerk metadata for role update: ${err.message}`);
+    }
+
     await user.save();
 
-    console.log('User updated via Clerk sync:', user._id);
+    console.log('User updated via Clerk sync:', user._id, roleUpdated ? `, role updated to: ${user.role}` : '');
 
     return {
       success: true,
       message: "User updated",
       userId: user._id.toString(),
+      role: user.role,
     };
   }
 );

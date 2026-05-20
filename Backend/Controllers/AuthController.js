@@ -1,5 +1,6 @@
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
+const { getClerkUserMetadata, extractRoleFromClerk } = require('../Utils/clerkSync');
 
 const SyncUser = async (req, res) => {
   try {
@@ -12,11 +13,23 @@ const SyncUser = async (req, res) => {
 
     let user = await User.findOne({ clerkId });
 
+    let role = 'user';
+    try {
+      const userMetadata = await getClerkUserMetadata(clerkId);
+      role = extractRoleFromClerk(userMetadata);
+    } catch (err) {
+      console.warn('Failed to fetch Clerk metadata, using default role:', err.message);
+    }
+
     if (!user) {
-      user = await User.create({ clerkId, name, email, role: 'user' });
+      user = await User.create({ clerkId, name, email, role });
     } else {
       user.name = name || user.name;
       user.email = email || user.email;
+      if (user.role !== role) {
+        console.log(`Role sync: ${user.role} -> ${role} for user ${clerkId}`);
+        user.role = role;
+      }
       await user.save();
     }
 

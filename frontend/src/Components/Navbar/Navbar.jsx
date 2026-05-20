@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, X, Menu, TicketPlus, Check, Trash2, BellOff, Loader2, LayoutDashboard } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, UserButton, useAuth } from "@clerk/clerk-react";
 import "./Navbar.css";
 import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification, clearAllNotifications } from "../../services/api";
 import useIsAdmin from "../../hooks/useIsAdmin";
@@ -88,7 +88,7 @@ const Navbar = () => {
   const [error, setError] = useState(null);
   const notificationRef = useRef(null);
   const navigate = useNavigate();
-  const { getToken, isSignedIn } = useUser();
+  const { isSignedIn, getToken } = useAuth();
   const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
 
   const fetchNotifications = async () => {
@@ -282,7 +282,7 @@ const Navbar = () => {
         </SignedIn>
 
         <SignedOut>
-          <SignInButton mode="modal">
+          <SignInButton mode="redirect">
             <button className="whitespace-nowrap rounded-full bg-red-600 px-4 py-2 text-xs font-medium text-white transition duration-300 hover:bg-red-400 hover:text-white sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base">
               Login
             </button>
