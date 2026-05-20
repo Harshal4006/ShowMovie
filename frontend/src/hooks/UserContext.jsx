@@ -75,6 +75,13 @@ export const UserProvider = ({ children }) => {
     setError(null);
   }, []);
 
+  const setFavoritesOptimistic = useCallback((updater) => {
+    setFavorites((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      return next;
+    });
+  }, []);
+
   const refreshUser = useCallback(async () => {
     if (!clerkLoaded || !isSignedIn) return;
 
@@ -96,6 +103,7 @@ export const UserProvider = ({ children }) => {
   const value = useMemo(() => ({
     user,
     favorites,
+    setFavorites: setFavoritesOptimistic,
     role: user?.role || 'user',
     isAdmin: user?.role === 'admin',
     isLoading,
@@ -104,7 +112,7 @@ export const UserProvider = ({ children }) => {
     isSignedIn,
     clearUser,
     refreshUser,
-  }), [user, favorites, isLoading, clerkLoaded, error, isSignedIn, clearUser, refreshUser]);
+  }), [user, favorites, isLoading, clerkLoaded, error, isSignedIn, clearUser, refreshUser, setFavoritesOptimistic]);
 
   return (
     <UserContext.Provider value={value}>

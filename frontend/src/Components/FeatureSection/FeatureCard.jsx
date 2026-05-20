@@ -18,7 +18,7 @@ const normalizeTmdbImage = (value, size) => {
 
 const FeatureCard = memo(({ movie }) => {
   const { getToken, isSignedIn } = useAuth();
-  const { favorites, refreshUser } = useUserContext();
+  const { favorites, setFavorites, refreshUser } = useUserContext();
   const toastIdRef = useRef(null);
   const [imgError, setImgError] = useState(false);
 
@@ -39,16 +39,30 @@ const FeatureCard = memo(({ movie }) => {
       toast.dismiss(toastIdRef.current);
     }
 
+    const adding = !isFavorite;
     toastIdRef.current = toast.success(
-      isFavorite
-        ? `${movie.title || 'Movie'} removed from favorites`
-        : `${movie.title || 'Movie'} added to favorites`,
+      adding
+        ? `${movie.title || 'Movie'} added to favorites`
+        : `${movie.title || 'Movie'} removed from favorites`,
       { duration: 2000 }
     );
 
+    setFavorites((prev) => {
+      if (adding) {
+        if (!prev.includes(numericTmdbId)) {
+          return [...prev, numericTmdbId];
+        }
+        return prev;
+      }
+      return prev.filter((id) => id !== numericTmdbId);
+    });
+
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        await refreshUser();
+        return;
+      }
 
       await toggleFavorite(token, String(tmdbId));
       await refreshUser();
@@ -57,7 +71,7 @@ const FeatureCard = memo(({ movie }) => {
       toast.error(error?.message || "Failed to update favorites");
       await refreshUser();
     }
-  }, [isSignedIn, tmdbId, isFavorite, movie.title, getToken, refreshUser]);
+  }, [isSignedIn, tmdbId, numericTmdbId, isFavorite, movie.title, getToken, setFavorites, refreshUser]);
 
   if (!movie) return null;
 
