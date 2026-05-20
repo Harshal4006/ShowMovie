@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { getMe } from '../services/api';
+import { request } from '../services/authClient';
 
 const UserContext = createContext(null);
 
@@ -19,11 +19,15 @@ export const UserProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   const fetchUser = useCallback(async () => {
+    console.log('[UserContext] fetchUser called', { clerkLoaded, isSignedIn });
+
     if (!clerkLoaded) {
+      console.log('[UserContext] Clerk not loaded yet, skipping');
       return;
     }
 
     if (!isSignedIn) {
+      console.log('[UserContext] User not signed in, clearing user');
       setUser(null);
       setIsLoading(false);
       return;
@@ -33,18 +37,23 @@ export const UserProvider = ({ children }) => {
     setError(null);
 
     try {
+      console.log('[UserContext] Getting token...');
       const token = await getToken();
-      
+      console.log('[UserContext] Token:', token ? `received (${token.length} chars)` : 'null');
+
       if (!token) {
+        console.log('[UserContext] No token available, clearing user');
         setUser(null);
         setIsLoading(false);
         return;
       }
 
-      const userData = await getMe(token);
+      console.log('[UserContext] Fetching /users/me...');
+      const userData = await request('/users/me', { token });
+      console.log('[UserContext] User data received:', { id: userData?._id, role: userData?.role });
       setUser(userData);
     } catch (err) {
-      console.warn('Failed to fetch user:', err.message);
+      console.error('[UserContext] Failed to fetch user:', err.message, err.status);
       setError(err.message);
       setUser(null);
     } finally {
@@ -53,11 +62,13 @@ export const UserProvider = ({ children }) => {
   }, [isSignedIn, clerkLoaded, getToken]);
 
   useEffect(() => {
+    console.log('[UserContext] useEffect triggered', { clerkLoaded, isSignedIn });
     fetchUser();
   }, [fetchUser]);
 
   useEffect(() => {
     if (!isSignedIn && user) {
+      console.log('[UserContext] User signed out, clearing user');
       setUser(null);
       setError(null);
     }
@@ -70,16 +81,16 @@ export const UserProvider = ({ children }) => {
 
   const refreshUser = useCallback(async () => {
     if (!clerkLoaded || !isSignedIn) return;
-    
+
     setIsLoading(true);
     try {
       const token = await getToken();
       if (token) {
-        const userData = await getMe(token);
+        const userData = await request('/users/me', { token });
         setUser(userData);
       }
     } catch (err) {
-      console.warn('Failed to refresh user:', err.message);
+      console.warn('[UserContext] Failed to refresh user:', err.message);
     } finally {
       setIsLoading(false);
     }

@@ -3,11 +3,14 @@ import useIsAdmin from '../hooks/useIsAdmin';
 import PageLoader from './PageLoader/PageLoader';
 
 const AdminRoute = ({ children }) => {
-  const { isAdmin, isLoading, isSignedIn } = useIsAdmin();
+  const { isAdmin, isLoading, isSignedIn, isAuthLoaded } = useIsAdmin();
 
-  if (isLoading) {
+  if (!isAuthLoaded || isLoading) {
+    console.log('[AdminRoute] Waiting for auth to load...', { isAuthLoaded, isLoading });
     return <PageLoader />;
   }
+
+  console.log('[AdminRoute] Auth loaded', { isSignedIn, isAdmin });
 
   if (!isSignedIn) {
     return <Navigate to="/" replace />;
