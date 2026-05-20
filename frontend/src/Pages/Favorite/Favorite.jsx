@@ -1,67 +1,23 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Heart } from "lucide-react";
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
 import { useUserContext } from "../../hooks/UserContext";
 
 const Favorite = () => {
-  const { favorites, isLoading: userLoading, isSignedIn } = useUserContext();
-  const [movieDetails, setMovieDetails] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { favoriteIds, favoriteMovies, isLoading: userLoading, isSignedIn } = useUserContext();
 
-  const favoriteTmdbIds = useMemo(
-    () => new Set(favorites.map((id) => Number(id))),
-    [favorites]
-  );
+  const visibleMovies = useMemo(() => {
+    if (!favoriteIds || favoriteIds.length === 0) return [];
+    return favoriteIds
+      .map((id) => {
+        const numId = Number(id);
+        return favoriteMovies[numId] || null;
+      })
+      .filter(Boolean);
+  }, [favoriteIds, favoriteMovies]);
 
-  const visibleMovies = useMemo(
-    () => movieDetails.filter((m) => favoriteTmdbIds.has(Number(m.tmdbId))),
-    [movieDetails, favoriteTmdbIds]
-  );
-
-  useEffect(() => {
-    if (userLoading) {
-      setIsLoading(true);
-      return;
-    }
-
-    if (!isSignedIn) {
-      setIsLoading(false);
-      setMovieDetails([]);
-      return;
-    }
-
-    if (favorites.length === 0) {
-      setIsLoading(false);
-      setMovieDetails([]);
-      return;
-    }
-
-    const stored = sessionStorage.getItem("favoriteMovies");
-    const parsed = stored ? JSON.parse(stored) : {};
-    const cached = Object.values(parsed).filter(Boolean);
-
-    if (cached.length > 0) {
-      setMovieDetails(cached);
-    }
-
-    setIsLoading(false);
-  }, [userLoading, isSignedIn, favorites.length]);
-
-  const onMovieDataLoaded = (movie) => {
-    if (!movie?.tmdbId) return;
-    setMovieDetails((prev) => {
-      const exists = prev.some((m) => Number(m.tmdbId) === Number(movie.tmdbId));
-      if (exists) return prev;
-      const updated = [...prev, movie];
-      const asObj = {};
-      updated.forEach((m) => { asObj[m.tmdbId] = m; });
-      sessionStorage.setItem("favoriteMovies", JSON.stringify(asObj));
-      return updated;
-    });
-  };
-
-  if (userLoading || isLoading) {
+  if (userLoading) {
     return (
       <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
@@ -139,11 +95,7 @@ const Favorite = () => {
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {visibleMovies.map((movie) => (
-            <FeatureCard
-              key={movie.tmdbId || movie._id}
-              movie={movie}
-              onDataLoaded={onMovieDataLoaded}
-            />
+            <FeatureCard key={movie.tmdbId || movie._id} movie={movie} />
           ))}
         </div>
       </div>

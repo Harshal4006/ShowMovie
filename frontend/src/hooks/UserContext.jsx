@@ -12,10 +12,39 @@ export const useUserContext = () => {
   return context;
 };
 
+const normalizeFavorites = (favoritesData) => {
+  const ids = [];
+  const moviesMap = {};
+
+  const list = Array.isArray(favoritesData)
+    ? favoritesData
+    : (favoritesData?.favorites || []);
+
+  for (const item of list) {
+    let tmdbId;
+    if (typeof item === 'number' || typeof item === 'string') {
+      tmdbId = Number(item);
+    } else if (item?.tmdbId != null) {
+      tmdbId = Number(item.tmdbId);
+    } else {
+      continue;
+    }
+
+    if (!Number.isFinite(tmdbId)) continue;
+    if (ids.includes(tmdbId)) continue;
+
+    ids.push(tmdbId);
+    moviesMap[tmdbId] = typeof item === 'object' ? item : null;
+  }
+
+  return { ids, moviesMap };
+};
+
 export const UserProvider = ({ children }) => {
   const { isSignedIn, isLoaded: clerkLoaded, getToken } = useAuth();
   const [user, setUser] = useState(null);
-  const [favorites, setFavorites] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [favoriteMovies, setFavoriteMovies] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const fetchCountRef = useRef(0);
@@ -24,7 +53,8 @@ export const UserProvider = ({ children }) => {
     if (!clerkLoaded || !isSignedIn) {
       if (!isSignedIn) {
         setUser(null);
-        setFavorites([]);
+        setFavoriteIds([]);
+        setFavoriteMovies({});
         setIsLoading(false);
       }
       return;
@@ -39,7 +69,8 @@ export const UserProvider = ({ children }) => {
       const token = await getToken();
       if (!token) {
         setUser(null);
-        setFavorites([]);
+        setFavoriteIds([]);
+        setFavoriteMovies({});
         setIsLoading(false);
         return;
       }
@@ -52,12 +83,16 @@ export const UserProvider = ({ children }) => {
       if (currentFetch !== fetchCountRef.current) return;
 
       setUser(userData);
-      setFavorites(favoritesData?.favorites || []);
+
+      const { ids, moviesMap } = normalizeFavorites(favoritesData);
+      setFavoriteIds(ids);
+      setFavoriteMovies(moviesMap);
     } catch (err) {
       if (currentFetch !== fetchCountRef.current) return;
       setError(err.message);
       setUser(null);
-      setFavorites([]);
+      setFavoriteIds([]);
+      setFavoriteMovies({});
     } finally {
       if (currentFetch === fetchCountRef.current) {
         setIsLoading(false);
@@ -71,39 +106,64 @@ export const UserProvider = ({ children }) => {
 
   const clearUser = useCallback(() => {
     setUser(null);
-    setFavorites([]);
+    setFavoriteIds([]);
+    setFavoriteMovies({});
     setError(null);
   }, []);
 
-  const setFavoritesOptimistic = useCallback((updater) => {
-    setFavorites((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      return next;
-    });
-  }, []);
+  const toggleFavorite = useCallback(async (movie) => {
+    const tmdbId = movie?.tmdbId ?? movie?.id ?? movie?._id;
+    const numericId = Number(tmdbId);
+    if (!Number.isFinite(numericId)) return;
 
-  const refreshUser = useCallback(async () => {
+    const isFavorite = favoriteIds.includes(numericId);
+
+    setFavoriteIds((prev) => {
+      if (isFavorite) return prev.filter((id) => id !== numericId);
+      return prev.includes(numericId) ? prev : [...prev, numericId];
+    });
+
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await request('/users/favorites', { method: 'POST', token, body: { tmdbId: String(numericId) } });
+    } catch {
+      setFavoriteIds((prev) => {
+        if (isFavorite) return [...prev, numericId];
+        return prev.filter((id) => id !== numericId);
+      });
+    }
+  }, [favoriteIds, getToken]);
+
+  const refreshFavorites = useCallback(async () => {
     if (!clerkLoaded || !isSignedIn) return;
 
     try {
       const token = await getToken();
-      if (token) {
-        const [userData, favoritesData] = await Promise.all([
-          request('/users/me', { token }),
-          request('/users/favorites', { token })
-        ]);
-        setUser(userData);
-        setFavorites(favoritesData?.favorites || []);
-      }
+      if (!token) return;
+
+      const favoritesData = await request('/users/favorites', { token });
+      const { ids, moviesMap } = normalizeFavorites(favoritesData);
+      setFavoriteIds(ids);
+      setFavoriteMovies(moviesMap);
     } catch {
-      // Silent fail
+      // silent fail
     }
   }, [clerkLoaded, isSignedIn, getToken]);
 
+  const isMovieFavorite = useCallback((movie) => {
+    const tmdbId = movie?.tmdbId ?? movie?.id ?? movie?._id;
+    const numericId = Number(tmdbId);
+    return Number.isFinite(numericId) && favoriteIds.includes(numericId);
+  }, [favoriteIds]);
+
   const value = useMemo(() => ({
     user,
-    favorites,
-    setFavorites: setFavoritesOptimistic,
+    favoriteIds,
+    favoriteMovies,
+    setFavoriteIds,
+    setFavoriteMovies,
+    isMovieFavorite,
     role: user?.role || 'user',
     isAdmin: user?.role === 'admin',
     isLoading,
@@ -111,8 +171,9 @@ export const UserProvider = ({ children }) => {
     error,
     isSignedIn,
     clearUser,
-    refreshUser,
-  }), [user, favorites, isLoading, clerkLoaded, error, isSignedIn, clearUser, refreshUser, setFavoritesOptimistic]);
+    toggleFavorite,
+    refreshFavorites,
+  }), [user, favoriteIds, favoriteMovies, isLoading, clerkLoaded, error, isSignedIn, clearUser, isMovieFavorite, toggleFavorite, refreshFavorites]);
 
   return (
     <UserContext.Provider value={value}>

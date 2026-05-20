@@ -4,7 +4,6 @@ import { Heart, Play, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/clerk-react";
 import { formatRuntime } from "../../lib/formatRuntime.js";
-import { toggleFavorite } from "../../services/api";
 import { useUserContext } from "../../hooks/UserContext";
 
 const PLACEHOLDER_IMAGE = "https://via.placeholder.com/500x300?text=No+Image";
@@ -17,23 +16,26 @@ const normalizeTmdbImage = (value, size) => {
 };
 
 const FeatureCard = memo(({ movie }) => {
-  const { getToken, isSignedIn } = useAuth();
-  const { favorites, setFavorites, refreshUser } = useUserContext();
+  const { isSignedIn } = useAuth();
+  const { favoriteIds, toggleFavorite } = useUserContext();
   const toastIdRef = useRef(null);
   const [imgError, setImgError] = useState(false);
 
   const tmdbId = movie?.tmdbId ?? movie?.id ?? movie?._id;
+  const numericId = Number(tmdbId);
+  const isFavorite = Number.isFinite(numericId) && favoriteIds.includes(numericId);
   const movieId = movie?._id || movie?.id || tmdbId;
-  const numericTmdbId = Number(tmdbId);
-  const isFavorite = Number.isFinite(numericTmdbId) && favorites.includes(numericTmdbId);
 
-  const handleFavoriteToggle = useCallback(async () => {
+  const handleFavoriteClick = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (!isSignedIn) {
       toast.error("Please login to add favorites");
       return;
     }
 
-    if (!tmdbId) return;
+    if (!movie) return;
 
     if (toastIdRef.current) {
       toast.dismiss(toastIdRef.current);
@@ -47,31 +49,8 @@ const FeatureCard = memo(({ movie }) => {
       { duration: 2000 }
     );
 
-    setFavorites((prev) => {
-      if (adding) {
-        if (!prev.includes(numericTmdbId)) {
-          return [...prev, numericTmdbId];
-        }
-        return prev;
-      }
-      return prev.filter((id) => id !== numericTmdbId);
-    });
-
-    try {
-      const token = await getToken();
-      if (!token) {
-        await refreshUser();
-        return;
-      }
-
-      await toggleFavorite(token, String(tmdbId));
-      await refreshUser();
-    } catch (error) {
-      toast.dismiss(toastIdRef.current);
-      toast.error(error?.message || "Failed to update favorites");
-      await refreshUser();
-    }
-  }, [isSignedIn, tmdbId, numericTmdbId, isFavorite, movie.title, getToken, setFavorites, refreshUser]);
+    await toggleFavorite(movie);
+  }, [isSignedIn, isFavorite, movie, toggleFavorite]);
 
   if (!movie) return null;
 
@@ -99,14 +78,16 @@ const FeatureCard = memo(({ movie }) => {
 
         <button
           type="button"
-          onClick={handleFavoriteToggle}
-          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur transition duration-300 ${
-            isFavorite ? "border-red-400/60 bg-red-500/25 text-red-200" : "border-white/10 bg-black/45 text-white/80 hover:border-red-500/40 hover:bg-red-500/20 hover:text-white"
+          onClick={handleFavoriteClick}
+          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur transition-all duration-300 ${
+            isFavorite
+              ? "border-red-400/60 bg-red-500/25 text-red-200 scale-110"
+              : "border-white/10 bg-black/45 text-white/80 hover:border-red-500/40 hover:bg-red-500/20 hover:text-white hover:scale-110"
           }`}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${title} ${isFavorite ? "from" : "to"} favorites`}
           aria-pressed={isFavorite}
         >
-          <Heart className={`h-4 w-4 transition duration-300 ${isFavorite ? "fill-current" : ""}`} />
+          <Heart className={`h-4 w-4 transition-all duration-300 ${isFavorite ? "fill-current scale-125" : ""}`} />
         </button>
 
         <div className="absolute left-3 top-3 z-10 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/85 backdrop-blur">
