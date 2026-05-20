@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
@@ -36,6 +36,7 @@ const MovieDetailse = () => {
   const { id } = useParams();
   const { getToken, isSignedIn } = useAuth();
   const { favorites, refreshUser } = useUserContext();
+  const toastIdRef = useRef(null);
   
   const [movie, setMovie] = useState(null);
   const [relatedMovies, setRelatedMovies] = useState([]);
@@ -44,8 +45,8 @@ const MovieDetailse = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const tmdbId = movie?.tmdbId || id;
-  const isFavorite = favorites.includes(Number(tmdbId));
+  const tmdbId = movie?.tmdbId ? Number(movie.tmdbId) : null;
+  const isFavorite = tmdbId != null && favorites.includes(tmdbId);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -97,7 +98,7 @@ const MovieDetailse = () => {
           setShowDates(nextShowDates);
           setSelectedDate((prev) => prev || nextShowDates[0]?.date || null);
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load movie');
       } finally {
         setIsLoading(false);
@@ -120,20 +121,27 @@ const MovieDetailse = () => {
       return;
     }
 
+    if (toastIdRef.current) {
+      toast.dismiss(toastIdRef.current);
+    }
+
+    toastIdRef.current = toast.success(
+      isFavorite
+        ? `${movie.title} removed from favorites`
+        : `${movie.title} added to favorites`,
+      { duration: 2000 }
+    );
+
     try {
       const token = await getToken();
       if (!token) return;
 
       await toggleFavorite(token, String(movie.tmdbId));
       await refreshUser();
-
-      toast.success(
-        !isFavorite
-          ? `${movie.title} added to favorites`
-          : `${movie.title} removed from favorites`
-      );
     } catch (err) {
+      toast.dismiss(toastIdRef.current);
       toast.error(err?.message || "Failed to update favorites");
+      await refreshUser();
     }
   };
 

@@ -93,8 +93,33 @@ const GetUserFavorites = async (req, res) => {
     
     const favoritesData = favorites.map(tmdbId => {
       const movie = movies.find(m => m.tmdbId === Number(tmdbId));
-      return movie || { tmdbId, title: 'Movie', posterUrl: null, backdropUrl: null };
-    });
+      if (movie) {
+        return {
+          tmdbId: movie.tmdbId,
+          _id: movie._id,
+          title: movie.title,
+          originalTitle: movie.originalTitle,
+          overview: movie.overview,
+          posterPath: movie.posterPath,
+          backdropPath: movie.backdropPath,
+          posterUrl: movie.posterUrl,
+          backdropUrl: movie.backdropUrl,
+          releaseDate: movie.releaseDate,
+          runtime: movie.runtime,
+          genres: movie.genres,
+          rating: movie.rating,
+          voteCount: movie.voteCount,
+          language: movie.language,
+          tagline: movie.tagline,
+          cast: movie.cast,
+          status: movie.status,
+          price: movie.price,
+          movieLanguage: movie.movieLanguage,
+          format: movie.format
+        };
+      }
+      return null;
+    }).filter(Boolean);
 
     res.json({ favorites: favoritesData });
   } catch (error) {

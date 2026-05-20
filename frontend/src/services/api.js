@@ -1,5 +1,4 @@
 import { request } from './authClient.js';
-import { authRequest } from './authClient.js';
 
 export const getMe = (token) => request('/users/me', { token });
 export const updateUserProfile = (token, profileData) =>
