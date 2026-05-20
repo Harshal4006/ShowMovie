@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { request } from '../services/authClient';
 
@@ -15,89 +15,87 @@ export const useUserContext = () => {
 export const UserProvider = ({ children }) => {
   const { isSignedIn, isLoaded: clerkLoaded, getToken } = useAuth();
   const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const fetchCountRef = useRef(0);
 
-  const fetchUser = useCallback(async () => {
-    console.log('[UserContext] fetchUser called', { clerkLoaded, isSignedIn });
-
-    if (!clerkLoaded) {
-      console.log('[UserContext] Clerk not loaded yet, skipping');
+  const fetchUserData = useCallback(async () => {
+    if (!clerkLoaded || !isSignedIn) {
+      if (!isSignedIn) {
+        setUser(null);
+        setFavorites([]);
+        setIsLoading(false);
+      }
       return;
     }
 
-    if (!isSignedIn) {
-      console.log('[UserContext] User not signed in, clearing user');
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
+    fetchCountRef.current += 1;
+    const currentFetch = fetchCountRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log('[UserContext] Getting token...');
       const token = await getToken();
-      console.log('[UserContext] Token:', token ? `received (${token.length} chars)` : 'null');
-
       if (!token) {
-        console.log('[UserContext] No token available, clearing user');
         setUser(null);
+        setFavorites([]);
         setIsLoading(false);
         return;
       }
 
-      console.log('[UserContext] Fetching /users/me...');
-      const userData = await request('/users/me', { token });
-      console.log('[UserContext] User data received:', { id: userData?._id, role: userData?.role });
+      const [userData, favoritesData] = await Promise.all([
+        request('/users/me', { token }),
+        request('/users/favorites', { token })
+      ]);
+
+      if (currentFetch !== fetchCountRef.current) return;
+
       setUser(userData);
+      setFavorites(favoritesData?.favorites || []);
     } catch (err) {
-      console.error('[UserContext] Failed to fetch user:', err.message, err.status);
+      if (currentFetch !== fetchCountRef.current) return;
       setError(err.message);
       setUser(null);
+      setFavorites([]);
     } finally {
-      setIsLoading(false);
+      if (currentFetch === fetchCountRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [isSignedIn, clerkLoaded, getToken]);
 
   useEffect(() => {
-    console.log('[UserContext] useEffect triggered', { clerkLoaded, isSignedIn });
-    fetchUser();
-  }, [fetchUser]);
-
-  useEffect(() => {
-    if (!isSignedIn && user) {
-      console.log('[UserContext] User signed out, clearing user');
-      setUser(null);
-      setError(null);
-    }
-  }, [isSignedIn, user]);
+    fetchUserData();
+  }, [fetchUserData]);
 
   const clearUser = useCallback(() => {
     setUser(null);
+    setFavorites([]);
     setError(null);
   }, []);
 
   const refreshUser = useCallback(async () => {
     if (!clerkLoaded || !isSignedIn) return;
 
-    setIsLoading(true);
     try {
       const token = await getToken();
       if (token) {
-        const userData = await request('/users/me', { token });
+        const [userData, favoritesData] = await Promise.all([
+          request('/users/me', { token }),
+          request('/users/favorites', { token })
+        ]);
         setUser(userData);
+        setFavorites(favoritesData?.favorites || []);
       }
-    } catch (err) {
-      console.warn('[UserContext] Failed to refresh user:', err.message);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // Silent fail
     }
   }, [clerkLoaded, isSignedIn, getToken]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
+    favorites,
     role: user?.role || 'user',
     isAdmin: user?.role === 'admin',
     isLoading,
@@ -106,7 +104,7 @@ export const UserProvider = ({ children }) => {
     isSignedIn,
     clearUser,
     refreshUser,
-  };
+  }), [user, favorites, isLoading, clerkLoaded, error, isSignedIn, clearUser, refreshUser]);
 
   return (
     <UserContext.Provider value={value}>

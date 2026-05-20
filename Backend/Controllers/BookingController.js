@@ -10,9 +10,7 @@ const CreateBooking = async (req, res) => {
     await ensureDbConnection();
     const { showId, bookedSeats, amount } = req.body;
     const { userId } = getAuth(req);
-    
-    console.log('[CreateBooking] userId from getAuth:', userId);
-    
+
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
     const user = await User.findOne({ clerkId: userId });
@@ -85,9 +83,7 @@ const GetBookingById = async (req, res) => {
   try {
     await ensureDbConnection();
     const { userId } = getAuth(req);
-    
-    console.log('[GetBookingById] userId from getAuth:', userId);
-    
+
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
     const booking = await Booking.findById(req.params.id)

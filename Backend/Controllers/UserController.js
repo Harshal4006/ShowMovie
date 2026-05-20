@@ -1,35 +1,28 @@
 const { getAuth } = require('@clerk/express');
 const User = require('../Models/User');
+const Movie = require('../Models/Movie');
 const Booking = require('../Models/Booking');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
 const GetCurrentUser = async (req, res) => {
   try {
     await ensureDbConnection();
-    
-    console.log('[GetCurrentUser] req.auth:', req.auth);
-    
     const { userId } = getAuth(req);
-    console.log('[GetCurrentUser] userId from getAuth:', userId);
-    
+
     if (!userId) {
-      console.log('[GetCurrentUser] No userId - returning 401');
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const user = await User.findOne({ clerkId: userId })
       .populate('bookings')
-      .populate('favorites');
+      .select('-favorites');
 
     if (!user) {
-      console.log('[GetCurrentUser] User not found in database for clerkId:', userId);
       return res.status(404).json({ message: 'User not found' });
     }
-    
-    console.log('[GetCurrentUser] Found user:', { id: user._id, role: user.role });
+
     res.json(user);
   } catch (error) {
-    console.error('[GetCurrentUser] Error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -57,38 +50,29 @@ const UpdateUserProfile = async (req, res) => {
 
 const ToggleFavorite = async (req, res) => {
   try {
-    const { movieId, tmdbId } = req.body;
+    const { tmdbId } = req.body;
     await ensureDbConnection();
     const { userId } = getAuth(req);
+
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!tmdbId) return res.status(400).json({ message: 'tmdbId is required' });
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    let movieObjectId = null;
-    if (tmdbId) {
-      const movie = await require('../Models/Movie').findOne({ tmdbId: Number(tmdbId) });
-      if (movie) {
-        movieObjectId = movie._id;
-      }
-    } else if (movieId) {
-      movieObjectId = movieId;
-    }
+    const tmdbIdNum = Number(tmdbId);
+    if (isNaN(tmdbIdNum)) return res.status(400).json({ message: 'Invalid tmdbId' });
 
-    if (!movieObjectId) {
-      return res.status(404).json({ message: 'Movie not found' });
-    }
-
-    const movieIdString = String(movieObjectId);
-    const index = user.favorites.findIndex((id) => String(id) === movieIdString);
+    const index = user.favorites.indexOf(tmdbIdNum);
+    
     if (index > -1) {
       user.favorites.splice(index, 1);
     } else {
-      user.favorites.push(movieObjectId);
+      user.favorites.push(tmdbIdNum);
     }
 
     await user.save();
-    res.json({ favorites: user.favorites });
+    res.json({ tmdbId: tmdbIdNum, action: index > -1 ? 'removed' : 'added', favorites: user.favorites });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -100,13 +84,19 @@ const GetUserFavorites = async (req, res) => {
     const { userId } = getAuth(req);
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const user = await User.findOne({ clerkId: userId }).populate({
-      path: 'favorites',
-      select: 'tmdbId title posterUrl backdropUrl overview releaseDate runtime rating language'
+    const user = await User.findOne({ clerkId: userId }).select('favorites');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const favorites = user.favorites || [];
+    
+    const movies = await Movie.find({ tmdbId: { $in: favorites } });
+    
+    const favoritesData = favorites.map(tmdbId => {
+      const movie = movies.find(m => m.tmdbId === Number(tmdbId));
+      return movie || { tmdbId, title: 'Movie', posterUrl: null, backdropUrl: null };
     });
 
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({ favorites: user.favorites });
+    res.json({ favorites: favoritesData });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -116,7 +106,7 @@ const GetAllUsers = async (req, res) => {
   try {
     await ensureDbConnection();
     const { page = 1, limit = 10, search } = req.query;
-    
+
     let query = {};
     if (search) {
       query.$or = [
@@ -144,7 +134,7 @@ const GetUserById = async (req, res) => {
     await ensureDbConnection();
     const user = await User.findById(req.params.id)
       .populate('bookings')
-      .populate('favorites');
+      .select('-favorites');
 
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
@@ -174,9 +164,9 @@ const DeleteUser = async (req, res) => {
     await ensureDbConnection();
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     await Booking.deleteMany({ user: req.params.id });
-    
+
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -186,11 +176,10 @@ const DeleteUser = async (req, res) => {
 const GetUserStats = async (req, res) => {
   try {
     await ensureDbConnection();
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select('favorites');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const bookingCount = await Booking.countDocuments({ user: req.params.id });
-    const favoriteCount = user.favorites.length;
 
     res.json({
       userId: user._id,
@@ -198,7 +187,7 @@ const GetUserStats = async (req, res) => {
       email: user.email,
       role: user.role,
       bookingCount,
-      favoriteCount,
+      favoriteCount: user.favorites?.length || 0,
       memberSince: user.createdAt
     });
   } catch (error) {

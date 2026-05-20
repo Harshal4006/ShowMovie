@@ -1,5 +1,3 @@
-import { useAuth } from '@clerk/clerk-react';
-
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export class ApiError extends Error {
@@ -26,25 +24,15 @@ const handleResponse = async (res) => {
 
 export const authRequest = async (getToken, path, options = {}) => {
   if (!API_BASE_URL) {
-    throw new ApiError('VITE_API_URL is not set. Configure it in your frontend environment.');
+    throw new ApiError('VITE_API_URL is not set.');
   }
 
   const token = await getToken();
-  console.log('[AuthRequest] Token obtained:', token ? 'YES (length: ' + token.length + ')' : 'NO');
-
   if (!token) {
-    throw new ApiError('No authentication token available. Please sign in again.', { status: 401 });
+    throw new ApiError('No authentication token available.', { status: 401 });
   }
 
-  const {
-    method = 'GET',
-    headers = {},
-    body,
-    signal,
-  } = options;
-
-  console.log('[AuthRequest] Sending request to:', `${API_BASE_URL}${path}`);
-  console.log('[AuthRequest] Authorization header:', 'Bearer [TOKEN]');
+  const { method = 'GET', headers = {}, body, signal } = options;
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
@@ -57,24 +45,7 @@ export const authRequest = async (getToken, path, options = {}) => {
     signal,
   });
 
-  console.log('[AuthRequest] Response status:', res.status);
-
   return handleResponse(res);
-};
-
-export const createAuthRequester = (getToken) => {
-  return {
-    get: (path, options = {}) => authRequest(getToken, path, { ...options, method: 'GET' }),
-    post: (path, body, options = {}) => authRequest(getToken, path, { ...options, method: 'POST', body }),
-    put: (path, body, options = {}) => authRequest(getToken, path, { ...options, method: 'PUT', body }),
-    patch: (path, body, options = {}) => authRequest(getToken, path, { ...options, method: 'PATCH', body }),
-    delete: (path, options = {}) => authRequest(getToken, path, { ...options, method: 'DELETE' }),
-  };
-};
-
-export const useAuthRequest = () => {
-  const { getToken } = useAuth();
-  return createAuthRequester(getToken);
 };
 
 export const request = async (path, options = {}) => {

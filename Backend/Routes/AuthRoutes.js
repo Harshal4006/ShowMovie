@@ -13,7 +13,6 @@ router.get('/sync-role', VerifyToken, async (req, res) => {
   try {
     await ensureDbConnection();
     const { userId } = getAuth(req);
-    console.log('[sync-role] userId from getAuth:', userId);
 
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -23,8 +22,8 @@ router.get('/sync-role', VerifyToken, async (req, res) => {
     try {
       const userMetadata = await getClerkUserMetadata(userId);
       role = extractRoleFromClerk(userMetadata);
-    } catch (err) {
-      console.warn('Failed to fetch Clerk metadata:', err.message);
+    } catch {
+      // Use default role
     }
 
     const user = await User.findOne({ clerkId: userId });
@@ -34,7 +33,6 @@ router.get('/sync-role', VerifyToken, async (req, res) => {
     }
 
     if (user.role !== role) {
-      console.log(`Role sync: ${user.role} -> ${role} for user ${userId}`);
       user.role = role;
       await user.save();
     }

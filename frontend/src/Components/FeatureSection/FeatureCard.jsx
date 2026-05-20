@@ -1,19 +1,46 @@
-import { useEffect, useState } from "react";
+import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Play, Star } from "lucide-react";
 import toast from "react-hot-toast";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 import { formatRuntime } from "../../lib/formatRuntime.js";
-import { getFavoriteIds, toggleFavoriteShow } from "../../lib/favorites.js";
+import { toggleFavorite } from "../../services/api";
+import { useUserContext } from "../../hooks/UserContext";
 
-const FeatureCard = ({ movie, schedule }) => {
-  const { getToken, isSignedIn } = useUser();
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+const FeatureCard = memo(({ movie }) => {
+  const { getToken, isSignedIn } = useAuth();
+  const { favorites, refreshUser } = useUserContext();
 
-  const movieId = movie?._id || movie?.id || movie?.tmdbId;
-  const favoriteId = movie?.tmdbId || movie?.id || movie?._id;
-  const title = movie?.title || movie?.title;
+  const tmdbId = movie?.tmdbId || movie?.id || movie?._id;
+  const movieId = movie?._id || movie?.id || tmdbId;
+  const isFavorite = favorites.includes(Number(tmdbId));
+
+  const handleFavoriteToggle = useCallback(async () => {
+    if (!isSignedIn) {
+      toast.error("Please login to add favorites");
+      return;
+    }
+
+    if (!tmdbId) return;
+
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      await toggleFavorite(token, String(tmdbId));
+      await refreshUser();
+
+      toast.success(
+        !isFavorite
+          ? `${movie.title || 'Movie'} added to favorites`
+          : `${movie.title || 'Movie'} removed from favorites`
+      );
+    } catch (error) {
+      toast.error(error?.message || "Failed to update favorites");
+    }
+  }, [isSignedIn, tmdbId, isFavorite, movie.title, getToken, refreshUser]);
+
+  if (!movie) return null;
 
   const normalizeTmdbImage = (value, size) => {
     if (!value) return null;
@@ -23,79 +50,18 @@ const FeatureCard = ({ movie, schedule }) => {
     return value;
   };
 
-  const posterUrl = normalizeTmdbImage(
-    movie?.posterUrl || movie?.poster_path || movie?.posterPath,
-    "w500"
-  );
-  const backdropUrl = normalizeTmdbImage(
-    movie?.backdropUrl || movie?.backdrop_path || movie?.backdropPath,
-    "w1280"
-  );
+  const posterUrl = normalizeTmdbImage(movie?.posterUrl || movie?.poster_path || movie?.posterPath, "w500");
+  const backdropUrl = normalizeTmdbImage(movie?.backdropUrl || movie?.backdrop_path || movie?.backdropPath, "w1280");
   const releaseDate = movie?.releaseDate || movie?.release_date;
   const originalLanguage = movie?.language || movie?.original_language;
   const voteAverage = movie?.rating || movie?.vote_average;
   const runtime = movie?.runtime;
   const genres = movie?.genres;
-
-  useEffect(() => {
-    if (!favoriteId) return;
-
-    const syncFavoriteState = async () => {
-      setIsLoading(true);
-      try {
-        const tokenFn = isSignedIn ? getToken : null;
-        const favorites = await getFavoriteIds(tokenFn);
-        setIsFavorite(favorites.includes(String(favoriteId)));
-      } catch (error) {
-        console.error("Failed to sync favorite state:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    syncFavoriteState();
-    window.addEventListener("favorites:changed", syncFavoriteState);
-
-    return () => {
-      window.removeEventListener("favorites:changed", syncFavoriteState);
-    };
-  }, [favoriteId, isSignedIn]);
-
-  if (!movie) return null;
+  const title = movie?.title || "Unknown";
 
   const releaseYear = releaseDate?.split("-")[0] || "2026";
-  const genreNames = genres?.slice(0, 2).map((genre) => genre.name).join(", ") || "Action";
+  const genreNames = genres?.slice(0, 2).map((g) => g.name).join(", ") || "Action";
   const language = originalLanguage?.toUpperCase() || "EN";
-
-  const formatShowTime = (dateTimeString) => {
-    if (!dateTimeString) return null;
-    return new Date(dateTimeString).toLocaleTimeString("en-IN", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-  const showTimeLabel = formatShowTime(schedule?.dateTime);
-
-  const handleFavoriteToggle = async () => {
-    if (!favoriteId) return;
-
-    if (!isSignedIn) {
-      toast.error("Please login to add favorites");
-      return;
-    }
-
-    const tokenFn = isSignedIn ? getToken : null;
-    const result = await toggleFavoriteShow(favoriteId, tokenFn);
-    setIsFavorite(result.isFavorite);
-
-    toast.success(
-      result.isFavorite
-        ? `${title} added to favorites`
-        : `${title} removed from favorites`
-    );
-  };
-
   const imageSrc = backdropUrl || posterUrl || 'https://via.placeholder.com/500x300';
 
   return (
@@ -103,27 +69,17 @@ const FeatureCard = ({ movie, schedule }) => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.12),transparent_38%)] opacity-0 transition duration-300 group-hover:opacity-100" />
 
       <div className="relative overflow-hidden rounded-[1.35rem] border border-white/8 bg-[#0f1117]">
-        <img
-          src={imageSrc}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl"
-        />
+        <img src={imageSrc} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl" />
         <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/35" />
 
         <button
           type="button"
           onClick={handleFavoriteToggle}
-          disabled={isLoading}
           className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur transition duration-300 ${
-            isFavorite
-              ? "border-red-400/60 bg-red-500/25 text-red-200"
-              : "border-white/10 bg-black/45 text-white/80 hover:border-red-500/40 hover:bg-red-500/20 hover:text-white"
-          } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            isFavorite ? "border-red-400/60 bg-red-500/25 text-red-200" : "border-white/10 bg-black/45 text-white/80 hover:border-red-500/40 hover:bg-red-500/20 hover:text-white"
+          }`}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${title} ${isFavorite ? "from" : "to"} favorites`}
           aria-pressed={isFavorite}
-          data-favorite-id={favoriteId}
         >
           <Heart className={`h-4 w-4 transition duration-300 ${isFavorite ? "fill-current" : ""}`} />
         </button>
@@ -133,12 +89,7 @@ const FeatureCard = ({ movie, schedule }) => {
         </div>
 
         <Link to={`/movies/${movieId}`} className="relative block aspect-16/10 overflow-hidden p-3">
-          <img
-            src={imageSrc}
-            alt={title}
-            loading="lazy"
-            className="h-full w-full rounded-[1.05rem] object-contain transition duration-500 group-hover:scale-[1.04]"
-          />
+          <img src={imageSrc} alt={title} loading="lazy" className="h-full w-full rounded-[1.05rem] object-contain transition duration-500 group-hover:scale-[1.04]" />
           <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/5 to-transparent opacity-80" />
           <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 group-hover:opacity-100">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur">
@@ -157,10 +108,6 @@ const FeatureCard = ({ movie, schedule }) => {
         <p className="mt-3 text-sm text-gray-400">
           {releaseYear} | {genreNames} | {formatRuntime(runtime)}
         </p>
-
-        {showTimeLabel && (
-          <p className="mt-2 text-sm font-semibold text-red-300">{showTimeLabel}</p>
-        )}
 
         <div className="mt-4 flex flex-wrap gap-2">
           {genres?.slice(0, 3).map((genre) => (
@@ -183,6 +130,8 @@ const FeatureCard = ({ movie, schedule }) => {
       </div>
     </div>
   );
-};
+});
+
+FeatureCard.displayName = 'FeatureCard';
 
 export default FeatureCard;

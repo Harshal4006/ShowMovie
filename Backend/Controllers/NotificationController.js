@@ -6,19 +6,14 @@ const ensureDbConnection = require('../Utils/ensureDbConnection');
 const GetNotifications = async (req, res) => {
   try {
     await ensureDbConnection();
-    
-    console.log('[GetNotifications] req.auth:', req.auth);
     const { userId } = getAuth(req);
-    console.log('[GetNotifications] userId from getAuth:', userId);
-    
+
     if (!userId) {
-      console.log('[GetNotifications] No userId - returning 401');
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      console.log('[GetNotifications] User not found in database');
       return res.status(404).json({ message: 'User not found' });
     }
 
@@ -30,7 +25,6 @@ const GetNotifications = async (req, res) => {
 
     res.json({ notifications, unreadCount });
   } catch (error) {
-    console.error('[GetNotifications] Error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -111,7 +105,7 @@ const ClearAllNotifications = async (req, res) => {
 const CreateNotification = async (userId, type, title, message, relatedId = null, relatedModel = null) => {
   try {
     await ensureDbConnection();
-    const notification = await Notification.create({
+    return await Notification.create({
       user: userId,
       type,
       title,
@@ -119,9 +113,7 @@ const CreateNotification = async (userId, type, title, message, relatedId = null
       relatedId,
       relatedModel
     });
-    return notification;
   } catch (error) {
-    console.error('Failed to create notification:', error);
     return null;
   }
 };

@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import useIsAdmin from '../hooks/useIsAdmin';
 import PageLoader from './PageLoader/PageLoader';
 
@@ -6,17 +7,16 @@ const AdminRoute = ({ children }) => {
   const { isAdmin, isLoading, isSignedIn, isAuthLoaded } = useIsAdmin();
 
   if (!isAuthLoaded || isLoading) {
-    console.log('[AdminRoute] Waiting for auth to load...', { isAuthLoaded, isLoading });
     return <PageLoader />;
   }
 
-  console.log('[AdminRoute] Auth loaded', { isSignedIn, isAdmin });
-
   if (!isSignedIn) {
+    toast.error('Please sign in to access this page');
     return <Navigate to="/" replace />;
   }
 
   if (!isAdmin) {
+    toast.error('Access denied. Admin privileges required.');
     return <Navigate to="/" replace />;
   }
 

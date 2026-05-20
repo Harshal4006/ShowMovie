@@ -1,12 +1,12 @@
+import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, X, Menu, TicketPlus, Check, Trash2, BellOff, Loader2, LayoutDashboard } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
 import { SignedIn, SignedOut, SignInButton, UserButton, useAuth } from "@clerk/clerk-react";
 import "./Navbar.css";
 import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification, clearAllNotifications } from "../../services/api";
 import { useUserContext } from "../../hooks/UserContext";
 
-const NavItem = ({ text, to }) => (
+const NavItem = memo(({ text, to }) => (
   <Link
     to={to}
     className="relative h-6 overflow-hidden group cursor-pointer"
@@ -18,9 +18,9 @@ const NavItem = ({ text, to }) => (
       {text}
     </span>
   </Link>
-);
+));
 
-const NotificationItem = ({ notification, onMarkRead, onDelete }) => {
+const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
   const getIcon = (type) => {
     switch (type) {
       case 'booking_confirmed':
@@ -77,7 +77,7 @@ const NotificationItem = ({ notification, onMarkRead, onDelete }) => {
       </div>
     </div>
   );
-};
+});
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -89,19 +89,17 @@ const Navbar = () => {
   const notificationRef = useRef(null);
   const navigate = useNavigate();
   const { getToken } = useAuth();
-  const { isSignedIn, isLoading: isUserLoading, isAdmin, refreshUser } = useUserContext();
-
-  const fetchNotifications = async () => {
+  const { isSignedIn, isLoading: isUserLoading, isAdmin } = useUserContext();
+  
+  const fetchNotifications = useCallback(async () => {
     if (!isSignedIn) return;
     
     setIsLoading(true);
     setError(null);
     try {
       const token = await getToken();
-      if (!token) {
-        setError("Authentication error");
-        return;
-      }
+      if (!token) return;
+      
       const data = await getNotifications(token);
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
@@ -110,7 +108,7 @@ const Navbar = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isSignedIn, getToken]);
 
   useEffect(() => {
     if (isSignedIn) {
@@ -118,7 +116,8 @@ const Navbar = () => {
       const interval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(interval);
     }
-  }, [isSignedIn]);
+    return () => {};
+  }, [isSignedIn, fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -126,35 +125,34 @@ const Navbar = () => {
         setShowNotifications(false);
       }
     };
+    
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMarkRead = async (id) => {
+  const handleMarkRead = useCallback(async (id) => {
     try {
       const token = await getToken();
       await markNotificationRead(token, id);
-      setNotifications(prev =>
-        prev.map(n => (n._id === id ? { ...n, isRead: true } : n))
-      );
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (err) {
-      console.error("Failed to mark as read:", err);
+    } catch {
+      // Silent fail
     }
-  };
+  }, [getToken]);
 
-  const handleMarkAllRead = async () => {
+  const handleMarkAllRead = useCallback(async () => {
     try {
       const token = await getToken();
       await markAllNotificationsRead(token);
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
-    } catch (err) {
-      console.error("Failed to mark all as read:", err);
+    } catch {
+      // Silent fail
     }
-  };
+  }, [getToken]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     try {
       const token = await getToken();
       await deleteNotification(token, id);
@@ -163,33 +161,29 @@ const Navbar = () => {
       if (deleted && !deleted.isRead) {
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
-    } catch (err) {
-      console.error("Failed to delete notification:", err);
+    } catch {
+      // Silent fail
     }
-  };
+  }, [getToken, notifications]);
 
-  const handleClearAll = async () => {
+  const handleClearAll = useCallback(async () => {
     try {
       const token = await getToken();
       await clearAllNotifications(token);
       setNotifications([]);
       setUnreadCount(0);
-    } catch (err) {
-      console.error("Failed to clear notifications:", err);
+    } catch {
+      // Silent fail
     }
-  };
+  }, [getToken]);
 
-  const openMenu = () => {
-    setIsOpen(true);
-  };
+  const toggleNotifications = useCallback(() => {
+    setShowNotifications(prev => !prev);
+  }, []);
 
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
-
-  const handleMobileClick = () => {
-    setIsOpen(false);
-  };
+  const toggleMobileMenu = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
 
   return (
     <div className="fixed top-0 left-0 z-50 flex w-full items-center justify-between gap-3 px-4 py-3 backdrop-blur sm:px-6 sm:py-4 md:px-10 lg:px-14 xl:px-24 2xl:px-36">
@@ -204,14 +198,14 @@ const Navbar = () => {
         <NavItem text="Movies" to="/movies" />
         <NavItem text="Theaters" to="/" />
         <NavItem text="Releases" to="/" />
-        <NavItem text="Favorite" to="/favorite" />
+        {isSignedIn && <NavItem text="Favorite" to="/favorite" />}
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
         <SignedIn>
           <div className="relative" ref={notificationRef}>
             <button
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={toggleNotifications}
               className="relative rounded-full p-2 text-red-800 transition hover:bg-white/10 xl:block 2xl:p-2.5"
               aria-label="Notifications"
             >
@@ -247,7 +241,7 @@ const Navbar = () => {
                       </>
                     )}
                     <button
-                      onClick={() => setShowNotifications(false)}
+                      onClick={toggleNotifications}
                       className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
                     >
                       <X className="h-4 w-4" />
@@ -320,7 +314,7 @@ const Navbar = () => {
         </SignedIn>
 
         <Menu
-          onClick={openMenu}
+          onClick={toggleMobileMenu}
           className="h-6 w-6 cursor-pointer text-red-800 sm:h-7 sm:w-7 xl:hidden"
           aria-label="Open menu"
         />
@@ -335,7 +329,7 @@ const Navbar = () => {
         aria-label="Navigation menu"
       >
         <X
-          onClick={closeMenu}
+          onClick={toggleMobileMenu}
           className="absolute top-5 right-5 h-6 w-6 cursor-pointer sm:top-6 sm:right-6 sm:h-7 sm:w-7"
           aria-label="Close menu"
         />
@@ -343,35 +337,35 @@ const Navbar = () => {
         <Link
           to="/"
           className="w-full max-w-xs rounded-full border border-white/10 bg-white/5 px-6 py-3 text-center"
-          onClick={handleMobileClick}
+          onClick={() => setIsOpen(false)}
         >
           Home
         </Link>
         <Link
           to="/movies"
           className="w-full max-w-xs rounded-full border border-white/10 bg-white/5 px-6 py-3 text-center"
-          onClick={handleMobileClick}
+          onClick={() => setIsOpen(false)}
         >
           Movies
         </Link>
         <Link
           to="/"
           className="w-full max-w-xs rounded-full border border-white/10 bg-white/5 px-6 py-3 text-center"
-          onClick={handleMobileClick}
+          onClick={() => setIsOpen(false)}
         >
           Theaters
         </Link>
         <Link
           to="/"
           className="w-full max-w-xs rounded-full border border-white/10 bg-white/5 px-6 py-3 text-center"
-          onClick={handleMobileClick}
+          onClick={() => setIsOpen(false)}
         >
           Releases
         </Link>
         <Link
           to="/favorite"
           className="w-full max-w-xs rounded-full border border-white/10 bg-white/5 px-6 py-3 text-center"
-          onClick={handleMobileClick}
+          onClick={() => setIsOpen(false)}
         >
           Favorite
         </Link>

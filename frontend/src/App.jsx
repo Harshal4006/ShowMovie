@@ -4,6 +4,7 @@ import ToastProvider from "./Components/ToastProvider/ToastProvider";
 import PageLoader from "./Components/PageLoader/PageLoader.jsx";
 import ErrorBoundary from "./Components/ErrorBoundary/ErrorBoundary.jsx";
 import AdminRoute from "./Components/AdminRoute.jsx";
+import FavoriteRoute from "./Components/FavoriteRoute.jsx";
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import("./Pages/Home/Home.jsx"));
@@ -46,7 +47,7 @@ const App = () => {
               <Route path="/movies/:id" element={<MovieDetails />} />
               <Route path="/movies/:id/:date" element={<SeatLayout />} />
               <Route path="/my-booking" element={<MyBooking />} />
-              <Route path="/favorite" element={<Favorite />} />
+              <Route path="/favorite" element={<FavoriteRoute><Favorite /></FavoriteRoute>} />
 
               {/* Admin Routes - Protected */}
               <Route
