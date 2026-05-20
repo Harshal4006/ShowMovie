@@ -88,8 +88,8 @@ const Navbar = () => {
   const [error, setError] = useState(null);
   const notificationRef = useRef(null);
   const navigate = useNavigate();
-  const { isSignedIn, getToken } = useAuth();
-  const { isAdmin, isLoading: isUserLoading } = useUserContext();
+  const { getToken } = useAuth();
+  const { isSignedIn, isLoading: isUserLoading, isAdmin, refreshUser } = useUserContext();
 
   const fetchNotifications = async () => {
     if (!isSignedIn) return;
@@ -98,6 +98,10 @@ const Navbar = () => {
     setError(null);
     try {
       const token = await getToken();
+      if (!token) {
+        setError("Authentication error");
+        return;
+      }
       const data = await getNotifications(token);
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);

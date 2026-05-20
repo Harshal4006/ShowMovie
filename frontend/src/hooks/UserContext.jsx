@@ -19,7 +19,11 @@ export const UserProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   const fetchUser = useCallback(async () => {
-    if (!isSignedIn || !clerkLoaded) {
+    if (!clerkLoaded) {
+      return;
+    }
+
+    if (!isSignedIn) {
       setUser(null);
       setIsLoading(false);
       return;
@@ -30,6 +34,7 @@ export const UserProvider = ({ children }) => {
 
     try {
       const token = await getToken();
+      
       if (!token) {
         setUser(null);
         setIsLoading(false);
@@ -51,20 +56,41 @@ export const UserProvider = ({ children }) => {
     fetchUser();
   }, [fetchUser]);
 
+  useEffect(() => {
+    if (!isSignedIn && user) {
+      setUser(null);
+      setError(null);
+    }
+  }, [isSignedIn, user]);
+
   const clearUser = useCallback(() => {
     setUser(null);
     setError(null);
   }, []);
 
-  const refreshUser = useCallback(() => {
-    fetchUser();
-  }, [fetchUser]);
+  const refreshUser = useCallback(async () => {
+    if (!clerkLoaded || !isSignedIn) return;
+    
+    setIsLoading(true);
+    try {
+      const token = await getToken();
+      if (token) {
+        const userData = await getMe(token);
+        setUser(userData);
+      }
+    } catch (err) {
+      console.warn('Failed to refresh user:', err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [clerkLoaded, isSignedIn, getToken]);
 
   const value = {
     user,
     role: user?.role || 'user',
     isAdmin: user?.role === 'admin',
     isLoading,
+    isAuthLoaded: clerkLoaded,
     error,
     isSignedIn,
     clearUser,

@@ -2,20 +2,30 @@ const User = require('../Models/User');
 const Booking = require('../Models/Booking');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
-// Get current user profile
 const GetCurrentUser = async (req, res) => {
   try {
     await ensureDbConnection();
     const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    
+    console.log('[GetCurrentUser] Request received for user:', clerkUserId);
+    
+    if (!clerkUserId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
     const user = await User.findOne({ clerkId: clerkUserId })
       .populate('bookings')
       .populate('favorites');
 
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      console.log('[GetCurrentUser] User not found in database for clerkId:', clerkUserId);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('[GetCurrentUser] Found user:', { id: user._id, role: user.role });
     res.json(user);
   } catch (error) {
+    console.error('[GetCurrentUser] Error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };

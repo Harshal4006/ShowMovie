@@ -6,10 +6,18 @@ const GetNotifications = async (req, res) => {
   try {
     await ensureDbConnection();
     const clerkUserId = req.auth?.userId;
-    if (!clerkUserId) return res.status(401).json({ message: 'Unauthorized' });
+    
+    console.log('[GetNotifications] Request received for user:', clerkUserId);
+    
+    if (!clerkUserId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
     const user = await User.findOne({ clerkId: clerkUserId });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      console.log('[GetNotifications] User not found in database');
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     const notifications = await Notification.find({ user: user._id })
       .sort({ createdAt: -1 })
@@ -19,6 +27,7 @@ const GetNotifications = async (req, res) => {
 
     res.json({ notifications, unreadCount });
   } catch (error) {
+    console.error('[GetNotifications] Error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
