@@ -7,7 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const { serve } = require('inngest/express');
-const { clerkMiddleware } = require('@clerk/express');
+const { clerkMiddleware, getAuth } = require('@clerk/express');
 
 const ErrorHandler = require('./Middleware/ErrorMiddleware');
 const { inngest, functions } = require('./Inngest/Inngest');
@@ -15,17 +15,55 @@ const ensureDbConnection = require('./Utils/ensureDbConnection');
 
 const app = express();
 
-// Configure middleware
+// Configure CORS
 const allowedOrigin = process.env.FRONTEND_URL;
-app.use(cors({
+const corsOptions = {
   origin: allowedOrigin || '*',
   credentials: Boolean(allowedOrigin),
-}));
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Clerk auth (reads CLERK_SECRET_KEY, etc from env)
+// Clerk auth middleware - MUST be before routes
 app.use(clerkMiddleware());
+
+// Debug auth route - test if token is being decoded correctly
+app.get('/api/debug-auth', (req, res) => {
+  const authHeader = req.headers.authorization;
+  console.log('[Debug] Request headers:', req.headers);
+  console.log('[Debug] Auth header:', authHeader ? 'Present' : 'Missing');
+  console.log('[Debug] Cookie header:', req.headers.cookie ? 'Present' : 'Missing');
+  
+  try {
+    const auth = getAuth(req);
+    console.log('[Debug] getAuth result:', auth);
+    
+    res.json({
+      success: true,
+      message: 'Auth debug endpoint',
+      auth: {
+        userId: auth.userId || null,
+        sessionId: auth.sessionId || null,
+        organizationId: auth.organizationId || null,
+      },
+      headers: {
+        authHeaderPresent: !!authHeader,
+        cookiePresent: !!req.headers.cookie,
+      },
+      environment: process.env.NODE_ENV,
+    });
+  } catch (error) {
+    console.error('[Debug] Auth error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined,
+    });
+  }
+});
 
 // Root route
 app.get('/', (req, res) => {
