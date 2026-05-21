@@ -15,26 +15,22 @@ const ensureDbConnection = require('./Utils/ensureDbConnection');
 
 const app = express();
 
-// Configure CORS
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://showmovie-frontend.vercel.app',
-  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-];
+// CORS - MUST be before all routes and middleware
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'https://showmovie-frontend.vercel.app',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-app.use(cors(corsOptions));
+// Handle OPTIONS preflight requests explicitly
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
