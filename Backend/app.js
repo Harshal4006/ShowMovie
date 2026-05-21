@@ -156,6 +156,10 @@ app.use('/api/notifications', NotificationRoutes);
 const AdminRoutes = require('./Routes/AdminRoutes');
 app.use('/api/admin', AdminRoutes);
 
+// Mount Payment routes
+const PaymentRoutes = require('./Routes/PaymentRoutes');
+app.use('/api/payment', PaymentRoutes);
+
 
 // Error handling
 app.use(ErrorHandler);

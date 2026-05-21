@@ -9,6 +9,7 @@ const BookingConfirmationModal = ({
   onConfirm,
   bookingDetails,
   isLoading = false,
+  total: totalProp,
 }) => {
   if (!isOpen) return null;
 
@@ -32,11 +33,10 @@ const BookingConfirmationModal = ({
     return timeString;
   };
 
-  // Calculate payment breakdown
   const totalSeats = seats.length;
   const convenienceFee = 2.99;
-  const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + convenienceFee + tax;
+  const tax = subtotal * 0.08;
+  const total = totalProp ?? (subtotal + convenienceFee + tax);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">

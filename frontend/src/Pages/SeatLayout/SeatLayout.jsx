@@ -12,7 +12,7 @@ import SeatSummaryCard from "../../Components/SeatLayout/SeatSummaryCard.jsx";
 import BookingConfirmationModal from "../../Components/SeatLayout/BookingConfirmationModal.jsx";
 import QuickBookingSuggestions from "../../Components/SeatLayout/QuickBookingSuggestions.jsx";
 import { useSeatLayoutModel } from "../../Components/SeatLayout/useSeatLayoutModel.js";
-import { createBooking } from "../../services/api";
+import { createPaymentOrder, verifyPayment } from "../../services/api";
 
 const SeatLayout = () => {
   const navigate = useNavigate();
@@ -21,12 +21,11 @@ const SeatLayout = () => {
   const time = searchParams.get("time") || "";
   const { isSignedIn, getToken } = useAuth();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); // block UI while processing booking
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const {
     status,
     errorMessage,
-    isResolving,
     movie,
     rows,
     seatsPerRow,
@@ -39,6 +38,10 @@ const SeatLayout = () => {
     selectMultipleSeats,
   } = useSeatLayoutModel({ id, date, time });
 
+  const convenienceFee = 2.99;
+  const tax = subtotal * 0.08;
+  const totalAmount = subtotal + convenienceFee + tax;
+
   const handleToggleSeat = (seatId) => {
     const result = toggleSeat(seatId);
     if (result.reason === "limit") {
@@ -48,7 +51,6 @@ const SeatLayout = () => {
     }
   };
 
-  // open confirmation modal if seats are selected
   const handleConfirmClick = () => {
     if (selectedSeats.length === 0) {
       toast.error("Please select at least one seat to continue.");
@@ -57,7 +59,33 @@ const SeatLayout = () => {
     setShowConfirmationModal(true);
   };
 
-  // finalize the booking and redirect
+  const handlePaymentSuccess = async (response) => {
+    try {
+      const token = await getToken();
+      const result = await verifyPayment(token, {
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+        showId: selectedShow._id,
+        bookedSeats: selectedSeats,
+        amount: totalAmount,
+      });
+
+      setShowConfirmationModal(false);
+      toast.success("Payment successful! Booking confirmed.");
+      navigate("/my-booking");
+    } catch (error) {
+      toast.error(error?.message || "Payment verification failed. Please contact support.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaymentError = (error) => {
+    setIsProcessing(false);
+    toast.error("Payment failed. Please try again.");
+  };
+
   const handleConfirmBooking = async () => {
     if (!selectedShow?._id) {
       toast.error("Show not found for selected date/time.");
@@ -71,19 +99,46 @@ const SeatLayout = () => {
     setIsProcessing(true);
     try {
       const token = await getToken();
-      await createBooking(token, {
-        showId: selectedShow._id,
-        bookedSeats: selectedSeats,
-        amount: subtotal,
+
+      const orderResponse = await createPaymentOrder(token, {
+        amount: totalAmount,
+        currency: "INR",
+        receipt: `showmovie_${Date.now()}`,
       });
 
-      setShowConfirmationModal(false);
-      toast.success("Booking confirmed! Redirecting to your bookings...");
-      navigate("/my-booking");
-    } catch (e) {
-      toast.error(e?.message || "Failed to confirm booking. Please try again.");
-    } finally {
+      if (!orderResponse.success || !orderResponse.orderId) {
+        throw new Error("Failed to create payment order");
+      }
+
+      const options = {
+        key: orderResponse.key,
+        amount: orderResponse.amount,
+        currency: orderResponse.currency,
+        name: "ShowMovie",
+        description: `Booking for ${movie?.title || "Movie"}`,
+        order_id: orderResponse.orderId,
+        handler: handlePaymentSuccess,
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+        theme: {
+          color: "#ef4444",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", handlePaymentError);
+      razorpay.open();
+    } catch (error) {
       setIsProcessing(false);
+      toast.error(error?.message || "Failed to initiate payment. Please try again.");
     }
   };
 
@@ -116,9 +171,9 @@ const SeatLayout = () => {
           Back
         </Link>
 
-        {(status === "loading" || isResolving) && <LoadingState />}
+        {status === "loading" && <LoadingState />}
 
-        {!isResolving && status === "error" && (
+        {status === "error" && (
           <ErrorState
             title="Unable to load seat layout"
             message={errorMessage || "Something went wrong."}
@@ -127,7 +182,7 @@ const SeatLayout = () => {
           />
         )}
 
-        {!isResolving && status === "ready" && movie && (
+        {status === "ready" && movie && (
           <div className="grid gap-6 md:gap-8 lg:grid-cols-12">
             <div className="lg:col-span-8 space-y-6">
               <ShowTimingsCard
@@ -175,6 +230,7 @@ const SeatLayout = () => {
         onClose={handleCloseModal}
         onConfirm={handleConfirmBooking}
         isLoading={isProcessing}
+        total={totalAmount}
         bookingDetails={{
           movieTitle: movie?.title,
           showDate: date,

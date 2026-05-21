@@ -11,6 +11,11 @@ export const getMyBookings = (token) => request('/bookings', { token });
 export const createBooking = (token, bookingData) =>
   request('/bookings', { method: 'POST', token, body: bookingData });
 
+export const createPaymentOrder = (token, orderData) =>
+  request('/payment/create-order', { method: 'POST', token, body: orderData });
+export const verifyPayment = (token, paymentData) =>
+  request('/payment/verify-payment', { method: 'POST', token, body: paymentData });
+
 export const syncUser = (token, userData) =>
   request('/auth/sync', { method: 'POST', token, body: userData });
 

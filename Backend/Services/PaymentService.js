@@ -1,32 +1,49 @@
-// Payment Service - placeholder for payment integration
-// Can integrate with Razorpay, Stripe, etc. in the future
+const razorpayInstance = require('../Config/Razorpay');
 
 class PaymentService {
-  async CreatePayment(amount, currency = 'INR') {
-    // Placeholder for payment gateway integration
-    return {
-      orderId: `order_${Date.now()}`,
-      amount,
+  async CreatePayment(amount, currency = 'INR', receipt) {
+    const options = {
+      amount: Math.round(amount * 100),
       currency,
-      status: 'pending'
+      receipt: receipt || `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpayInstance.orders.create(options);
+
+    return {
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key: process.env.RAZORPAY_KEY_ID,
+      status: 'pending',
     };
   }
 
-  async VerifyPayment(paymentId) {
-    // Placeholder for payment verification
+  async VerifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature) {
+    const crypto = require('crypto');
+    const body = razorpayOrderId + '|' + razorpayPaymentId;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest('hex');
+
+    const isAuthentic = expectedSignature === razorpaySignature;
+
     return {
-      verified: true,
-      paymentId
+      verified: isAuthentic,
+      paymentId: razorpayPaymentId,
+      orderId: razorpayOrderId,
     };
   }
 
   async Refund(paymentId, amount) {
-    // Placeholder for refund processing
+    const refund = await razorpayInstance.payments.refund(paymentId, { amount });
+
     return {
-      refundId: `refund_${Date.now()}`,
+      refundId: refund.id,
       paymentId,
       amount,
-      status: 'processed'
+      status: refund.status,
     };
   }
 }
