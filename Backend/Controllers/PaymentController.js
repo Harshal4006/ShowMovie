@@ -5,6 +5,7 @@ const Show = require('../Models/Show');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { CreateNotification } = require('./NotificationController');
+const { inngest } = require('../Inngest/Inngest');
 
 const CreateOrder = async (req, res) => {
   try {
@@ -124,6 +125,34 @@ const VerifyPayment = async (req, res) => {
       booking._id,
       'Booking'
     );
+
+    const showDate = populated.show?.showDateTime
+      ? new Date(populated.show.showDateTime).toLocaleDateString('en-US', {
+          weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+        })
+      : 'N/A';
+    const showTime = populated.show?.showDateTime
+      ? new Date(populated.show.showDateTime).toLocaleTimeString('en-US', {
+          hour: '2-digit', minute: '2-digit',
+        })
+      : 'N/A';
+
+    await inngest.send({
+      name: 'booking/confirmed',
+      data: {
+        bookingId: booking._id.toString(),
+        userId: user._id.toString(),
+        userEmail: user.email,
+        userName: user.name,
+        movieTitle: populated.show?.movie?.title || 'Movie',
+        seats: bookedSeats,
+        amount,
+        showDate,
+        showTime,
+        theater: populated.show?.theater || 'Standard Theater',
+        paymentId: razorpay_payment_id,
+      },
+    });
 
     const enriched = {
       _id: populated._id,

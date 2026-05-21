@@ -1,6 +1,7 @@
 const { Inngest } = require("inngest");
 const mongoose = require("mongoose");
 const { getClerkUserMetadata, extractRoleFromClerk } = require("../Utils/clerkSync");
+const EmailService = require("../Services/EmailService");
 
 mongoose.set("strictQuery", true);
 
@@ -197,10 +198,158 @@ const syncUserDeletion = inngest.createFunction(
   }
 );
 
+// Booking Confirmed Email
+const bookingConfirmedEmail = inngest.createFunction(
+  {
+    id: "booking-confirmed-email",
+    name: "Send Booking Confirmed Email",
+    retries: 2,
+    timeout: "30s",
+    triggers: [{ event: "booking/confirmed" }],
+  },
+  async ({ event }) => {
+    await connectDB();
+    console.log("Email event triggered: booking/confirmed");
+
+    const { bookingId, userId, userEmail, userName, movieTitle, seats, amount, showDate, showTime, theater, paymentId } = event.data || {};
+
+    if (!bookingId || !userEmail) {
+      console.error("Missing required data for booking confirmed email");
+      return { success: false, reason: "Missing required data" };
+    }
+
+    const Booking = require("../Models/Booking");
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      console.error("Booking not found:", bookingId);
+      return { success: false, reason: "Booking not found" };
+    }
+
+    if (booking.emailSent === 'confirmed') {
+      console.log("Duplicate prevention: confirmed email already sent for", bookingId);
+      return { success: true, reason: "Email already sent" };
+    }
+
+    const result = await EmailService.sendBookingConfirmed({
+      userEmail,
+      userName: userName || 'Movie Lover',
+      movieTitle,
+      bookingId,
+      seats,
+      amount,
+      showDate,
+      showTime,
+      theater,
+      paymentId,
+    });
+
+    if (result.success) {
+      await Booking.findByIdAndUpdate(bookingId, { emailSent: 'confirmed' });
+      console.log("Booking notification sent:", bookingId);
+    }
+
+    return result;
+  }
+);
+
+// Booking Pending Email
+const bookingPendingEmail = inngest.createFunction(
+  {
+    id: "booking-pending-email",
+    name: "Send Booking Pending Email",
+    retries: 2,
+    timeout: "30s",
+    triggers: [{ event: "booking/pending" }],
+  },
+  async ({ event }) => {
+    await connectDB();
+    console.log("Email event triggered: booking/pending");
+
+    const { bookingId, userEmail, userName, movieTitle, amount, showDate, showTime } = event.data || {};
+
+    if (!bookingId || !userEmail) {
+      console.error("Missing required data for booking pending email");
+      return { success: false, reason: "Missing required data" };
+    }
+
+    const Booking = require("../Models/Booking");
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      console.error("Booking not found:", bookingId);
+      return { success: false, reason: "Booking not found" };
+    }
+
+    if (booking.emailSent === 'pending') {
+      console.log("Duplicate prevention: pending email already sent for", bookingId);
+      return { success: true, reason: "Email already sent" };
+    }
+
+    const result = await EmailService.sendBookingPending({
+      userEmail,
+      userName: userName || 'Movie Lover',
+      movieTitle,
+      bookingId,
+      amount,
+      showDate,
+      showTime,
+    });
+
+    if (result.success) {
+      await Booking.findByIdAndUpdate(bookingId, { emailSent: 'pending' });
+      console.log("Booking notification sent:", bookingId);
+    }
+
+    return result;
+  }
+);
+
+// Booking Failed Email
+const bookingFailedEmail = inngest.createFunction(
+  {
+    id: "booking-failed-email",
+    name: "Send Booking Failed Email",
+    retries: 2,
+    timeout: "30s",
+    triggers: [{ event: "booking/failed" }],
+  },
+  async ({ event }) => {
+    await connectDB();
+    console.log("Email event triggered: booking/failed");
+
+    const { bookingId, userEmail, userName, movieTitle, amount, showDate, showTime, errorMessage } = event.data || {};
+
+    if (!bookingId || !userEmail) {
+      console.error("Missing required data for booking failed email");
+      return { success: false, reason: "Missing required data" };
+    }
+
+    const result = await EmailService.sendBookingFailed({
+      userEmail,
+      userName: userName || 'Movie Lover',
+      movieTitle,
+      amount,
+      showDate,
+      showTime,
+      errorMessage: errorMessage || 'Payment could not be processed',
+    });
+
+    if (result.success) {
+      console.log("Booking notification sent for failed booking:", bookingId);
+    }
+
+    return result;
+  }
+);
+
 const functions = [
   syncUserCreation,
   syncUserUpdate,
   syncUserDeletion,
+  bookingConfirmedEmail,
+  bookingPendingEmail,
+  bookingFailedEmail,
 ];
 
 module.exports = {

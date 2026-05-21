@@ -8,7 +8,8 @@ const bookingSchema = new mongoose.Schema({
   isPaid: { type: Boolean, default: false },
   paymentId: { type: String },
   paymentMethod: { type: String },
-  status: { type: String, enum: ['confirmed', 'cancelled', 'completed'], default: 'confirmed' }
+  status: { type: String, enum: ['confirmed', 'cancelled', 'completed'], default: 'confirmed' },
+  emailSent: { type: String, enum: ['confirmed', 'pending', 'failed', null], default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);
