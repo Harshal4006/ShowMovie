@@ -3,6 +3,16 @@ import { Ticket, IndianRupee, Clock, MapPin, Film, Shield, Star, Monitor, Langua
 
 import { formatShowDate } from "./seatLayoutUtils.js";
 
+const PLACEHOLDER = "https://via.placeholder.com/200x300?text=No+Image";
+
+const normalizePoster = (movie) => {
+  if (!movie) return PLACEHOLDER;
+  if (movie.posterUrl) return movie.posterUrl;
+  if (movie.posterPath) return `https://image.tmdb.org/t/p/w500${movie.posterPath}`;
+  if (movie.poster_path) return `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+  return PLACEHOLDER;
+};
+
 const SeatSummaryCard = ({
   date,
   time,
@@ -19,7 +29,7 @@ const SeatSummaryCard = ({
       {movie && (
         <div className="flex gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 mb-4">
           <img
-            src={movie.poster_path}
+            src={normalizePoster(movie)}
             alt={movie.title}
             loading="lazy"
             className="w-20 h-28 rounded-xl object-cover"
