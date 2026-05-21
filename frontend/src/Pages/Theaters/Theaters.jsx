@@ -26,7 +26,7 @@ const Theaters = () => {
       {/* Hero */}
       <div className="relative h-72 overflow-hidden sm:h-80 md:h-96">
         <img
-          src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600&q=80"
+          src="https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=1600&q=80"
           alt="Cinema Hall"
           className="h-full w-full object-cover"
         />
