@@ -6,6 +6,7 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { CreateNotification } = require('./NotificationController');
+const { inngest } = require('../Inngest/Inngest');
 
 // TMDB Helper Functions
 const getTmdbConfig = () => {
@@ -474,6 +475,27 @@ const CreateShow = async (req, res) => {
         );
       }
     }
+
+    // Trigger email notification to all users
+    const firstShowDate = new Date(dateTimes[0]);
+    await inngest.send({
+      name: 'show/added',
+      data: {
+        showId: createdShows[0]._id.toString(),
+        movieTitle: movie.title,
+        moviePoster: movie.posterUrl,
+        showDate: firstShowDate.toLocaleDateString('en-US', {
+          weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+        }),
+        showTime: firstShowDate.toLocaleTimeString('en-US', {
+          hour: '2-digit', minute: '2-digit',
+        }),
+        theater,
+        screenType,
+        language,
+        price: showPrice || 0,
+      },
+    });
 
     res.status(201).json({ shows: populated, movie });
   } catch (error) {

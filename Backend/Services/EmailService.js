@@ -2,6 +2,7 @@ const { Resend } = require('resend');
 const generateBookingConfirmedEmail = require('../EmailTemplates/BookingConfirmedTemplate');
 const generateBookingPendingEmail = require('../EmailTemplates/BookingPendingTemplate');
 const generateBookingFailedEmail = require('../EmailTemplates/BookingFailedTemplate');
+const generateNewShowAddedEmail = require('../EmailTemplates/NewShowAddedTemplate');
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -62,6 +63,25 @@ class EmailService {
     });
 
     console.log('[EmailService] Failed email sent to', data.userEmail, '- ID:', result.data?.id);
+    return { success: true, emailId: result.data?.id };
+  }
+
+  async sendNewShowAdded(data) {
+    if (!resend) {
+      console.log('[EmailService] Resend not configured, skipping show added email');
+      return { success: false, reason: 'Resend not configured' };
+    }
+
+    const html = generateNewShowAddedEmail(data);
+
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.userEmail,
+      subject: `New Show Added - ${data.movieTitle}`,
+      html,
+    });
+
+    console.log('[EmailService] Show added email sent to', data.userEmail, '- ID:', result.data?.id);
     return { success: true, emailId: result.data?.id };
   }
 }

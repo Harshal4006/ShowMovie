@@ -343,6 +343,63 @@ const bookingFailedEmail = inngest.createFunction(
   }
 );
 
+// New Show Added Email - sends to all users
+const newShowAddedEmail = inngest.createFunction(
+  {
+    id: "new-show-added-email",
+    name: "Send New Show Added Email",
+    retries: 2,
+    timeout: "5m",
+    concurrency: { limit: 10 },
+    triggers: [{ event: "show/added" }],
+  },
+  async ({ event }) => {
+    await connectDB();
+    console.log("Email event triggered: show/added");
+
+    const { showId, movieTitle, moviePoster, showDate, showTime, theater, screenType, language, price } = event.data || {};
+
+    if (!showId || !movieTitle) {
+      console.error("Missing required data for show added email");
+      return { success: false, reason: "Missing required data" };
+    }
+
+    const User = require("../Models/User");
+    const allUsers = await User.find({}).select('email name');
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    for (const user of allUsers) {
+      if (!user.email) continue;
+
+      try {
+        const result = await EmailService.sendNewShowAdded({
+          userEmail: user.email,
+          userName: user.name || 'Movie Lover',
+          movieTitle,
+          moviePoster,
+          showDate,
+          showTime,
+          theater,
+          screenType,
+          language,
+          price,
+        });
+
+        if (result.success) sentCount++;
+        else failedCount++;
+      } catch (err) {
+        console.error("Failed to send show added email to", user.email, err.message);
+        failedCount++;
+      }
+    }
+
+    console.log(`Show added emails: ${sentCount} sent, ${failedCount} failed`);
+    return { success: true, sentCount, failedCount };
+  }
+);
+
 const functions = [
   syncUserCreation,
   syncUserUpdate,
@@ -350,6 +407,7 @@ const functions = [
   bookingConfirmedEmail,
   bookingPendingEmail,
   bookingFailedEmail,
+  newShowAddedEmail,
 ];
 
 module.exports = {
