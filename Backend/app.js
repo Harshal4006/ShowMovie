@@ -16,10 +16,21 @@ const ensureDbConnection = require('./Utils/ensureDbConnection');
 const app = express();
 
 // Configure CORS
-const allowedOrigin = process.env.FRONTEND_URL;
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://showmovie-frontend.vercel.app',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+];
+
 const corsOptions = {
-  origin: allowedOrigin || '*',
-  credentials: Boolean(allowedOrigin),
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
