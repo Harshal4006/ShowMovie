@@ -12,6 +12,7 @@ const Movies = lazy(() => import("./Pages/Movies/Movies.jsx"));
 const MovieDetails = lazy(() => import("./Pages/MovieDetails/MovieDetailse.jsx"));
 const SeatLayout = lazy(() => import("./Pages/SeatLayout/SeatLayout.jsx"));
 const MyBooking = lazy(() => import("./Pages/MyBooking/MyBooking.jsx"));
+const Theaters = lazy(() => import("./Pages/Theaters/Theaters.jsx"));
 const Favorite = lazy(() => import("./Pages/Favorite/Favorite.jsx"));
 
 // Admin pages
@@ -47,6 +48,7 @@ const App = () => {
               <Route path="/movies/:id" element={<MovieDetails />} />
               <Route path="/movies/:id/:date" element={<SeatLayout />} />
               <Route path="/my-booking" element={<MyBooking />} />
+              <Route path="/theaters" element={<Theaters />} />
               <Route path="/favorite" element={<FavoriteRoute><Favorite /></FavoriteRoute>} />
 
               {/* Admin Routes - Protected */}
