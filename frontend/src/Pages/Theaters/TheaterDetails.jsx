@@ -340,39 +340,48 @@ const MovieCard = ({ movie, mIndex, showTimings }) => {
 
   return (
     <div
-      className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)] flex flex-col h-full"
+      className="animate-fade-up rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)] hover:scale-[1.02] flex flex-col h-full"
       style={{ animationDelay: `${200 + mIndex * 100}ms` }}
     >
-      <div className="relative aspect-[2/3] overflow-hidden">
+      {/* Poster - vertical cinematic ratio */}
+      <div className="relative w-full overflow-hidden" style={{ height: "clamp(280px, 45vw, 420px)" }}>
         <img
           src={poster}
           alt={movie.title}
-          className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
+          className="h-full w-full object-cover transition-all duration-500 hover:scale-110"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
         {rating && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
+          <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/80 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
             {rating.toFixed(1)}
           </div>
         )}
+        {language && (
+          <div className="absolute top-3 left-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-medium text-gray-300 backdrop-blur-sm ring-1 ring-white/10 uppercase">
+            {language}
+          </div>
+        )}
       </div>
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-sm font-bold text-white">{movie.title}</h3>
 
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-1 space-y-3">
+        <h3 className="text-sm font-bold text-white leading-tight">{movie.title}</h3>
+
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
           {year && <span>{year}</span>}
           {year && runtime && <span className="h-1 w-1 rounded-full bg-gray-600" />}
           {runtime && <span>{formatRuntime(runtime)}</span>}
-          {runtime && language && <span className="h-1 w-1 rounded-full bg-gray-600" />}
-          {language && <span className="uppercase">{language}</span>}
         </div>
 
         {genres.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {genres.slice(0, 2).map((g) => (
-              <span key={g.name || g} className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-500">
+              <span
+                key={g.name || g}
+                className="rounded-md bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-gray-400 ring-1 ring-white/[0.06]"
+              >
                 {g.name || g}
               </span>
             ))}
@@ -380,7 +389,7 @@ const MovieCard = ({ movie, mIndex, showTimings }) => {
         )}
 
         {timings.length > 0 && (
-          <div className="mt-3">
+          <div>
             <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mb-1.5">
               <Clock className="h-3 w-3" />
               Show Timings
@@ -389,7 +398,7 @@ const MovieCard = ({ movie, mIndex, showTimings }) => {
               {timings.map((time) => (
                 <span
                   key={time}
-                  className="rounded border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-gray-300"
+                  className="rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-gray-300"
                 >
                   {time}
                 </span>
@@ -398,7 +407,7 @@ const MovieCard = ({ movie, mIndex, showTimings }) => {
           </div>
         )}
 
-        <div className="mt-auto pt-3">
+        <div className="mt-auto pt-1">
           <Link
             to={`/movies/${movieId}`}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 py-2.5 text-xs font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:from-red-500 hover:to-red-600 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]"
