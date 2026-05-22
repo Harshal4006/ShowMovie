@@ -127,14 +127,16 @@ const TheaterDetails = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
 
         {/* Back Button - top left, inside content width */}
-        <div className="relative z-30 max-w-[80%] mx-auto px-4">
-          <button
-            onClick={() => navigate("/theaters")}
-            className="mt-2 sm:mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
+        <div className="relative z-30 max-w-[80%] mx-auto hidden sm:block">
+          <div className="ml-2">
+            <button
+              onClick={() => navigate("/theaters")}
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+          </div>
         </div>
 
         {/* Hero Content - center */}
