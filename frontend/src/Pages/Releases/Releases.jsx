@@ -260,32 +260,32 @@ const Releases = () => {
             ref={scrollRef}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
+            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
             {upcoming.map((movie) => (
               <div
                 key={movie.id}
                 onClick={() => handleMovieClick(movie.id, movie.title)}
-                className="group min-w-[120px] sm:min-w-[130px] md:min-w-[150px] lg:min-w-[170px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0 cursor-pointer"
+                className="group w-[220px] sm:w-[260px] md:w-[300px] snap-start shrink-0 rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
               >
-                <div className="relative aspect-[2/3] overflow-hidden">
+                <div className="relative overflow-hidden">
                   <img
                     src={movie.poster_path ? `${POSTER_BASE}${movie.poster_path}` : ""}
                     alt={movie.title}
-                    className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
+                    className="h-[320px] sm:h-[360px] md:h-[420px] w-full object-cover transition-all duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   {movie.vote_average > 0 && (
-                    <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 flex items-center gap-1 rounded-full bg-black/80 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
-                      <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 fill-yellow-400 text-yellow-400" />
+                    <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/80 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
+                      <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
                       {movie.vote_average.toFixed(1)}
                     </div>
                   )}
                 </div>
-                <div className="p-2 sm:p-3">
-                  <h3 className="text-xs sm:text-sm font-semibold text-white truncate">{movie.title}</h3>
+                <div className="p-3 sm:p-3">
+                  <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
                   {movie.release_date && (
-                    <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-gray-500">{formatDate(movie.release_date)}</p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">{formatDate(movie.release_date)}</p>
                   )}
                 </div>
               </div>

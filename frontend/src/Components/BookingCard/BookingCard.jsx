@@ -26,7 +26,7 @@ const normalizePoster = (movie) => {
 };
 
 const BookingCard = ({ booking }) => {
-  const { show, amount, bookedSeats, status, _id } = booking;
+  const { show, amount, bookedSeats, isPaid, status, _id } = booking;
   const movie = show?.movie;
   const showDateTime = show?.showDateTime;
   const theater = show?.theater;
@@ -34,14 +34,15 @@ const BookingCard = ({ booking }) => {
   const seats = bookedSeats || [];
   const movieId = movie?.tmdbId || movie?._id || movie?.id || "";
 
-  const statusColors = {
-    confirmed: { bg: "bg-green-500/15", text: "text-green-400", ring: "ring-green-500/30", dot: "bg-green-400" },
-    cancelled: { bg: "bg-red-500/15", text: "text-red-400", ring: "ring-red-500/30", dot: "bg-red-400" },
-    completed: { bg: "bg-blue-500/15", text: "text-blue-400", ring: "ring-blue-500/30", dot: "bg-blue-400" },
+  const derivedStatus = status === "cancelled" ? "cancelled" : isPaid ? "confirmed" : "pending";
+
+  const statusConfig = {
+    confirmed: { bg: "bg-green-500/20", text: "text-green-400", ring: "ring-green-500/30", dot: "bg-green-400", label: "Confirmed" },
+    pending: { bg: "bg-yellow-500/20", text: "text-yellow-300", ring: "ring-yellow-500/30", dot: "bg-yellow-400", label: "Pending" },
+    cancelled: { bg: "bg-gray-500/20", text: "text-gray-300", ring: "ring-gray-500/30", dot: "bg-gray-400", label: "Cancelled" },
   };
 
-  const statusStyle = statusColors[status] || statusColors.confirmed;
-  const statusLabel = { confirmed: "Confirmed", cancelled: "Cancelled", completed: "Completed" }[status] || "Unknown";
+  const statusStyle = statusConfig[derivedStatus] || statusConfig.pending;
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-3 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-red-500/25 hover:shadow-[0_0_30px_rgba(239,68,68,0.08)] sm:p-4">
@@ -75,7 +76,7 @@ const BookingCard = ({ booking }) => {
             </Link>
             <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 backdrop-blur-sm ${statusStyle.bg} ${statusStyle.text} ${statusStyle.ring}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
-              {statusLabel}
+              {statusStyle.label}
             </span>
           </div>
 
