@@ -7,11 +7,6 @@ import {
 } from "lucide-react";
 import { getTheaterById, getNowShowingMovies } from "../../services/api.js";
 import { formatRuntime } from "../../lib/formatRuntime.js";
-import inoxImage from "../../assets/Theaters Img/INOX.png";
-import cinepolisImage from "../../assets/Theaters Img/Cinepolis.png";
-import mirajImage from "../../assets/Theaters Img/Miraj Cinemas.png";
-import carnivalImage from "../../assets/Theaters Img/Carnival Cinemas.png";
-
 const facilityIconMap = {
   IMAX: Film,
   "Dolby Atmos": Volume2,
@@ -23,8 +18,6 @@ const facilityIconMap = {
 };
 
 const defaultShowTimings = ["10:00 AM", "1:30 PM", "4:00 PM", "7:30 PM", "10:45 PM"];
-const fallbackGallery = [inoxImage, cinepolisImage, mirajImage, carnivalImage];
-const galleryLabel = ["Luxury Seats", "IMAX Hall", "Food Court", "Lobby"];
 
 const TheaterDetails = () => {
   const { id } = useParams();
@@ -80,7 +73,7 @@ const TheaterDetails = () => {
   }, [theater?.movies?.length]);
 
   const showTimings = theater?.showTimings?.length > 0 ? theater.showTimings : defaultShowTimings;
-  const gallery = theater?.galleryImages?.length >= 4 ? theater.galleryImages.slice(0, 4) : fallbackGallery;
+  const gallery = theater?.galleryImages?.filter(Boolean) || [];
 
   if (loading) {
     return (
@@ -133,11 +126,11 @@ const TheaterDetails = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/60 to-black/40" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
 
-        {/* Back Button - top left */}
-        <div className="relative z-30">
+        {/* Back Button - top left, inside content width */}
+        <div className="relative z-30 max-w-[80%] mx-auto px-4">
           <button
             onClick={() => navigate("/theaters")}
-            className="mt-6 ml-4 sm:ml-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
+            className="mt-2 sm:mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -145,7 +138,7 @@ const TheaterDetails = () => {
         </div>
 
         {/* Hero Content - center */}
-        <div className="absolute inset-0 z-20 flex items-center justify-center pt-14 sm:pt-16">
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
           <div className="max-w-[80%] mx-auto px-4 text-center">
             <div className="animate-fade-up">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm ring-1 ring-red-500/10">
@@ -247,25 +240,27 @@ const TheaterDetails = () => {
             </div>
 
             {/* Gallery */}
+            {gallery.length > 0 && (
             <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6" style={{ animationDelay: "250ms" }}>
               <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-white">Gallery</h2>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                {gallery.map((img, i) => (
+                {gallery.slice(0, 4).map((img, i) => (
                   <div key={i} className="group relative overflow-hidden rounded-xl">
                     <img
                       src={img}
-                      alt={galleryLabel[i] || `Gallery ${i + 1}`}
+                      alt={`Gallery ${i + 1}`}
                       className="h-24 sm:h-28 w-full object-cover transition-all duration-500 group-hover:scale-110"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <span className="absolute bottom-2 left-2 text-[10px] sm:text-xs font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      {galleryLabel[i] || `Gallery ${i + 1}`}
+                      Gallery {i + 1}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
+            )}
           </div>
 
           {/* ───── Right Column - Movies ───── */}
