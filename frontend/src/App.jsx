@@ -22,6 +22,7 @@ const AddShow = lazy(() => import("./Pages/Admin/AddShow.jsx"));
 const ListShows = lazy(() => import("./Pages/Admin/ListShows.jsx"));
 const ListBookings = lazy(() => import("./Pages/Admin/ListBookings.jsx"));
 const ListMovies = lazy(() => import("./Pages/Admin/ListMovies.jsx"));
+const ManageTheaters = lazy(() => import("./Pages/Admin/ManageTheaters.jsx"));
 
 // Non-lazy components (used on all pages)
 import AnimatedBackground from "./Components/AnimatedBackground/AnimatedBackground.jsx";
@@ -83,6 +84,14 @@ const App = () => {
                 element={
                   <AdminRoute>
                     <ListBookings />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/manage-theaters"
+                element={
+                  <AdminRoute>
+                    <ManageTheaters />
                   </AdminRoute>
                 }
               />

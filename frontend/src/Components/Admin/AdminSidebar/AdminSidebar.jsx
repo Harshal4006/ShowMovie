@@ -4,6 +4,7 @@ import {
   PlusCircle,
   Film,
   Ticket,
+  Building2,
   LogOut,
   X,
   ChevronRight,
@@ -105,6 +106,7 @@ const AdminSidebar = () => {
     { icon: PlusCircle, label: "Add Show", path: "/admin/add-show" },
     { icon: Film, label: "List Shows", path: "/admin/list-shows" },
     { icon: Ticket, label: "List Bookings", path: "/admin/list-bookings" },
+    { icon: Building2, label: "Manage Theaters", path: "/admin/manage-theaters" },
     { icon: Film, label: "Manage Movies", path: "/admin/list-movies" },
   ];
 

@@ -156,6 +156,10 @@ app.use('/api/users', UserRoutes);
 const NotificationRoutes = require('./Routes/NotificationRoutes');
 app.use('/api/notifications', NotificationRoutes);
 
+// Mount Theater routes
+const TheaterRoutes = require('./Routes/TheaterRoutes');
+app.use('/api/theaters', TheaterRoutes);
+
 // Mount Admin routes
 const AdminRoutes = require('./Routes/AdminRoutes');
 app.use('/api/admin', AdminRoutes);

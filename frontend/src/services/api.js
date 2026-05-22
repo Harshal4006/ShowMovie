@@ -1,5 +1,25 @@
 import { request } from './authClient.js';
 
+// ─── Public Theater APIs ───
+export const getTheaters = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return request(`/theaters?${query}`);
+};
+export const getTheaterById = (id) => request(`/theaters/${id}`);
+
+// ─── Admin Theater APIs ───
+export const getAdminTheaters = (token) => request(`/theaters/admin/all`, { token });
+export const createTheater = (token, theaterData) =>
+  request(`/theaters`, { method: 'POST', token, body: theaterData });
+export const updateTheater = (token, id, theaterData) =>
+  request(`/theaters/${id}`, { method: 'PUT', token, body: theaterData });
+export const deleteTheater = (token, id) =>
+  request(`/theaters/${id}`, { method: 'DELETE', token });
+export const addMovieToTheater = (token, id, movieId) =>
+  request(`/theaters/${id}/movies`, { method: 'POST', token, body: { movieId } });
+export const removeMovieFromTheater = (token, id, movieId) =>
+  request(`/theaters/${id}/movies`, { method: 'DELETE', token, body: { movieId } });
+
 export const getMe = (token) => request('/users/me', { token });
 export const updateUserProfile = (token, profileData) =>
   request('/users/me', { method: 'PUT', token, body: profileData });
