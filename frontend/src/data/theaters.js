@@ -1,10 +1,19 @@
+import pvrImage from "../assets/Theaters Img/PVR IMAX.png";
+import inoxImage from "../assets/Theaters Img/INOX.png";
+import cinepolisImage from "../assets/Theaters Img/Cinepolis.png";
+import movieMaxImage from "../assets/Theaters Img/MovieMax.png";
+import mirajImage from "../assets/Theaters Img/Miraj Cinemas.png";
+import carnivalImage from "../assets/Theaters Img/Carnival Cinemas.png";
+import mamiImage from "../assets/Theaters Img/MAMI Cinemas.png";
+import waveImage from "../assets/Theaters Img/Wave Cinemas.png";
+
 const theaters = [
   {
     id: 1,
     name: "PVR IMAX",
     location: "Phoenix Mall, Lower Parel",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=80",
+    image: pvrImage,
     rating: 4.5,
     screens: 8,
     facilities: ["IMAX", "Dolby Atmos", "Parking", "Recliner Seats", "Food Court"],
@@ -16,7 +25,7 @@ const theaters = [
     name: "INOX",
     location: "Inorbit Mall, Malad West",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1594908900066-3f47337c53ce?w=800&q=80",
+    image: inoxImage,
     rating: 4.3,
     screens: 6,
     facilities: ["Dolby Atmos", "Parking", "Recliner Seats", "VIP Lounge"],
@@ -27,7 +36,7 @@ const theaters = [
     name: "Cinepolis",
     location: "R City Mall, Ghatkopar West",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
+    image: cinepolisImage,
     rating: 4.2,
     screens: 5,
     facilities: ["4DX", "Parking", "Food Court", "Recliner Seats"],
@@ -38,7 +47,7 @@ const theaters = [
     name: "MovieMax",
     location: "Sunset Mall, Goregaon West",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1524712245354-9561b0f3d6b5?w=800&q=80",
+    image: movieMaxImage,
     rating: 4.0,
     screens: 4,
     facilities: ["Dolby Atmos", "Parking", "Food Court"],
@@ -49,7 +58,7 @@ const theaters = [
     name: "Miraj Cinemas",
     location: "Oberoi Mall, Goregaon East",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&q=80",
+    image: mirajImage,
     rating: 4.1,
     screens: 7,
     facilities: ["IMAX", "Parking", "Recliner Seats", "VIP Lounge", "Food Court"],
@@ -60,7 +69,7 @@ const theaters = [
     name: "Carnival Cinemas",
     location: "R City Mall, Ghatkopar",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80",
+    image: carnivalImage,
     rating: 3.9,
     screens: 3,
     facilities: ["Parking", "Food Court", "Recliner Seats"],
@@ -71,7 +80,7 @@ const theaters = [
     name: "MAMI Cinemas",
     location: "NCPA, Nariman Point",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=800&q=80",
+    image: mamiImage,
     rating: 4.6,
     screens: 2,
     facilities: ["Dolby Atmos", "VIP Lounge", "Parking"],
@@ -82,7 +91,7 @@ const theaters = [
     name: "Wave Cinemas",
     location: "High Street Phoenix, Lower Parel",
     city: "Mumbai",
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80",
+    image: waveImage,
     rating: 4.4,
     screens: 6,
     facilities: ["IMAX", "Dolby Atmos", "4DX", "Parking", "Recliner Seats", "Food Court"],

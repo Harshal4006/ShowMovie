@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Search, MapPin, Film, Sparkles, Star, Monitor } from "lucide-react";
 import TheaterCard from "../../Components/Theaters/TheaterCard.jsx";
 import theaters from "../../data/theaters.js";
+import heroImage from "../../assets/Theaters Img/PVR IMAX.png";
 
 const allFacilities = ["IMAX", "Dolby Atmos", "4DX", "VIP Lounge", "Recliner Seats", "Parking", "Food Court"];
 
@@ -34,25 +35,34 @@ const Theaters = () => {
           background-size: 200% 200%;
           animation: gradient-shift 4s ease infinite;
         }
+        @keyframes fade-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up {
+          animation: fade-up 0.6s ease-out both;
+        }
       `}</style>
 
       {/* ───── Hero ───── */}
       <div className="relative h-[70vh] min-h-[500px] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600&q=80"
+          src={heroImage}
           alt="Premium Cinema"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        {/* Dark overlay */}
+        {/* Dark cinematic overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-[#050505]" />
-        {/* Red ambient lighting */}
+        {/* Blur layer */}
+        <div className="absolute inset-0 backdrop-blur-[2px]" />
+        {/* Red ambient glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.12),transparent_70%)]" />
-        {/* Projector glow */}
+        {/* Projector light glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.06),transparent_60%)]" />
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-sm font-medium text-red-400 backdrop-blur-sm ring-1 ring-red-500/10">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-sm font-medium text-red-400 backdrop-blur-md ring-1 ring-red-500/10">
             <Film className="h-4 w-4" />
             Premium Cinemas
           </div>
@@ -71,7 +81,7 @@ const Theaters = () => {
       {/* ───── Content ───── */}
       <div className="relative mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-10">
         {/* Stats Strip */}
-        <div className="relative z-10 -mt-16 mb-8">
+        <div className="relative z-10 -mt-16 mb-8 animate-fade-up">
           <div className="rounded-2xl border border-white/[0.06] bg-[#0a0a0f]/80 px-6 py-6 backdrop-blur-xl sm:px-8">
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
               {[
@@ -79,8 +89,12 @@ const Theaters = () => {
                 { icon: Star, label: "Premium Theaters", value: "10" },
                 { icon: Film, label: "IMAX Experience", value: "8K" },
                 { icon: Sparkles, label: "4DX Available", value: "6" },
-              ].map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center text-center">
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="flex flex-col items-center text-center"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
                   <stat.icon className="mb-2 h-5 w-5 text-red-500" />
                   <div className="text-2xl font-bold text-white">{stat.value}</div>
                   <div className="mt-0.5 text-xs text-gray-500">{stat.label}</div>
@@ -92,7 +106,7 @@ const Theaters = () => {
 
         {/* Search & Filters - Glassmorphism Container */}
         <div className="sticky top-20 z-20 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-4 backdrop-blur-2xl sm:px-6 sm:py-5">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-4 backdrop-blur-2xl sm:px-6 sm:py-5 transition-all duration-300">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               {/* Search */}
               <div className="relative flex-1 max-w-md">
@@ -128,12 +142,12 @@ const Theaters = () => {
 
         {/* Featured Theater */}
         {featuredTheater && (
-          <div className="mt-10 mb-8">
+          <div className="mt-10 mb-8 animate-fade-up" style={{ animationDelay: "100ms" }}>
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-red-400" />
               <h2 className="text-lg font-semibold text-white">Featured Theater This Week</h2>
             </div>
-            <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] transition-all duration-500 hover:border-red-500/30 hover:shadow-[0_0_60px_rgba(239,68,68,0.1)]">
+            <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] transition-all duration-500 hover:border-red-500/30 hover:shadow-[0_0_80px_rgba(239,68,68,0.12)]">
               <div className="relative h-56 sm:h-72">
                 <img
                   src={featuredTheater.image}
@@ -141,6 +155,7 @@ const Theaters = () => {
                   className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
                   <div className="flex items-center gap-2 text-sm font-medium text-red-400">
                     <Star className="h-4 w-4 fill-red-400" />
@@ -180,8 +195,14 @@ const Theaters = () => {
         {/* Grid */}
         {filtered.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((theater) => (
-              <TheaterCard key={theater.id} theater={theater} />
+            {filtered.map((theater, i) => (
+              <div
+                key={theater.id}
+                className="animate-fade-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <TheaterCard theater={theater} />
+              </div>
             ))}
           </div>
         ) : (
