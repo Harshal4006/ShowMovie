@@ -44,7 +44,7 @@ const Theaters = () => {
   const totalScreens = theaters.reduce((sum, t) => sum + (t.screens || 0), 0);
 
   return (
-    <section className="relative min-h-screen w-full bg-[#050505]">
+    <section className="relative min-h-screen w-full">
       <style>{`
         @keyframes gradient-shift {
           0%, 100% { background-position: 0% 50%; }

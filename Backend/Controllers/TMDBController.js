@@ -163,4 +163,52 @@ const GetMovieVideos = async (req, res) => {
   }
 };
 
-module.exports = { GetNowPlayingMovies, GetMovieDetails, GetMovieGenres, SearchMovies, GetMovieCredits, GetMovieVideos };
+const GetTrendingMovies = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const accessToken = process.env.TMDB_ACCESS_TOKEN;
+    if (!accessToken) return res.status(500).json({ message: 'TMDB API key not configured' });
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/trending/movie/week?language=en-US&page=${page}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    res.json({ movies: response.data.results, page: response.data.page, totalPages: response.data.total_pages, totalResults: response.data.total_results });
+  } catch (error) {
+    console.error('TMDB API Error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch trending movies', error: error.message });
+  }
+};
+
+const GetUpcomingMovies = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const accessToken = process.env.TMDB_ACCESS_TOKEN;
+    if (!accessToken) return res.status(500).json({ message: 'TMDB API key not configured' });
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=${page}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    res.json({ movies: response.data.results, page: response.data.page, totalPages: response.data.total_pages, totalResults: response.data.total_results });
+  } catch (error) {
+    console.error('TMDB API Error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch upcoming movies', error: error.message });
+  }
+};
+
+const GetPopularMovies = async (req, res) => {
+  try {
+    const { page = 1 } = req.query;
+    const accessToken = process.env.TMDB_ACCESS_TOKEN;
+    if (!accessToken) return res.status(500).json({ message: 'TMDB API key not configured' });
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/movie/popular?language=en-US&page=${page}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    res.json({ movies: response.data.results, page: response.data.page, totalPages: response.data.total_pages, totalResults: response.data.total_results });
+  } catch (error) {
+    console.error('TMDB API Error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch popular movies', error: error.message });
+  }
+};
+
+module.exports = { GetNowPlayingMovies, GetMovieDetails, GetMovieGenres, SearchMovies, GetMovieCredits, GetMovieVideos, GetTrendingMovies, GetUpcomingMovies, GetPopularMovies };

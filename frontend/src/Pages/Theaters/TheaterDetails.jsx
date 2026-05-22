@@ -77,7 +77,7 @@ const TheaterDetails = () => {
 
   if (loading) {
     return (
-      <section className="relative flex min-h-screen items-center justify-center bg-[#050505]">
+      <section className="relative flex min-h-screen items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-red-500" />
       </section>
     );
@@ -85,7 +85,7 @@ const TheaterDetails = () => {
 
   if (error || !theater) {
     return (
-      <section className="relative flex min-h-screen items-center justify-center bg-[#050505] px-4">
+      <section className="relative flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md mx-auto text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-white/[0.06]">
             <Film className="h-10 w-10 text-gray-600" />
@@ -105,7 +105,7 @@ const TheaterDetails = () => {
   }
 
   return (
-    <section className="relative min-h-screen w-full bg-[#050505] overflow-x-hidden">
+    <section className="relative min-h-screen w-full overflow-x-hidden">
       <style>{`
         @keyframes fade-up {
           from { opacity: 0; transform: translateY(24px); }
@@ -125,19 +125,6 @@ const TheaterDetails = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/60 to-black/40" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
-
-        {/* Back Button - top left, inside content width */}
-        <div className="relative z-30 max-w-[80%] mx-auto hidden sm:block">
-          <div className="ml-2">
-            <button
-              onClick={() => navigate("/theaters")}
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-          </div>
-        </div>
 
         {/* Hero Content - center */}
         <div className="absolute inset-0 z-20 flex items-center justify-center">
@@ -275,7 +262,7 @@ const TheaterDetails = () => {
 
             {moviesLoading ? (
               <div className="flex flex-col gap-6">
-                {Array.from({ length: 4 }).map((_, i) => (
+                {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="animate-pulse rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
                     <div className="flex flex-col sm:flex-row">
                       <div className="w-full sm:w-[180px] sm:h-[260px] aspect-[2/3] sm:aspect-auto bg-gray-800/50" />
@@ -296,7 +283,7 @@ const TheaterDetails = () => {
               </div>
             ) : movies.length > 0 ? (
               <div className="flex flex-col gap-6">
-                {movies.slice(0, 4).map((movie, mIndex) => (
+                {[...movies].sort(() => Math.random() - 0.5).slice(0, 3).map((movie, mIndex) => (
                   <MovieCard
                     key={movie._id || movie.id}
                     movie={movie}

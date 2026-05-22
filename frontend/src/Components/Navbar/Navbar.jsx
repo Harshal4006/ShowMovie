@@ -197,7 +197,7 @@ const Navbar = () => {
         <NavItem text="Home" to="/" />
         <NavItem text="Movies" to="/movies" />
         <NavItem text="Theaters" to="/theaters" />
-        <NavItem text="Releases" to="/" />
+        <NavItem text="Releases" to="/releases" />
         {isSignedIn && <NavItem text="Favorite" to="/favorite" />}
       </div>
 
@@ -356,7 +356,7 @@ const Navbar = () => {
           Theaters
         </Link>
         <Link
-          to="/"
+          to="/releases"
           className="w-full max-w-xs rounded-full border border-white/10 bg-white/5 px-6 py-3 text-center"
           onClick={() => setIsOpen(false)}
         >
