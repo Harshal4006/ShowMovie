@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Star, Clock, Film, ChevronRight, X, Play, TrendingUp, Sparkles, CalendarDays, Loader2, AlertCircle } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Star, Clock, Film, ChevronRight, Play, TrendingUp, Sparkles, CalendarDays, Loader2, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { request } from "../../services/authClient.js";
 import { getMovieById } from "../../services/api.js";
@@ -26,7 +26,8 @@ const Releases = () => {
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [trailerModal, setTrailerModal] = useState({ open: false, key: null });
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
   const scrollRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
   const autoScrollRef = useRef(null);
@@ -95,31 +96,48 @@ const Releases = () => {
     }
   };
 
-  const openTrailer = async (movieId) => {
+  const handleWatchTrailer = useCallback(async (movie) => {
+    if (trailerLoading) return;
+    setTrailerLoading(true);
     try {
-      const data = await request(`/tmdb/movie/${movieId}/videos`);
+      const data = await request(`/tmdb/movie/${movie.id}/videos`);
       const results = data?.results || [];
       const trailer = results.find((v) => v.type === "Trailer" && v.site === "YouTube") || results[0];
-      if (trailer) {
-        setTrailerModal({ open: true, key: trailer.key });
+      if (trailer?.key) {
+        window.open(`https://www.youtube.com/watch?v=${trailer.key}`, "_blank", "noopener,noreferrer");
+      } else {
+        toast.error("Trailer not available right now.");
       }
     } catch {
-      // ignore
+      toast.error("Trailer not available right now.");
+    } finally {
+      setTrailerLoading(false);
     }
-  };
+  }, [trailerLoading]);
+
+  const navigateToMovie = useCallback(async (movieId, movieTitle) => {
+    try {
+      const movie = await getMovieById(movieId);
+      navigate(`/movies/${movie._id || movieId}`);
+    } catch (err) {
+      toast.error(`"${movieTitle || "This movie"}" is not available yet.`);
+    }
+  }, [navigate]);
+
+  const handleMovieClick = useCallback(async (movieId, movieTitle) => {
+    await navigateToMovie(movieId, movieTitle);
+  }, [navigateToMovie]);
+
+  const handleBookTickets = useCallback(async (movie) => {
+    if (bookingLoading) return;
+    setBookingLoading(true);
+    await navigateToMovie(movie.id, movie.title);
+    setBookingLoading(false);
+  }, [bookingLoading, navigateToMovie]);
 
   const scroll = (dir) => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: dir * 320, behavior: "smooth" });
-    }
-  };
-
-  const handleMovieClick = async (movieId) => {
-    try {
-      await getMovieById(movieId);
-      navigate(`/movies/${movieId}`);
-    } catch (err) {
-      toast.error(`"${err.data?.title || "This movie"}" is not available yet.`);
     }
   };
 
@@ -186,19 +204,29 @@ const Releases = () => {
 
                 <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
-                    onClick={() => openTrailer(heroMovie.id)}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]"
+                    onClick={() => handleWatchTrailer(heroMovie)}
+                    disabled={trailerLoading}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white" />
-                    Watch Trailer
+                    {trailerLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                    ) : (
+                      <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white" />
+                    )}
+                    {trailerLoading ? "Loading..." : "Watch Trailer"}
                   </button>
-                  <Link
-                    to="/movies"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
+                  <button
+                    onClick={() => handleBookTickets(heroMovie)}
+                    disabled={bookingLoading}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Book Tickets
-                    <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  </Link>
+                    {bookingLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    )}
+                    {bookingLoading ? "Loading..." : "Book Tickets"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -236,8 +264,8 @@ const Releases = () => {
             {upcoming.map((movie) => (
               <div
                 key={movie.id}
-                onClick={() => handleMovieClick(movie.id)}
-                className="min-w-[120px] sm:min-w-[130px] md:min-w-[150px] lg:min-w-[170px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0 cursor-pointer"
+                onClick={() => handleMovieClick(movie.id, movie.title)}
+                className="group min-w-[120px] sm:min-w-[130px] md:min-w-[150px] lg:min-w-[170px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0 cursor-pointer"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
                   <img
@@ -278,7 +306,7 @@ const Releases = () => {
             {trending.map((movie, i) => (
               <div
                 key={movie.id}
-                onClick={() => handleMovieClick(movie.id)}
+                onClick={() => handleMovieClick(movie.id, movie.title)}
                 className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
@@ -354,14 +382,14 @@ const Releases = () => {
                 return (
                   <div
                     key={movie.id}
-                    onClick={() => handleMovieClick(movie.id)}
-                    className="rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
+                    onClick={() => handleMovieClick(movie.id, movie.title)}
+                    className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
                   >
                     <div className="relative aspect-[2/3] overflow-hidden">
                       <img
                         src={movie.poster_path ? `${POSTER_BASE}${movie.poster_path}` : ""}
                         alt={movie.title}
-                        className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
+                        className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -415,7 +443,8 @@ const Releases = () => {
               {filteredMovies.slice(0, 8).map((movie) => (
                 <div
                   key={movie.id}
-                  className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)]"
+                  onClick={() => handleMovieClick(movie.id, movie.title)}
+                  className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
                 >
                   <div className="relative aspect-[2/3] overflow-hidden">
                     <img
@@ -450,33 +479,6 @@ const Releases = () => {
           )}
         </section>
       </div>
-
-      {/* ───── Trailer Modal ───── */}
-      {trailerModal.open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4"
-          onClick={() => setTrailerModal({ open: false, key: null })}
-        >
-          <div
-            className="relative w-full max-w-4xl aspect-video rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setTrailerModal({ open: false, key: null })}
-              className="absolute -top-2 sm:-top-3 -right-2 sm:-right-3 z-10 rounded-full bg-black/80 border border-white/10 p-1.5 sm:p-2 transition-all hover:bg-red-600 hover:scale-110"
-            >
-              <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            </button>
-            <iframe
-              src={`https://www.youtube.com/embed/${trailerModal.key}?autoplay=1&rel=0`}
-              title="Trailer"
-              className="w-full h-full"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
 
       <style>{`
         @keyframes fade-up {

@@ -36,19 +36,19 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
 
   return (
     <div
-      className={`flex items-start gap-2.5 sm:gap-3 rounded-xl p-2.5 sm:p-3 transition-all hover:bg-white/5 ${
-        !notification.isRead ? "border-l-2 border-red-500 bg-red-500/5" : ""
+      className={`flex items-start gap-3 sm:gap-4 rounded-2xl border border-white/[0.04] p-3 sm:p-4 transition-all hover:bg-white/[0.03] hover:border-white/[0.08] ${
+        !notification.isRead ? "border-l-2 border-red-500 bg-red-500/[0.04]" : ""
       }`}
     >
-      <div className="mt-0.5 flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-white/10">
+      <div className="mt-0.5 flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/[0.08]">
         {getIcon(notification.type)}
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-1">
         <p className={`text-xs sm:text-sm font-medium leading-snug ${notification.isRead ? "text-gray-400" : "text-white"}`}>
           {notification.title}
         </p>
-        <p className="mt-1 text-[11px] sm:text-xs text-gray-500 line-clamp-2 leading-relaxed">{notification.message}</p>
-        <p className="mt-1.5 text-[10px] sm:text-xs text-gray-600">
+        <p className="text-[11px] sm:text-xs text-gray-500 line-clamp-2 leading-relaxed">{notification.message}</p>
+        <p className="pt-0.5 text-[10px] sm:text-xs text-gray-600">
           {new Date(notification.createdAt).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "short",
@@ -57,11 +57,11 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
           })}
         </p>
       </div>
-      <div className="flex flex-col gap-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+      <div className="flex flex-col gap-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 shrink-0">
         {!notification.isRead && (
           <button
             onClick={() => onMarkRead(notification._id)}
-            className="rounded-full p-1.5 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-green-400"
+            className="rounded-full p-1.5 sm:p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-green-400"
             title="Mark as read"
           >
             <Check className="h-3.5 w-3.5" />
@@ -69,7 +69,7 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
         )}
         <button
           onClick={() => onDelete(notification._id)}
-          className="rounded-full p-1.5 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
+          className="rounded-full p-1.5 sm:p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
           title="Delete"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -268,7 +268,7 @@ const Navbar = () => {
                         <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500">No notifications yet</p>
                       </div>
                     ) : (
-                      <div className="p-1.5 sm:p-2">
+                      <div className="p-2 sm:p-3 space-y-2 sm:space-y-2.5">
                         {notifications.map((notification) => (
                           <NotificationItem
                             key={notification._id}
