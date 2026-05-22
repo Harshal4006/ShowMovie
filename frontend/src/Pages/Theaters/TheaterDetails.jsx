@@ -5,7 +5,7 @@ import {
   Volume2, Dices, ParkingCircle, Armchair, UtensilsCrossed, Crown,
   Ticket, ChevronRight, Loader2
 } from "lucide-react";
-import { getTheaterById } from "../../services/api.js";
+import { getTheaterById, getNowShowingMovies } from "../../services/api.js";
 import { formatRuntime } from "../../lib/formatRuntime.js";
 import inoxImage from "../../assets/Theaters Img/INOX.png";
 import cinepolisImage from "../../assets/Theaters Img/Cinepolis.png";
@@ -23,15 +23,18 @@ const facilityIconMap = {
 };
 
 const defaultShowTimings = ["10:00 AM", "1:30 PM", "4:00 PM", "7:30 PM", "10:45 PM"];
-const galleryImages = [inoxImage, cinepolisImage, mirajImage, carnivalImage];
+const fallbackGallery = [inoxImage, cinepolisImage, mirajImage, carnivalImage];
 const galleryLabel = ["Luxury Seats", "IMAX Hall", "Food Court", "Lobby"];
 
 const TheaterDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [theater, setTheater] = useState(null);
+  const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [moviesLoading, setMoviesLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [moviesError, setMoviesError] = useState(false);
 
   useEffect(() => {
     const fetchTheater = async () => {
@@ -39,6 +42,11 @@ const TheaterDetails = () => {
         setLoading(true);
         const data = await getTheaterById(id);
         setTheater(data);
+
+        if (data.movies && data.movies.length > 0) {
+          setMovies(data.movies);
+          setMoviesLoading(false);
+        }
       } catch (err) {
         setError(err?.message || "Theater not found");
       } finally {
@@ -47,6 +55,35 @@ const TheaterDetails = () => {
     };
     fetchTheater();
   }, [id]);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        setMoviesLoading(true);
+        const data = await getNowShowingMovies();
+        if (Array.isArray(data)) {
+          const existingIds = new Set(movies.map((m) => m._id || m.id));
+          const fresh = data.filter((m) => !existingIds.has(m._id || m.id));
+          setMovies((prev) => (prev.length > 0 ? [...prev, ...fresh] : fresh));
+        }
+      } catch {
+        setMoviesError(true);
+      } finally {
+        setMoviesLoading(false);
+      }
+    };
+
+    if (!theater) return;
+
+    if (!theater.movies || theater.movies.length === 0) {
+      fetchMovies();
+    } else {
+      setMoviesLoading(false);
+    }
+  }, [theater?.movies?.length]);
+
+  const showTimings = theater?.showTimings?.length > 0 ? theater.showTimings : defaultShowTimings;
+  const gallery = theater?.galleryImages?.length >= 4 ? theater.galleryImages.slice(0, 4) : fallbackGallery;
 
   if (loading) {
     return (
@@ -59,7 +96,7 @@ const TheaterDetails = () => {
   if (error || !theater) {
     return (
       <section className="relative flex min-h-screen items-center justify-center bg-[#050505] px-4">
-        <div className="text-center w-full max-w-md mx-auto">
+        <div className="w-full max-w-md mx-auto text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-white/[0.06]">
             <Film className="h-10 w-10 text-gray-600" />
           </div>
@@ -77,10 +114,6 @@ const TheaterDetails = () => {
     );
   }
 
-  const showTimings = theater.showTimings?.length > 0 ? theater.showTimings : defaultShowTimings;
-  const theaterMovies = theater.movies || [];
-  const gallery = theater.galleryImages?.length >= 4 ? theater.galleryImages.slice(0, 4) : galleryImages;
-
   return (
     <section className="relative min-h-screen w-full bg-[#050505] overflow-x-hidden">
       <style>{`
@@ -91,11 +124,17 @@ const TheaterDetails = () => {
         .animate-fade-up {
           animation: fade-up 0.6s ease-out both;
         }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
 
-      {/* ───── Hero (full-width background, contained content) ───── */}
-      <div className="relative h-[50vh] min-h-[380px] sm:h-[60vh] sm:min-h-[420px] overflow-hidden">
-        {/* Full-width background */}
+      {/* ───── Hero ───── */}
+      <div className="relative min-h-[420px] md:min-h-[520px] overflow-hidden">
         <img
           src={theater.image}
           alt={theater.name}
@@ -104,45 +143,42 @@ const TheaterDetails = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/60 to-black/40" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
 
-        {/* Contained content */}
-        <div className="relative h-full w-full max-w-full px-4 sm:max-w-[80%] sm:mx-auto">
-          {/* Back Button */}
+        <div className="relative h-full w-full px-4 sm:px-6">
           <button
             onClick={() => navigate("/theaters")}
-            className="mt-4 sm:mt-24 flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
+            className="mt-4 md:mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
 
-          {/* Bottom content */}
-          <div className="absolute bottom-0 left-0 right-0 pb-6 sm:pb-10 lg:pb-12 px-0">
-            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="absolute bottom-0 left-0 right-0 pb-6 sm:pb-10 lg:pb-12 px-4 sm:px-6">
+            <div className="space-y-4 sm:space-y-0 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-6">
               <div className="animate-fade-up">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm ring-1 ring-red-500/10">
                   <Star className="h-3.5 w-3.5 fill-red-400" />
                   {theater.rating} Rating
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-white">
+                <h1 className="text-3xl md:text-5xl font-bold text-white">
                   {theater.name}
                 </h1>
-                <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-400">
+                <div className="mt-2 md:mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-400">
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
+                    <MapPin className="h-4 w-4 text-red-500" />
                     {theater.location}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Monitor className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
+                    <Monitor className="h-4 w-4 text-red-500" />
                     {theater.screens} Screens
                   </span>
                 </div>
               </div>
 
-              <div className="flex gap-2 sm:gap-3 animate-fade-up shrink-0" style={{ animationDelay: "150ms" }}>
-                <button className="flex-1 sm:flex-none rounded-full bg-red-600 px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto animate-fade-up" style={{ animationDelay: "150ms" }}>
+                <button className="w-full sm:w-auto rounded-full bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]">
                   View Movies
                 </button>
-                <button className="flex-1 sm:flex-none rounded-full border border-white/10 bg-white/[0.04] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white active:scale-[0.97]">
+                <button className="w-full sm:w-auto rounded-full border border-white/10 bg-white/[0.04] px-6 py-3 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white active:scale-[0.97]">
                   Book Now
                 </button>
               </div>
@@ -151,11 +187,10 @@ const TheaterDetails = () => {
         </div>
       </div>
 
-      {/* ───── Content ───── */}
-      <div className="w-full max-w-full px-4 sm:max-w-[80%] sm:mx-auto pb-20 -mt-6 sm:-mt-8">
-        {/* Quick Info Strip */}
-        <div className="relative z-10 mb-6 sm:mb-8 animate-fade-up" style={{ animationDelay: "100ms" }}>
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0a0a0f]/80 px-4 sm:px-8 py-4 sm:py-5 backdrop-blur-xl">
+      {/* ───── Stats Strip ───── */}
+      <div className="relative z-10 -translate-y-6 md:-translate-y-14 px-4 sm:px-6 mb-6 md:mb-0">
+        <div className="mx-auto max-w-full sm:max-w-[80%]">
+          <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[#0a0a0f]/80 px-4 sm:px-8 py-4 sm:py-5 backdrop-blur-xl" style={{ animationDelay: "100ms" }}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <div className="flex flex-col items-center text-center">
                 <Star className="mb-1 h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
@@ -180,10 +215,13 @@ const TheaterDetails = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
+      {/* ───── Content ───── */}
+      <div className="px-4 sm:px-6 pb-20 mx-auto max-w-full sm:max-w-[80%]">
+        <div className="mt-6 space-y-6 md:mt-0 md:space-y-8 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
           {/* ───── Left Column ───── */}
-          <div className="space-y-6 sm:space-y-8 lg:col-span-1">
+          <div className="space-y-6 lg:col-span-1">
             {/* Facilities */}
             <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6" style={{ animationDelay: "150ms" }}>
               <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-white">Facilities</h2>
@@ -217,8 +255,8 @@ const TheaterDetails = () => {
                   <div key={item.label} className="flex items-start gap-3">
                     <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                     <div className="min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-white">{item.label}</p>
-                      <p className="text-xs sm:text-sm text-gray-400 break-words">{item.value}</p>
+                      <p className="text-sm font-medium text-white">{item.label}</p>
+                      <p className="text-sm text-gray-400 break-words">{item.value}</p>
                     </div>
                   </div>
                 ))}
@@ -247,117 +285,227 @@ const TheaterDetails = () => {
             </div>
           </div>
 
-          {/* ───── Right Column - Currently Running Movies ───── */}
+          {/* ───── Right Column - Movies ───── */}
           <div className="space-y-4 sm:space-y-6 lg:col-span-2">
             <div className="animate-fade-up flex items-center gap-2" style={{ animationDelay: "150ms" }}>
               <Film className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
               <h2 className="text-base sm:text-lg font-semibold text-white">Now Showing</h2>
-              <span className="ml-auto text-xs sm:text-sm text-gray-500">{theaterMovies.length} movies</span>
+              <span className="ml-auto text-xs sm:text-sm text-gray-500">{movies.length} movies</span>
             </div>
 
-            {theaterMovies.length === 0 ? (
+            {moviesLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="animate-pulse rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                    <div className="aspect-[2/3] bg-gray-800/50" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-4 bg-gray-800/50 rounded w-3/4" />
+                      <div className="h-3 bg-gray-800/50 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : movies.length === 0 && !moviesError ? (
               <div className="animate-fade-up rounded-2xl border border-white/[0.06] p-6 sm:p-8 text-center" style={{ animationDelay: "200ms" }}>
                 <Film className="mx-auto mb-3 h-8 w-8 text-gray-600" />
                 <p className="text-sm text-gray-500">No movies currently showing at this theater.</p>
               </div>
-            ) : (
-              theaterMovies.map((movie, mIndex) => {
-                const movieTimings = showTimings.slice(
-                  ((theater._id?.charCodeAt(0) || 0) + mIndex * 2) % showTimings.length,
-                  ((theater._id?.charCodeAt(0) || 0) + mIndex * 2 + 4) % showTimings.length || undefined
-                );
+            ) : movies.length > 0 ? (
+              <>
+                {/* Mobile: horizontal scroll */}
+                <div className="flex sm:hidden gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
+                  {movies.slice(0, 8).map((movie, mIndex) => (
+                    <MovieCard
+                      key={movie._id || movie.id}
+                      movie={movie}
+                      mIndex={mIndex}
+                      theaterId={theater._id}
+                      showTimings={showTimings}
+                      compact
+                    />
+                  ))}
+                </div>
 
-                return (
-                  <div
-                    key={movie._id || movie.id}
-                    className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)]"
-                    style={{ animationDelay: `${200 + mIndex * 100}ms` }}
-                  >
-                    <div className="flex flex-col sm:flex-row">
-                      {/* Poster */}
-                      <div className="relative w-full sm:w-40 shrink-0">
-                        <img
-                          src={movie.posterUrl || movie.poster_path}
-                          alt={movie.title}
-                          className="h-44 sm:h-full w-full object-cover transition-all duration-500 hover:scale-105"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:bg-gradient-to-r sm:from-black/60 sm:via-transparent sm:to-transparent" />
-                        <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          {movie.rating?.toFixed(1) || movie.vote_average?.toFixed(1)}
-                        </div>
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
-                        <div>
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="text-base sm:text-lg font-bold text-white">{movie.title}</h3>
-                            <Link
-                              to={`/movies/${movie._id || movie.id}`}
-                              className="hidden shrink-0 rounded-full bg-red-600/10 px-3 py-1 text-xs font-medium text-red-400 transition-all duration-200 hover:bg-red-600/20 sm:inline-flex"
-                            >
-                              Details <ChevronRight className="ml-0.5 h-3 w-3" />
-                            </Link>
-                          </div>
-
-                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-gray-400">
-                            <span>{movie.releaseDate?.split("-")[0] || movie.release_date?.split("-")[0]}</span>
-                            <span className="h-1 w-1 rounded-full bg-gray-600" />
-                            <span>{(movie.genres || []).slice(0, 2).map((g) => g.name).join(", ")}</span>
-                            <span className="h-1 w-1 rounded-full bg-gray-600" />
-                            <span>{formatRuntime(movie.runtime)}</span>
-                            <span className="h-1 w-1 rounded-full bg-gray-600" />
-                            <span className="uppercase">{movie.originalLanguage || movie.original_language || movie.language}</span>
-                          </div>
-
-                          <p className="mt-2 sm:mt-3 text-xs sm:text-sm leading-relaxed text-gray-500 line-clamp-2">
-                            {movie.overview}
-                          </p>
-                        </div>
-
-                        {/* Show Timings */}
-                        {movieTimings.length > 0 && (
-                          <div className="mt-3 sm:mt-4">
-                            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-500 mb-2">
-                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                              Show Timings
-                            </div>
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                              {movieTimings.map((time) => (
-                                <button
-                                  key={time}
-                                  className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium text-gray-300 transition-all duration-200 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white hover:shadow-[0_0_12px_rgba(239,68,68,0.15)]"
-                                >
-                                  {time}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Book Ticket */}
-                        <div className="mt-3 sm:mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3 sm:pt-4">
-                          <span className="text-[11px] sm:text-xs text-gray-500">Starting from ₹199</span>
-                          <Link
-                            to={`/movies/${movie._id || movie.id}`}
-                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:from-red-500 hover:to-red-600 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]"
-                          >
-                            <Ticket className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            Book Ticket
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+                {/* Desktop: grid */}
+                <div className="hidden sm:grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {movies.slice(0, 9).map((movie, mIndex) => (
+                    <MovieCard
+                      key={movie._id || movie.id}
+                      movie={movie}
+                      mIndex={mIndex}
+                      theaterId={theater._id}
+                      showTimings={showTimings}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
       </div>
     </section>
+  );
+};
+
+const MovieCard = ({ movie, mIndex, showTimings, compact }) => {
+  const timings = showTimings.slice(
+    (mIndex * 2) % showTimings.length,
+    ((mIndex * 2) + 3) % showTimings.length || undefined
+  );
+
+  const poster = movie.posterUrl || movie.posterPath || movie.poster_path || movie.backdropUrl || "";
+  const rating = movie.rating || movie.vote_average;
+  const year = movie.releaseDate?.split("-")[0] || movie.release_date?.split("-")[0];
+  const genres = movie.genres || [];
+  const runtime = movie.runtime;
+  const movieId = movie._id || movie.id;
+  const language = movie.originalLanguage || movie.original_language || movie.language;
+
+  if (compact) {
+    return (
+      <div
+        className="animate-fade-up w-[200px] shrink-0 snap-start rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)]"
+        style={{ animationDelay: `${200 + mIndex * 100}ms` }}
+      >
+        <div className="relative aspect-[2/3] overflow-hidden">
+          <img
+            src={poster}
+            alt={movie.title}
+            className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          {rating && (
+            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              {rating.toFixed(1)}
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          <h3 className="text-sm font-bold text-white truncate">{movie.title}</h3>
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-gray-400">
+            {year && <span>{year}</span>}
+            {year && runtime && <span className="h-1 w-1 rounded-full bg-gray-600" />}
+            {runtime && <span>{formatRuntime(runtime)}</span>}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1">
+            {genres.slice(0, 2).map((g) => (
+              <span key={g.name || g} className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-500">
+                {g.name || g}
+              </span>
+            ))}
+          </div>
+          {timings.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {timings.map((time) => (
+                <span
+                  key={time}
+                  className="rounded-lg border border-white/[0.06] px-2 py-1 text-[10px] font-medium text-gray-300"
+                >
+                  {time}
+                </span>
+              ))}
+            </div>
+          )}
+          <Link
+            to={`/movies/${movieId}`}
+            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-red-600 py-2 text-xs font-semibold text-white transition-all duration-300 hover:bg-red-500"
+          >
+            <Ticket className="h-3 w-3" />
+            Book
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)]"
+      style={{ animationDelay: `${200 + mIndex * 100}ms` }}
+    >
+      <div className="relative aspect-[2/3] overflow-hidden">
+        <img
+          src={poster}
+          alt={movie.title}
+          className="h-full w-full object-cover transition-all duration-500 hover:scale-105"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {rating && (
+          <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+            {rating.toFixed(1)}
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-base font-bold text-white">{movie.title}</h3>
+          <Link
+            to={`/movies/${movieId}`}
+            className="shrink-0 rounded-full bg-red-600/10 px-3 py-1 text-xs font-medium text-red-400 transition-all duration-200 hover:bg-red-600/20"
+          >
+            Details
+          </Link>
+        </div>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+          {year && <span>{year}</span>}
+          {year && runtime && <span className="h-1 w-1 rounded-full bg-gray-600" />}
+          {runtime && <span>{formatRuntime(runtime)}</span>}
+          {runtime && language && <span className="h-1 w-1 rounded-full bg-gray-600" />}
+          {language && <span className="uppercase">{language}</span>}
+        </div>
+
+        {genres.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {genres.slice(0, 3).map((g) => (
+              <span key={g.name || g} className="rounded-full bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-500">
+                {g.name || g}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {movie.overview && (
+          <p className="mt-2 text-xs leading-relaxed text-gray-500 line-clamp-2">
+            {movie.overview}
+          </p>
+        )}
+
+        {timings.length > 0 && (
+          <div className="mt-3">
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mb-2">
+              <Clock className="h-3 w-3" />
+              Show Timings
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {timings.map((time) => (
+                <button
+                  key={time}
+                  className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-gray-300 transition-all duration-200 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white hover:shadow-[0_0_12px_rgba(239,68,68,0.15)]"
+                >
+                  {time}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
+          <span className="text-[11px] text-gray-500">Starting from ₹199</span>
+          <Link
+            to={`/movies/${movieId}`}
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:from-red-500 hover:to-red-600 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]"
+          >
+            <Ticket className="h-3.5 w-3.5" />
+            Book Ticket
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 };
 
