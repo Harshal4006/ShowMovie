@@ -134,10 +134,10 @@ const TheaterDetails = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
 
         {/* Back Button - top left */}
-        <div className="relative z-30 px-4 sm:px-6 ml-1 sm:ml-4">
+        <div className="relative z-30">
           <button
             onClick={() => navigate("/theaters")}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
+            className="mt-6 ml-4 sm:ml-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -277,14 +277,17 @@ const TheaterDetails = () => {
             </div>
 
             {moviesLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="flex flex-col gap-6">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="animate-pulse rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-                    <div className="aspect-[2/3] bg-gray-800/50" />
-                    <div className="p-4 space-y-3">
-                      <div className="h-4 bg-gray-800/50 rounded w-3/4" />
-                      <div className="h-3 bg-gray-800/50 rounded w-1/2" />
-                      <div className="h-8 bg-gray-800/50 rounded w-full" />
+                    <div className="flex flex-col sm:flex-row">
+                      <div className="w-full sm:w-[180px] sm:h-[260px] aspect-[2/3] sm:aspect-auto bg-gray-800/50" />
+                      <div className="p-4 space-y-3 flex-1">
+                        <div className="h-5 bg-gray-800/50 rounded w-3/4" />
+                        <div className="h-3 bg-gray-800/50 rounded w-1/2" />
+                        <div className="h-3 bg-gray-800/50 rounded w-1/3" />
+                        <div className="h-10 bg-gray-800/50 rounded w-full sm:w-40" />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -295,7 +298,7 @@ const TheaterDetails = () => {
                 <p className="text-sm text-gray-500">No movies currently showing at this theater.</p>
               </div>
             ) : movies.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="flex flex-col gap-6">
                 {movies.slice(0, 4).map((movie, mIndex) => (
                   <MovieCard
                     key={movie._id || movie.id}
@@ -329,81 +332,90 @@ const MovieCard = ({ movie, mIndex, showTimings }) => {
 
   return (
     <div
-      className="animate-fade-up rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)] hover:scale-[1.02] flex flex-col h-full"
+      className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_40px_rgba(239,68,68,0.06)]"
       style={{ animationDelay: `${200 + mIndex * 100}ms` }}
     >
-      {/* Poster - vertical cinematic ratio */}
-      <div className="relative w-full overflow-hidden" style={{ height: "clamp(280px, 45vw, 420px)" }}>
-        <img
-          src={poster}
-          alt={movie.title}
-          className="h-full w-full object-cover transition-all duration-500 hover:scale-110"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-        {rating && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/80 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            {rating.toFixed(1)}
-          </div>
-        )}
-        {language && (
-          <div className="absolute top-3 left-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-medium text-gray-300 backdrop-blur-sm ring-1 ring-white/10 uppercase">
-            {language}
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-4 flex flex-col flex-1 space-y-3">
-        <h3 className="text-sm font-bold text-white leading-tight">{movie.title}</h3>
-
-        <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
-          {year && <span>{year}</span>}
-          {year && runtime && <span className="h-1 w-1 rounded-full bg-gray-600" />}
-          {runtime && <span>{formatRuntime(runtime)}</span>}
+      <div className="flex flex-col sm:flex-row">
+        {/* Poster */}
+        <div className="relative w-full sm:w-[180px] sm:h-[260px] overflow-hidden shrink-0">
+          <img
+            src={poster}
+            alt={movie.title}
+            className="w-full h-full object-cover transition-all duration-500 hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:bg-gradient-to-r sm:from-black/60 sm:via-transparent sm:to-transparent" />
+          {rating && (
+            <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/80 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              {rating.toFixed(1)}
+            </div>
+          )}
         </div>
 
-        {genres.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {genres.slice(0, 2).map((g) => (
-              <span
-                key={g.name || g}
-                className="rounded-md bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-gray-400 ring-1 ring-white/[0.06]"
-              >
-                {g.name || g}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {timings.length > 0 && (
+        {/* Content */}
+        <div className="flex flex-1 flex-col justify-between p-4 sm:p-5 gap-3">
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mb-1.5">
-              <Clock className="h-3 w-3" />
-              Show Timings
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-white">{movie.title}</h3>
             </div>
-            <div className="flex flex-wrap gap-1">
-              {timings.map((time) => (
-                <span
-                  key={time}
-                  className="rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-gray-300"
-                >
-                  {time}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
-        <div className="mt-auto pt-1">
-          <Link
-            to={`/movies/${movieId}`}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 py-2.5 text-xs font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:from-red-500 hover:to-red-600 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]"
-          >
-            <Ticket className="h-3.5 w-3.5" />
-            Book Ticket
-          </Link>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-400">
+              {year && <span>{year}</span>}
+              {year && runtime && <span className="h-1 w-1 rounded-full bg-gray-600" />}
+              {runtime && <span>{formatRuntime(runtime)}</span>}
+              {runtime && language && <span className="h-1 w-1 rounded-full bg-gray-600" />}
+              {language && <span className="uppercase">{language}</span>}
+            </div>
+
+            {genres.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {genres.slice(0, 3).map((g) => (
+                  <span
+                    key={g.name || g}
+                    className="rounded-md bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-gray-400 ring-1 ring-white/[0.06]"
+                  >
+                    {g.name || g}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {movie.overview && (
+              <p className="mt-2 text-xs sm:text-sm leading-relaxed text-gray-500 line-clamp-2">
+                {movie.overview}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {timings.length > 0 && (
+              <div>
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mb-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  Show Timings
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {timings.map((time) => (
+                    <span
+                      key={time}
+                      className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-gray-300"
+                    >
+                      {time}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Link
+              to={`/movies/${movieId}`}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:from-red-500 hover:to-red-600 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97] shrink-0"
+            >
+              <Ticket className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Book Ticket
+            </Link>
+          </div>
         </div>
       </div>
     </div>
