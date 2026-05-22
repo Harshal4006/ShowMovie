@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import useIsAdmin from '../hooks/useIsAdmin';
-import PageLoader from './PageLoader/PageLoader';
+import useIsAdmin from '../../hooks/useIsAdmin';
+import PageLoader from '../PageLoader/PageLoader';
 
 const AdminRoute = ({ children }) => {
   const { isAdmin, isLoading, isSignedIn, isAuthLoaded } = useIsAdmin();

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getShowsByMovie } from "../../services/api";
+import { getShowsByMovie } from "../../../services/api";
 
 export const useShowsByMovie = (movieId) => {
   const [shows, setShows] = useState([]);

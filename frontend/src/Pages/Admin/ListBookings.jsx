@@ -1,6 +1,9 @@
+// ListBookings page - admin view all bookings with filters, export, and modal
 import { useState, useMemo, useEffect } from "react";
+
 import { IndianRupee, Loader2 } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
+
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import BookingsTable from "../../Components/Admin/BookingsTable/BookingsTable";
 import BookingsHeader from "../../Components/Admin/ListBookings/BookingsHeader";
@@ -10,6 +13,7 @@ import BookingsInsights from "../../Components/Admin/ListBookings/BookingsInsigh
 import BookingsFooter from "../../Components/Admin/ListBookings/BookingsFooter";
 import BookingModal from "../../Components/Admin/ListBookings/BookingModal";
 import { TableRowSkeleton } from "../../Components/Skeletons";
+
 import { adminBookingsHelpActions, adminBookingsRecentNotifications } from "../../assets/assets";
 import { getAdminBookings } from "../../services/api";
 
@@ -118,6 +122,7 @@ const ListBookings = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Render
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       <AdminSidebar />
@@ -136,6 +141,7 @@ const ListBookings = () => {
           />
 
           <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden mb-6 lg:mb-8">
+            {/* Loading state */}
             {loading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin text-red-500" />

@@ -209,8 +209,6 @@ const bookingConfirmedEmail = inngest.createFunction(
   },
   async ({ event }) => {
     await connectDB();
-    console.log("Email event triggered: booking/confirmed");
-
     const { bookingId, userId, userEmail, userName, movieTitle, seats, amount, showDate, showTime, theater, paymentId } = event.data || {};
 
     if (!bookingId || !userEmail) {
@@ -264,8 +262,6 @@ const bookingPendingEmail = inngest.createFunction(
   },
   async ({ event }) => {
     await connectDB();
-    console.log("Email event triggered: booking/pending");
-
     const { bookingId, userEmail, userName, movieTitle, amount, showDate, showTime } = event.data || {};
 
     if (!bookingId || !userEmail) {
@@ -316,8 +312,6 @@ const bookingFailedEmail = inngest.createFunction(
   },
   async ({ event }) => {
     await connectDB();
-    console.log("Email event triggered: booking/failed");
-
     const { bookingId, userEmail, userName, movieTitle, amount, showDate, showTime, errorMessage } = event.data || {};
 
     if (!bookingId || !userEmail) {
@@ -355,8 +349,6 @@ const newShowAddedEmail = inngest.createFunction(
   },
   async ({ event }) => {
     await connectDB();
-    console.log("Email event triggered: show/added");
-
     const { showId, movieTitle, moviePoster, showDate, showTime, theater, screenType, language, price } = event.data || {};
 
     if (!showId || !movieTitle) {

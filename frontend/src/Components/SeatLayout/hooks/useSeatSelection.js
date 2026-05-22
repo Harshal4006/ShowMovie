@@ -100,46 +100,18 @@ export const useSeatSelection = ({ occupiedSeats, maxSeats = 8 }) => {
     };
   }, [selectedSeats, occupiedSeats, maxSeats]);
 
-  /**
-   * Check if a seat is selected
-   * @param {string} seatId - Seat ID to check
-   * @returns {boolean} True if seat is selected
-   */
-  const isSeatSelected = useCallback((seatId) => {
-    return selectedSeats.includes(seatId);
-  }, [selectedSeats]);
-
-  /**
-   * Get count of selected seats
-   */
+  // Count of selected seats for internal use
   const selectedCount = selectedSeats.length;
-
-  /**
-   * Check if selection is empty
-   */
-  const isEmpty = selectedCount === 0;
-
-  /**
-   * Check if selection is at maximum capacity
-   */
-  const isAtMax = selectedCount >= maxSeats;
 
   return {
     // State
     selectedSeats,
     selectedSeatsSet,
-    selectedCount,
-    isEmpty,
-    isAtMax,
     
     // Actions
     clearSelection,
     toggleSeat,
     selectMultipleSeats,
-    isSeatSelected,
-    
-    // Constants
-    maxSeats,
   };
 };
 

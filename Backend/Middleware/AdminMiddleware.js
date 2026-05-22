@@ -1,3 +1,5 @@
+// Restricts access to admin-level users only
+
 const { getAuth } = require('@clerk/express');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');

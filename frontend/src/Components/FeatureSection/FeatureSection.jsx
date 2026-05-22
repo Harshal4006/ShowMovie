@@ -1,3 +1,5 @@
+// Deprecated - kept for reference
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import FeatureCard from "./FeatureCard.jsx";
@@ -68,4 +70,5 @@ const FeatureSection = () => {
   );
 };
 
+// Deprecated component kept for reference
 export default FeatureSection;

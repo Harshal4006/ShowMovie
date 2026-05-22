@@ -1,7 +1,11 @@
+// Favorite page - shows user's favorited movies
 import React, { useMemo } from "react";
+
 import { Heart } from "lucide-react";
+
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
+
 import { useUserContext } from "../../hooks/UserContext";
 
 const Favorite = () => {
@@ -17,6 +21,7 @@ const Favorite = () => {
       .filter(Boolean);
   }, [favoriteIds, favoriteMovies]);
 
+  // Loading state
   if (userLoading) {
     return (
       <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
@@ -35,6 +40,7 @@ const Favorite = () => {
     );
   }
 
+  // Signed-out state
   if (!isSignedIn) {
     return (
       <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
@@ -59,6 +65,7 @@ const Favorite = () => {
     );
   }
 
+  // Empty state
   if (visibleMovies.length === 0) {
     return (
       <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
@@ -83,6 +90,7 @@ const Favorite = () => {
     );
   }
 
+  // Render
   return (
     <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">

@@ -1,11 +1,15 @@
+// MyBooking page - view and manage user bookings
 import React, { useMemo, useState, useEffect } from "react";
+
 import { useAuth } from "@clerk/clerk-react";
+
 import StatsSection from "../../Components/MyBooking/StatsSection.jsx";
 import FilterTabs from "../../Components/MyBooking/FilterTabs.jsx";
 import BookingsGrid from "../../Components/MyBooking/BookingsGrid.jsx";
 import EmptyState from "../../Components/MyBooking/EmptyState.jsx";
 import HelpSection from "../../Components/MyBooking/HelpSection.jsx";
 import { BookingCardSkeleton } from "../../Components/Skeletons";
+
 import { getMyBookings } from "../../services/api";
 
 const MyBooking = () => {

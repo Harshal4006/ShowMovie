@@ -1,3 +1,5 @@
+// Deprecated - kept for reference
+
 import { useEffect } from "react";
 
 /**
@@ -80,4 +82,5 @@ const useRevealAnimation = () => {
   }, []);
 };
 
+// Deprecated hook kept for reference
 export default useRevealAnimation;

@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import toast from "react-hot-toast";
 import { useAuth } from "@clerk/clerk-react";
 
-import ShowTimingsCard from "../../Components/SeatLayout/ShowTimingsCard.jsx";
-import LoadingState from "../../Components/SeatLayout/LoadingState.jsx";
-import ErrorState from "../../Components/SeatLayout/ErrorState.jsx";
-import SeatSelectionCard from "../../Components/SeatLayout/SeatSelectionCard.jsx";
-import SeatSummaryCard from "../../Components/SeatLayout/SeatSummaryCard.jsx";
-import BookingConfirmationModal from "../../Components/SeatLayout/BookingConfirmationModal.jsx";
-import QuickBookingSuggestions from "../../Components/SeatLayout/QuickBookingSuggestions.jsx";
-import { useSeatLayoutModel } from "../../Components/SeatLayout/useSeatLayoutModel.js";
-import { createPaymentOrder, verifyPayment } from "../../services/api";
+import ShowTimingsCard from "../../Components/SeatLayout/cards/ShowTimingsCard.jsx";
+import LoadingState from "../../Components/SeatLayout/states/LoadingState.jsx";
+import ErrorState from "../../Components/SeatLayout/states/ErrorState.jsx";
+import SeatSelectionCard from "../../Components/SeatLayout/cards/SeatSelectionCard.jsx";
+import SeatSummaryCard from "../../Components/SeatLayout/cards/SeatSummaryCard.jsx";
+import BookingConfirmationModal from "../../Components/SeatLayout/modals/BookingConfirmationModal.jsx";
+import QuickBookingSuggestions from "../../Components/SeatLayout/cards/QuickBookingSuggestions.jsx";
+import { useSeatLayoutModel } from "../../Components/SeatLayout/hooks/useSeatLayoutModel.js";
+import useSeatLayoutPayment from "../../Components/SeatLayout/hooks/useSeatLayoutPayment.js";
 
 const SeatLayout = () => {
   const navigate = useNavigate();
@@ -20,8 +19,6 @@ const SeatLayout = () => {
   const [searchParams] = useSearchParams();
   const time = searchParams.get("time") || "";
   const { isSignedIn, getToken } = useAuth();
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const {
     status,
@@ -38,127 +35,25 @@ const SeatLayout = () => {
     selectMultipleSeats,
   } = useSeatLayoutModel({ id, date, time });
 
-  const convenienceFee = 2.99;
-  const tax = subtotal * 0.08;
-  const totalAmount = subtotal + convenienceFee + tax;
-
-  const handleToggleSeat = (seatId) => {
-    const result = toggleSeat(seatId);
-    if (result.reason === "limit") {
-      toast.error("You can select up to 8 seats.");
-    } else if (result.ok) {
-      // Optional: Play subtle sound or show visual feedback
-    }
-  };
-
-  const handleConfirmClick = () => {
-    if (selectedSeats.length === 0) {
-      toast.error("Please select at least one seat to continue.");
-      return;
-    }
-    setShowConfirmationModal(true);
-  };
-
-  const handlePaymentSuccess = async (response) => {
-    try {
-      const token = await getToken();
-      const result = await verifyPayment(token, {
-        razorpay_order_id: response.razorpay_order_id,
-        razorpay_payment_id: response.razorpay_payment_id,
-        razorpay_signature: response.razorpay_signature,
-        showId: selectedShow._id,
-        bookedSeats: selectedSeats,
-        amount: totalAmount,
-      });
-
-      setShowConfirmationModal(false);
-      toast.success("Payment successful! Booking confirmed.");
-      navigate("/my-booking");
-    } catch (error) {
-      toast.error(error?.message || "Payment verification failed. Please contact support.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handlePaymentError = (error) => {
-    setIsProcessing(false);
-    toast.error("Payment failed. Please try again.");
-  };
-
-  const handleConfirmBooking = async () => {
-    if (!selectedShow?._id) {
-      toast.error("Show not found for selected date/time.");
-      return;
-    }
-    if (!isSignedIn) {
-      toast.error("Please sign in to book tickets.");
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      const token = await getToken();
-
-      const orderResponse = await createPaymentOrder(token, {
-        amount: totalAmount,
-        currency: "INR",
-        receipt: `showmovie_${Date.now()}`,
-      });
-
-      if (!orderResponse.success || !orderResponse.orderId) {
-        throw new Error("Failed to create payment order");
-      }
-
-      const options = {
-        key: orderResponse.key,
-        amount: orderResponse.amount,
-        currency: orderResponse.currency,
-        name: "ShowMovie",
-        description: `Booking for ${movie?.title || "Movie"}`,
-        order_id: orderResponse.orderId,
-        handler: handlePaymentSuccess,
-        prefill: {
-          name: "",
-          email: "",
-          contact: "",
-        },
-        theme: {
-          color: "#ef4444",
-        },
-        modal: {
-          ondismiss: () => {
-            setIsProcessing(false);
-          },
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.on("payment.failed", handlePaymentError);
-      razorpay.open();
-    } catch (error) {
-      setIsProcessing(false);
-      toast.error(error?.message || "Failed to initiate payment. Please try again.");
-    }
-  };
-
-  const handleCloseModal = () => {
-    if (!isProcessing) {
-      setShowConfirmationModal(false);
-    }
-  };
-
-  const handleSuggestionSelect = (suggestion) => {
-    const result = selectMultipleSeats(suggestion.seats);
-    if (!result.ok) {
-      toast.error(result.reason === "limit"
-        ? "Cannot select all suggested seats. Some are already occupied or exceed seat limit."
-        : "Unable to select suggested seats.");
-      return;
-    }
-    
-    toast.success(`Selected ${suggestion.seats.length} seats: ${suggestion.seats.join(", ")}`);
-  };
+  const {
+    showConfirmationModal,
+    isProcessing,
+    totalAmount,
+    handleToggleSeat,
+    handleConfirmClick,
+    handleConfirmBooking,
+    handleCloseModal,
+    handleSuggestionSelect,
+  } = useSeatLayoutPayment({
+    selectedSeats,
+    selectedShow,
+    movie,
+    subtotal,
+    toggleSeat,
+    selectMultipleSeats,
+    isSignedIn,
+    getToken,
+  });
 
   return (
     <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
@@ -224,7 +119,6 @@ const SeatLayout = () => {
         )}
       </div>
 
-      {/* Booking Confirmation Modal */}
       <BookingConfirmationModal
         isOpen={showConfirmationModal}
         onClose={handleCloseModal}

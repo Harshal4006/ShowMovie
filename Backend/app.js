@@ -34,41 +34,6 @@ app.use(express.urlencoded({ extended: true }));
 // Clerk auth middleware - MUST be before routes
 app.use(clerkMiddleware());
 
-// Debug auth route - test if token is being decoded correctly
-app.get('/api/debug-auth', (req, res) => {
-  const authHeader = req.headers.authorization;
-  console.log('[Debug] Request headers:', req.headers);
-  console.log('[Debug] Auth header:', authHeader ? 'Present' : 'Missing');
-  console.log('[Debug] Cookie header:', req.headers.cookie ? 'Present' : 'Missing');
-  
-  try {
-    const auth = getAuth(req);
-    console.log('[Debug] getAuth result:', auth);
-    
-    res.json({
-      success: true,
-      message: 'Auth debug endpoint',
-      auth: {
-        userId: auth.userId || null,
-        sessionId: auth.sessionId || null,
-        organizationId: auth.organizationId || null,
-      },
-      headers: {
-        authHeaderPresent: !!authHeader,
-        cookiePresent: !!req.headers.cookie,
-      },
-      environment: process.env.NODE_ENV,
-    });
-  } catch (error) {
-    console.error('[Debug] Auth error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined,
-    });
-  }
-});
-
 // Root route
 app.get('/', (req, res) => {
   res.json({

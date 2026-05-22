@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useUserContext } from '../hooks/UserContext';
-import PageLoader from './PageLoader/PageLoader';
+import { useUserContext } from '../../hooks/UserContext';
+import PageLoader from '../PageLoader/PageLoader';
 
 const FavoriteRoute = ({ children }) => {
   const { isSignedIn, isAuthLoaded, isLoading } = useUserContext();

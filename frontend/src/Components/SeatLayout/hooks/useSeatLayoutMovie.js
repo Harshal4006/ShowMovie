@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getMovieById } from "../../services/api";
+import { getMovieById } from "../../../services/api";
 
 export const useSeatLayoutMovie = (id) => {
   const [movie, setMovie] = useState(null);

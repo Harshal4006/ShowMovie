@@ -1,3 +1,5 @@
+// Theater schema - cinemas with screens, facilities, and show timings
+
 const mongoose = require('mongoose');
 
 const theaterSchema = new mongoose.Schema({

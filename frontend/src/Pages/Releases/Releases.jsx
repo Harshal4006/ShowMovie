@@ -1,145 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Star, Clock, Film, ChevronRight, Play, TrendingUp, Sparkles, CalendarDays, Loader2, AlertCircle } from "lucide-react";
-import toast from "react-hot-toast";
-import { request } from "../../services/authClient.js";
-import { getMovieById } from "../../services/api.js";
-
-const TMDB_IMG = "https://image.tmdb.org/t/p";
-const BACKDROP_BASE = `${TMDB_IMG}/w1280`;
-const POSTER_BASE = `${TMDB_IMG}/w500`;
-
-const genresList = ["Action", "Comedy", "Horror", "Sci-Fi", "Thriller", "Drama", "Romance", "Animation"];
-
-const formatDate = (d) => {
-  if (!d) return "";
-  const date = new Date(d);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-};
+import React from 'react';
+import { Loader2 } from 'lucide-react';
+import useReleases from '../../Components/Releases/useReleases';
+import { BACKDROP_BASE, POSTER_BASE, genresList, formatDate } from '../../Components/Releases/releasesUtils';
+import HeroSection from '../../Components/Releases/HeroSection';
+import UpcomingCarousel from '../../Components/Releases/UpcomingCarousel';
+import TrendingGrid from '../../Components/Releases/TrendingGrid';
+import ComingSoonGrid from '../../Components/Releases/ComingSoonGrid';
+import GenreSection from '../../Components/Releases/GenreSection';
 
 const Releases = () => {
-  const navigate = useNavigate();
-  const [heroMovie, setHeroMovie] = useState(null);
-  const [upcoming, setUpcoming] = useState([]);
-  const [trending, setTrending] = useState([]);
-  const [comingSoon, setComingSoon] = useState([]);
-  const [filteredMovies, setFilteredMovies] = useState([]);
-  const [selectedGenre, setSelectedGenre] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [trailerLoading, setTrailerLoading] = useState(false);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const scrollRef = useRef(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const autoScrollRef = useRef(null);
-
-  useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const [nowPlayingRes, trendingRes, upcomingRes] = await Promise.all([
-          request("/tmdb/now-playing?page=1"),
-          request("/tmdb/trending?page=1"),
-          request("/tmdb/upcoming?page=1"),
-        ]);
-
-        const nowPlaying = nowPlayingRes?.movies || [];
-        const trendingData = trendingRes?.movies || [];
-        const upcomingData = upcomingRes?.movies || [];
-
-        if (nowPlaying.length > 0) {
-          const featured = nowPlaying[Math.floor(Math.random() * Math.min(5, nowPlaying.length))];
-          setHeroMovie(featured);
-        }
-
-        setUpcoming(nowPlaying.slice(0, 12));
-        setTrending(trendingData.slice(0, 12));
-
-        const sorted = [...upcomingData].sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
-        setComingSoon(sorted.slice(0, 8));
-        setFilteredMovies(trendingData.slice(0, 12));
-      } catch (err) {
-        console.error("Failed to load releases", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
-  }, []);
-
-  useEffect(() => {
-    if (upcoming.length === 0) return;
-
-    const interval = setInterval(() => {
-      if (!scrollRef.current || isHovering) return;
-      const el = scrollRef.current;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft >= maxScroll - 10) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        el.scrollBy({ left: 160, behavior: "smooth" });
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [upcoming, isHovering]);
-
-  const handleGenreFilter = (genre) => {
-    if (selectedGenre === genre) {
-      setSelectedGenre(null);
-      setFilteredMovies(trending);
-    } else {
-      setSelectedGenre(genre);
-      const filtered = trending.filter((m) =>
-        m.genre_ids?.includes(genresList.indexOf(genre) + 1)
-      );
-      setFilteredMovies(filtered.length > 0 ? filtered : trending);
-    }
-  };
-
-  const handleWatchTrailer = useCallback(async (movie) => {
-    if (trailerLoading) return;
-    setTrailerLoading(true);
-    try {
-      const data = await request(`/tmdb/movie/${movie.id}/videos`);
-      const results = data?.results || [];
-      const trailer = results.find((v) => v.type === "Trailer" && v.site === "YouTube") || results[0];
-      if (trailer?.key) {
-        window.open(`https://www.youtube.com/watch?v=${trailer.key}`, "_blank", "noopener,noreferrer");
-      } else {
-        toast.error("Trailer not available right now.");
-      }
-    } catch {
-      toast.error("Trailer not available right now.");
-    } finally {
-      setTrailerLoading(false);
-    }
-  }, [trailerLoading]);
-
-  const navigateToMovie = useCallback(async (movieId, movieTitle) => {
-    try {
-      const movie = await getMovieById(movieId);
-      navigate(`/movies/${movie._id || movieId}`);
-    } catch (err) {
-      toast.error(`"${movieTitle || "This movie"}" is not available yet.`);
-    }
-  }, [navigate]);
-
-  const handleMovieClick = useCallback(async (movieId, movieTitle) => {
-    await navigateToMovie(movieId, movieTitle);
-  }, [navigateToMovie]);
-
-  const handleBookTickets = useCallback(async (movie) => {
-    if (bookingLoading) return;
-    setBookingLoading(true);
-    await navigateToMovie(movie.id, movie.title);
-    setBookingLoading(false);
-  }, [bookingLoading, navigateToMovie]);
-
-  const scroll = (dir) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: dir * 320, behavior: "smooth" });
-    }
-  };
+  const {
+    heroMovie, upcoming, trending, comingSoon, filteredMovies, selectedGenre,
+    loading, trailerLoading, bookingLoading, scrollRef, isHovering, setIsHovering,
+    handleGenreFilter, handleWatchTrailer, handleMovieClick, handleBookTickets, scroll,
+  } = useReleases();
 
   if (loading) {
     return (
@@ -151,333 +25,51 @@ const Releases = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {/* ───── Hero ───── */}
-      {heroMovie && (
-        <div className="relative min-h-[60vh] sm:min-h-[65vh] md:min-h-[70vh] lg:min-h-[80vh] overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center scale-105"
-            style={{ backgroundImage: `url(${BACKDROP_BASE}${heroMovie.backdrop_path})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/70 to-black/50" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.1),transparent_70%)]" />
+      <HeroSection
+        movie={heroMovie}
+        trailerLoading={trailerLoading}
+        bookingLoading={bookingLoading}
+        onWatchTrailer={handleWatchTrailer}
+        onBookTickets={handleBookTickets}
+        backdropBase={BACKDROP_BASE}
+        formatDate={formatDate}
+        genresList={genresList}
+      />
 
-          <div className="relative h-full min-h-[60vh] sm:min-h-[65vh] md:min-h-[70vh] lg:min-h-[80vh] flex items-center pt-20 sm:pt-24 lg:pt-28">
-            <div className="w-full px-4 sm:px-8 md:px-12 lg:px-16 max-w-[1400px] mx-auto">
-              <div className="max-w-3xl animate-fade-up">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <span className="rounded-full bg-red-600/20 border border-red-500/30 px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium text-red-400 backdrop-blur-sm">
-                    Featured Release
-                  </span>
-                  <span className="flex items-center gap-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium text-yellow-400 backdrop-blur-sm">
-                    <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-yellow-400" />
-                    {heroMovie.vote_average?.toFixed(1)}
-                  </span>
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white leading-tight break-words">
-                  {heroMovie.title}
-                </h1>
-
-                <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-400">
-                  {heroMovie.release_date && (
-                    <span className="flex items-center gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500 shrink-0" />
-                      {formatDate(heroMovie.release_date)}
-                    </span>
-                  )}
-                  {heroMovie.genre_ids && (
-                    <span className="flex flex-wrap gap-1.5 sm:gap-2">
-                      {heroMovie.genre_ids.slice(0, 3).map((id) => (
-                        <span key={id} className="rounded-full bg-white/5 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-xs text-gray-300 ring-1 ring-white/10">
-                          {genresList[id - 1] || `Genre ${id}`}
-                        </span>
-                      ))}
-                    </span>
-                  )}
-                </div>
-
-                {heroMovie.overview && (
-                  <p className="mt-3 sm:mt-4 text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed max-w-2xl line-clamp-2 sm:line-clamp-3">
-                    {heroMovie.overview}
-                  </p>
-                )}
-
-                <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <button
-                    onClick={() => handleWatchTrailer(heroMovie)}
-                    disabled={trailerLoading}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {trailerLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                    ) : (
-                      <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white" />
-                    )}
-                    {trailerLoading ? "Loading..." : "Watch Trailer"}
-                  </button>
-                  <button
-                    onClick={() => handleBookTickets(heroMovie)}
-                    disabled={bookingLoading}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {bookingLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                    ) : (
-                      <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    )}
-                    {bookingLoading ? "Loading..." : "Book Tickets"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ───── Sections Container ───── */}
       <div className="px-4 sm:px-8 md:px-12 lg:px-16 max-w-[1400px] mx-auto pb-20 mt-4 sm:mt-6 md:mt-8 lg:mt-10 relative z-10 space-y-10 sm:space-y-12 md:space-y-14">
+        <UpcomingCarousel
+          movies={upcoming}
+          scrollRef={scrollRef}
+          isHovering={isHovering}
+          setIsHovering={setIsHovering}
+          onMovieClick={handleMovieClick}
+          posterBase={POSTER_BASE}
+          formatDate={formatDate}
+          onScroll={scroll}
+        />
 
-        {/* ─── Upcoming This Week ─── */}
-        <section className="animate-fade-up">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/10">
-                <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
-              </div>
-              <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">Upcoming This Week</h2>
-            </div>
-            <div className="hidden sm:flex gap-2">
-              <button onClick={() => scroll(-1)} className="p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
-                <ChevronRight className="h-4 w-4 text-gray-400 rotate-180" />
-              </button>
-              <button onClick={() => scroll(1)} className="p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              </button>
-            </div>
-          </div>
+        <TrendingGrid
+          movies={trending}
+          onMovieClick={handleMovieClick}
+          posterBase={POSTER_BASE}
+          genresList={genresList}
+        />
 
-          <div
-            ref={scrollRef}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
-            {upcoming.map((movie) => (
-              <div
-                key={movie.id}
-                onClick={() => handleMovieClick(movie.id, movie.title)}
-                className="group w-[220px] sm:w-[260px] md:w-[300px] snap-start shrink-0 rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={movie.poster_path ? `${POSTER_BASE}${movie.poster_path}` : ""}
-                    alt={movie.title}
-                    className="h-[320px] sm:h-[360px] md:h-[420px] w-full object-cover transition-all duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  {movie.vote_average > 0 && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/80 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
-                      <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
-                      {movie.vote_average.toFixed(1)}
-                    </div>
-                  )}
-                </div>
-                <div className="p-3 sm:p-3">
-                  <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
-                  {movie.release_date && (
-                    <p className="mt-0.5 text-[11px] text-gray-500">{formatDate(movie.release_date)}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <ComingSoonGrid
+          movies={comingSoon}
+          onMovieClick={handleMovieClick}
+          posterBase={POSTER_BASE}
+          formatDate={formatDate}
+        />
 
-        {/* ─── Trending Releases ─── */}
-        <section className="animate-fade-up">
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/10">
-              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
-            </div>
-            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">Trending Releases</h2>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {trending.map((movie, i) => (
-              <div
-                key={movie.id}
-                onClick={() => handleMovieClick(movie.id, movie.title)}
-                className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
-              >
-                <div className="relative aspect-[2/3] overflow-hidden">
-                  <img
-                    src={movie.poster_path ? `${POSTER_BASE}${movie.poster_path}` : ""}
-                    alt={movie.title}
-                    className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-                  <div className="absolute top-1.5 sm:top-2 left-1.5 sm:left-2 flex flex-col gap-1">
-                    {i === 0 && (
-                      <span className="rounded-full bg-gradient-to-r from-red-600 to-red-700 px-1.5 sm:px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-lg flex items-center gap-1">
-                        <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        Trending
-                      </span>
-                    )}
-                    {i === 1 && (
-                      <span className="rounded-full bg-blue-600/90 px-1.5 sm:px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white">
-                        New
-                      </span>
-                    )}
-                    {movie.vote_average >= 8 && (
-                      <span className="rounded-full bg-yellow-500/90 px-1.5 sm:px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-black">
-                        Fan Favorite
-                      </span>
-                    )}
-                  </div>
-
-                  {movie.vote_average > 0 && (
-                    <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 flex items-center gap-1 rounded-full bg-black/80 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
-                      <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 fill-yellow-400 text-yellow-400" />
-                      {movie.vote_average.toFixed(1)}
-                    </div>
-                  )}
-                </div>
-                <div className="p-2 sm:p-3 lg:p-4">
-                  <h3 className="text-xs sm:text-sm font-semibold text-white truncate">{movie.title}</h3>
-                  <div className="mt-1 sm:mt-1.5 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-gray-500">
-                    {movie.release_date && <span className="truncate">{movie.release_date?.split("-")[0]}</span>}
-                    {movie.genre_ids && movie.genre_ids.length > 0 && (
-                      <>
-                        <span className="h-1 w-1 rounded-full bg-gray-600 shrink-0" />
-                        <span className="truncate">{movie.genre_ids.slice(0, 2).map((id) => genresList[id - 1] || `Genre ${id}`).join(", ")}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ─── Coming Soon ─── */}
-        {comingSoon.length > 0 && (
-          <section className="animate-fade-up">
-            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/10">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
-              </div>
-              <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">Coming Soon</h2>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-              {comingSoon.slice(0, 4).map((movie) => {
-                const releaseDate = new Date(movie.release_date);
-                const now = new Date();
-                const diff = releaseDate - now;
-                const days = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-                const hours = Math.max(0, Math.floor((diff / (1000 * 60 * 60)) % 24));
-
-                return (
-                  <div
-                    key={movie.id}
-                    onClick={() => handleMovieClick(movie.id, movie.title)}
-                    className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
-                  >
-                    <div className="relative aspect-[2/3] overflow-hidden">
-                      <img
-                        src={movie.poster_path ? `${POSTER_BASE}${movie.poster_path}` : ""}
-                        alt={movie.title}
-                        className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 right-2 sm:right-3">
-                        <div className="rounded-lg sm:rounded-xl bg-black/70 backdrop-blur-md border border-white/10 px-2 sm:px-3 py-1.5 sm:py-2 text-center">
-                          <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase tracking-wider">Releasing in</p>
-                          <p className="text-sm sm:text-base lg:text-lg font-bold text-white">
-                            {days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h` : "Today"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-2 sm:p-3 lg:p-4">
-                      <h3 className="text-xs sm:text-sm font-semibold text-white truncate">{movie.title}</h3>
-                      <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-gray-500">{formatDate(movie.release_date)}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ─── Genre Filter ─── */}
-        <section className="animate-fade-up">
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/10">
-              <Film className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
-            </div>
-            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">Browse by Genre</h2>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5 sm:gap-2 md:gap-3 mb-4 sm:mb-6">
-            {genresList.map((genre) => (
-              <button
-                key={genre}
-                onClick={() => handleGenreFilter(genre)}
-                className={`rounded-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs md:text-sm font-medium transition-all duration-200 ${
-                  selectedGenre === genre
-                    ? "bg-red-600 text-white shadow-lg shadow-red-500/20"
-                    : "border border-white/10 bg-white/5 text-gray-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
-                }`}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
-
-          {filteredMovies.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-              {filteredMovies.slice(0, 8).map((movie) => (
-                <div
-                  key={movie.id}
-                  onClick={() => handleMovieClick(movie.id, movie.title)}
-                  className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
-                >
-                  <div className="relative aspect-[2/3] overflow-hidden">
-                    <img
-                      src={movie.poster_path ? `${POSTER_BASE}${movie.poster_path}` : ""}
-                      alt={movie.title}
-                      className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    {movie.vote_average > 0 && (
-                      <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 flex items-center gap-1 rounded-full bg-black/80 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold text-white backdrop-blur-sm ring-1 ring-white/10">
-                        <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 fill-yellow-400 text-yellow-400" />
-                        {movie.vote_average.toFixed(1)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2 sm:p-3 lg:p-4">
-                    <h3 className="text-xs sm:text-sm font-semibold text-white truncate">{movie.title}</h3>
-                    <div className="mt-1 sm:mt-1.5 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-gray-500">
-                      {movie.release_date && <span>{movie.release_date?.split("-")[0]}</span>}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center">
-              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-gray-600 mb-2 sm:mb-3" />
-              <p className="text-xs sm:text-sm text-gray-500">No movies found for this genre.</p>
-              <p className="text-[11px] sm:text-xs text-gray-600 mt-1">Try selecting a different genre.</p>
-            </div>
-          )}
-        </section>
+        <GenreSection
+          selectedGenre={selectedGenre}
+          filteredMovies={filteredMovies}
+          onGenreFilter={handleGenreFilter}
+          onMovieClick={handleMovieClick}
+          posterBase={POSTER_BASE}
+          genresList={genresList}
+        />
       </div>
 
       <style>{`

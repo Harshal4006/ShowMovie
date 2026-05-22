@@ -1,5 +1,8 @@
+// Replaced by authClient.js - kept for reference
+
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
+// Superseded by authClient.js exports
 export class ApiError extends Error {
   constructor(message, { status, data } = {}) {
     super(message);
@@ -9,6 +12,7 @@ export class ApiError extends Error {
   }
 }
 
+// Superseded by authClient.js exports
 export const request = async (path, options = {}) => {
   if (!API_BASE_URL) {
     throw new ApiError(

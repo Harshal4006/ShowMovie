@@ -1,3 +1,5 @@
+// Handles transactional emails via Resend
+
 const { Resend } = require('resend');
 const generateBookingConfirmedEmail = require('../EmailTemplates/BookingConfirmedTemplate');
 const generateBookingPendingEmail = require('../EmailTemplates/BookingPendingTemplate');
@@ -9,6 +11,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'ShowMovie <onboarding@resend.dev>';
 
 class EmailService {
+  // Sends booking confirmed email
   async sendBookingConfirmed(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping confirmed email');
@@ -24,10 +27,10 @@ class EmailService {
       html,
     });
 
-    console.log('[EmailService] Confirmed email sent to', data.userEmail, '- ID:', result.data?.id);
     return { success: true, emailId: result.data?.id };
   }
 
+  // Sends booking pending email
   async sendBookingPending(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping pending email');
@@ -43,10 +46,10 @@ class EmailService {
       html,
     });
 
-    console.log('[EmailService] Pending email sent to', data.userEmail, '- ID:', result.data?.id);
     return { success: true, emailId: result.data?.id };
   }
 
+  // Sends booking failed notification
   async sendBookingFailed(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping failed email');
@@ -62,10 +65,10 @@ class EmailService {
       html,
     });
 
-    console.log('[EmailService] Failed email sent to', data.userEmail, '- ID:', result.data?.id);
     return { success: true, emailId: result.data?.id };
   }
 
+  // Sends new show alert to users
   async sendNewShowAdded(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping show added email');
@@ -81,7 +84,6 @@ class EmailService {
       html,
     });
 
-    console.log('[EmailService] Show added email sent to', data.userEmail, '- ID:', result.data?.id);
     return { success: true, emailId: result.data?.id };
   }
 }

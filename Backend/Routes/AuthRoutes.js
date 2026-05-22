@@ -23,7 +23,7 @@ router.get('/sync-role', VerifyToken, async (req, res) => {
       const userMetadata = await getClerkUserMetadata(userId);
       role = extractRoleFromClerk(userMetadata);
     } catch {
-      // Use default role
+      console.warn('Failed to fetch Clerk metadata, defaulting to user role');
     }
 
     const user = await User.findOne({ clerkId: userId });

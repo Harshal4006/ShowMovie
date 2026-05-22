@@ -1,3 +1,5 @@
+// Utility kept for reference - not currently imported
+
 // Generate Ticket - creates booking ticket data
 const GenerateTicket = (booking) => {
   const ticket = {

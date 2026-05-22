@@ -3,9 +3,9 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import ToastProvider from "./Components/ToastProvider/ToastProvider";
 import PageLoader from "./Components/PageLoader/PageLoader.jsx";
 import ErrorBoundary from "./Components/ErrorBoundary/ErrorBoundary.jsx";
-import AdminRoute from "./Components/AdminRoute.jsx";
-import FavoriteRoute from "./Components/FavoriteRoute.jsx";
+import AdminRoute from "./Components/RouteGuards/AdminRoute.jsx";
 
+import FavoriteRoute from "./Components/RouteGuards/FavoriteRoute.jsx";
 // Lazy load pages for code splitting
 const Home = lazy(() => import("./Pages/Home/Home.jsx"));
 const Movies = lazy(() => import("./Pages/Movies/Movies.jsx"));

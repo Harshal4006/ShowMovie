@@ -1,18 +1,22 @@
+// MovieDetailse page - single movie view with showtimes, cast, and related movies
 import React, { useState, useEffect, useRef } from "react";
+
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/clerk-react";
-import { getMovieById, getRelatedMovies, getShowsByMovie } from "../../services/api";
+
 import { useUserContext } from "../../hooks/UserContext";
 import { MovieDetailsSkeleton } from "../../Components/Skeletons";
-
 import MovieHeader from "../../Components/MovieDetailse/MovieHeader.jsx";
 import MovieStats from "../../Components/MovieDetailse/MovieStats.jsx";
 import ShowTimes from "../../Components/MovieDetailse/ShowTimes.jsx";
 import CastGrid from "../../Components/MovieDetailse/CastGrid.jsx";
 import RelatedMovies from "../../Components/MovieDetailse/RelatedMovies.jsx";
 
+import { getMovieById, getRelatedMovies, getShowsByMovie } from "../../services/api";
+
+// Helper: format ISO date to YYYY-MM-DD
 const formatDateKey = (iso) => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
@@ -22,6 +26,7 @@ const formatDateKey = (iso) => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+// Helper: format ISO time to 12-hour label
 const formatTimeLabel = (iso) => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
@@ -137,8 +142,10 @@ const MovieDetailse = () => {
     await toggleFavorite(movie);
   };
 
+  // Loading state
   if (isLoading) return <MovieDetailsSkeleton />;
 
+  // Error state
   if (error || !movie) {
     return (
       <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
@@ -158,6 +165,7 @@ const MovieDetailse = () => {
   const genres = movie.genres?.map((g) => g.name) || [];
   const cast = movie.cast || [];
 
+  // Render
   return (
     <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">

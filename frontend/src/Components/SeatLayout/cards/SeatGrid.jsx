@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { makeSeatId } from "./seatLayoutUtils";
+import { makeSeatId } from "../hooks/seatLayoutUtils";
 
 const SeatPill = ({ label, className }) => (
   <span className={`inline-flex items-center gap-2 text-xs text-gray-400 ${className ?? ""}`}>

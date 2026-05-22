@@ -1,3 +1,5 @@
+// User schema - synced from Clerk, stores role, bookings, favorites
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({

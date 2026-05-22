@@ -1,10 +1,14 @@
+// ListMovies page - admin manage movies with edit/delete
 import { useState, useEffect } from "react";
+
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
+
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import MovieHeader from "../../Components/Admin/ListMovies/MovieHeader";
 import MovieTable from "../../Components/Admin/ListMovies/MovieTable";
 import MovieEditModal from "../../Components/Admin/ListMovies/MovieEditModal";
+
 import { getAdminMovies, updateMovie, deleteMovie } from "../../services/api";
 
 const ListMovies = () => {
@@ -61,6 +65,7 @@ const ListMovies = () => {
 
   const editMovie = movies.find((m) => m._id === editMovieId);
 
+  // Render
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       <AdminSidebar />

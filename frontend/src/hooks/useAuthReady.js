@@ -1,3 +1,5 @@
+// Deprecated - kept for reference
+
 import { useAuth } from '@clerk/clerk-react';
 
 const useAuthReady = () => {
@@ -11,4 +13,5 @@ const useAuthReady = () => {
   };
 };
 
+// Deprecated hook kept for reference
 export default useAuthReady;

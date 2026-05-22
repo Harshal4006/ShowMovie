@@ -1,9 +1,13 @@
+// Movies page - browse, search, filter, and sort movies
 import React, { useMemo, useState, useEffect } from "react";
+
 import { useSearchParams } from "react-router-dom";
-import { getMovies } from "../../services/api";
+import { ChevronDown } from "lucide-react";
+
 import FeatureCard from "../../Components/FeatureSection/FeatureCard.jsx";
 import { MovieGridSkeleton } from "../../Components/Skeletons";
-import { ChevronDown } from "lucide-react";
+
+import { getMovies } from "../../services/api";
 
 const Movies = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -159,6 +163,7 @@ const Movies = () => {
           </div>
         </div>
 
+        {/* Loading / empty state */}
         {loading ? (
           <MovieGridSkeleton count={8} />
         ) : movies.length > 0 ? (

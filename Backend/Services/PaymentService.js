@@ -1,3 +1,5 @@
+// Service kept for reference - not currently imported
+
 const razorpayInstance = require('../Config/Razorpay');
 
 class PaymentService {

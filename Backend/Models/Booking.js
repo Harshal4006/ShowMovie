@@ -1,3 +1,5 @@
+// Booking schema - stores seat reservations and payment status
+
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({

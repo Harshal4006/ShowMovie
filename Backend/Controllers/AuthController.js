@@ -18,7 +18,7 @@ const SyncUser = async (req, res) => {
       const userMetadata = await getClerkUserMetadata(clerkId);
       role = extractRoleFromClerk(userMetadata);
     } catch {
-      // Use default role
+      console.warn('Failed to fetch Clerk metadata, defaulting to user role');
     }
 
     if (!user) {

@@ -1,3 +1,5 @@
+// Movie schema - stores TMDB data alongside app-specific fields
+
 const mongoose = require('mongoose');
 
 const movieSchema = new mongoose.Schema({

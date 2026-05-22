@@ -1,9 +1,12 @@
+// Home page - landing page with hero, featured, trending, and about sections
 import React, { useState, useEffect } from 'react'
+
 import Hero from '../../Components/HeroSection/HeroSection.jsx'
 import MovieSection from '../../Components/FeatureSection/MovieSection.jsx'
 import TrailerSection from '../../Components/TrailerSection/TrailerSection.jsx'
 import AboutSection from '../../Components/AboutSection/AboutSection.jsx'
 import { HeroSkeleton } from '../../Components/Skeletons'
+
 import { getFeaturedMovies, getTrendingMovies, getMostPopularMovies } from '../../services/api'
 
 const Home = () => {
@@ -14,9 +17,11 @@ const Home = () => {
     return () => clearTimeout(timer)
   }, [])
 
+  // Render
   return (
     <>
       {isLoading ? (
+        // Loading state
         <HeroSkeleton />
       ) : (
         <>

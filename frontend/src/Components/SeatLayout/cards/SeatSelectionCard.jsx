@@ -2,7 +2,7 @@ import React from "react";
 import { Info } from "lucide-react";
 
 import SeatGrid from "./SeatGrid.jsx";
-import { getSeatTier } from "./seatLayoutUtils.js";
+import { getSeatTier } from "../hooks/seatLayoutUtils.js";
 
 const SeatSelectionCard = ({
   rows,

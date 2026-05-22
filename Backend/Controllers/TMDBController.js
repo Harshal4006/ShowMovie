@@ -1,5 +1,8 @@
+// TMDB API proxy - fetches movies, details, genres, credits, etc.
+
 const axios = require('axios');
 
+// Gets now-playing movies from TMDB
 const GetNowPlayingMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -30,6 +33,7 @@ const GetNowPlayingMovies = async (req, res) => {
   }
 };
 
+// Gets full movie details by TMDB ID
 const GetMovieDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,6 +59,7 @@ const GetMovieDetails = async (req, res) => {
   }
 };
 
+// Gets the list of movie genres
 const GetMovieGenres = async (req, res) => {
   try {
     const accessToken = process.env.TMDB_ACCESS_TOKEN;
@@ -79,6 +84,7 @@ const GetMovieGenres = async (req, res) => {
   }
 };
 
+// Searches movies by query string
 const SearchMovies = async (req, res) => {
   try {
     const { query, page = 1 } = req.query;
@@ -113,6 +119,7 @@ const SearchMovies = async (req, res) => {
   }
 };
 
+// Gets cast and crew for a movie
 const GetMovieCredits = async (req, res) => {
   try {
     const { id } = req.params;
@@ -138,6 +145,7 @@ const GetMovieCredits = async (req, res) => {
   }
 };
 
+// Gets trailers and videos for a movie
 const GetMovieVideos = async (req, res) => {
   try {
     const { id } = req.params;
@@ -163,6 +171,7 @@ const GetMovieVideos = async (req, res) => {
   }
 };
 
+// Gets weekly trending movies
 const GetTrendingMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -179,6 +188,7 @@ const GetTrendingMovies = async (req, res) => {
   }
 };
 
+// Gets upcoming movies
 const GetUpcomingMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -195,6 +205,7 @@ const GetUpcomingMovies = async (req, res) => {
   }
 };
 
+// Gets popular movies
 const GetPopularMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;

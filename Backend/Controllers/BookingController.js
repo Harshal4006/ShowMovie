@@ -1,3 +1,5 @@
+// Booking creation and retrieval
+
 const { getAuth } = require('@clerk/express');
 const Booking = require('../Models/Booking');
 const Show = require('../Models/Show');
@@ -5,6 +7,7 @@ const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { CreateNotification } = require('./NotificationController');
 
+// Creates a booking for a show and reserves seats
 const CreateBooking = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -96,6 +99,7 @@ const CreateBooking = async (req, res) => {
   }
 };
 
+// Returns all bookings for the authenticated user
 const GetUserBookings = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -160,6 +164,7 @@ const GetUserBookings = async (req, res) => {
   }
 };
 
+// Returns a single booking if it belongs to the user or user is admin
 const GetBookingById = async (req, res) => {
   try {
     await ensureDbConnection();

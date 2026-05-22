@@ -1,19 +1,15 @@
+// Dashboard page - admin overview with stats, recent bookings, and widgets
 import { useMemo, useState, useEffect } from "react";
-import {
-  Calendar,
-  Clock,
-  TrendingUp,
-  Users,
-  IndianRupee,
-  Ticket,
-  Film,
-} from "lucide-react";
+
+import { Users, IndianRupee, Ticket, Film } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
+
 import AdminSidebar from "../../Components/Admin/AdminSidebar/AdminSidebar";
 import DashboardHeader from "../../Components/Admin/Dashboard/DashboardHeader";
 import StatsCards from "../../Components/Admin/Dashboard/StatsCards";
 import RecentBookings from "../../Components/Admin/Dashboard/RecentBookings";
 import DashboardWidgets from "../../Components/Admin/Dashboard/DashboardWidgets";
+
 import { adminShowsQuickActions, adminShowsRecentActivity } from "../../assets/assets";
 import { getAdminDashboard, getAdminBookings, getAdminShows } from "../../services/api";
 
@@ -125,6 +121,7 @@ const Dashboard = () => {
     },
   ];
 
+  // Loading state
   if (loading) {
     return (
       <div className="flex min-h-screen bg-gray-950 text-white">
@@ -138,6 +135,7 @@ const Dashboard = () => {
     );
   }
 
+  // Render
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       <AdminSidebar />

@@ -5,26 +5,9 @@ import toast from "react-hot-toast";
 const AddShowHeader = ({ onQuickAdd }) => {
   const navigate = useNavigate();
 
+  // Pre-fills form with default values
   const handleQuickAdd = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-    const sampleData = {
-      movieName: "",
-      movieId: "",
-      poster: "",
-      poster2: "",
-      theater: "Theater 1",
-      showtimes: [{ date: tomorrowStr, time: "19:00" }],
-      price: "",
-      language: "English",
-      screenType: "2D",
-      description: "",
-      status: "active"
-    };
-
-    onQuickAdd(sampleData);
+    onQuickAdd({});
     toast.success("Form pre-filled! Select a movie and complete the details.");
   };
 

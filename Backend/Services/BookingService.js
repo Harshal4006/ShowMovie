@@ -1,3 +1,5 @@
+// Service kept for reference - not currently imported
+
 const Booking = require('../Models/Booking');
 const Show = require('../Models/Show');
 

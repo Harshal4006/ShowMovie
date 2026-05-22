@@ -1,7 +1,7 @@
 import React from "react";
 import { Ticket, IndianRupee, Clock, MapPin, Film, Shield, Star, Monitor, Languages, Info, CheckCircle } from "lucide-react";
 
-import { formatShowDate } from "./seatLayoutUtils.js";
+import { formatShowDate } from "../hooks/seatLayoutUtils.js";
 
 const PLACEHOLDER = "https://via.placeholder.com/200x300?text=No+Image";
 

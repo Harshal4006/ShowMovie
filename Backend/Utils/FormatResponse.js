@@ -1,3 +1,5 @@
+// Utility kept for reference - not currently imported
+
 // Format API Response
 const FormatResponse = (data, message = 'Success', statusCode = 200) => {
   return {
