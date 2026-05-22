@@ -176,7 +176,7 @@ const Releases = () => {
       )}
 
       {/* ───── Sections Container ───── */}
-      <div className="px-4 sm:px-8 md:px-12 lg:px-16 max-w-[1400px] mx-auto pb-20 -mt-10 sm:-mt-12 md:-mt-16 lg:-mt-20 relative z-10 space-y-10 sm:space-y-12 md:space-y-14">
+      <div className="px-4 sm:px-8 md:px-12 lg:px-16 max-w-[1400px] mx-auto pb-20 mt-4 sm:mt-6 md:mt-8 lg:mt-10 relative z-10 space-y-10 sm:space-y-12 md:space-y-14">
 
         {/* ─── Upcoming This Week ─── */}
         <section className="animate-fade-up">
@@ -201,7 +201,7 @@ const Releases = () => {
             {upcoming.map((movie) => (
               <div
                 key={movie.id}
-                className="min-w-[140px] sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0"
+                className="min-w-[120px] sm:min-w-[130px] md:min-w-[150px] lg:min-w-[170px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
                   <img
