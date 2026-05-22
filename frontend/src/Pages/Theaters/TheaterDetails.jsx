@@ -124,7 +124,7 @@ const TheaterDetails = () => {
       `}</style>
 
       {/* ───── Hero ───── */}
-      <div className="relative min-h-[420px] md:min-h-[560px] overflow-hidden">
+      <div className="relative min-h-[420px] md:min-h-[560px] overflow-hidden pt-16 sm:pt-20">
         <img
           src={theater.image}
           alt={theater.name}
@@ -134,47 +134,36 @@ const TheaterDetails = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
 
         {/* Back Button - top left */}
-        <div className="relative z-20 px-4 sm:px-6">
+        <div className="relative z-30 px-4 sm:px-6 ml-1 sm:ml-4">
           <button
             onClick={() => navigate("/theaters")}
-            className="mt-4 md:mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-4 py-2 text-sm text-gray-300 backdrop-blur-md transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
         </div>
 
-        {/* Hero Content - bottom */}
-        <div className="absolute bottom-10 left-0 w-full z-20">
-          <div className="max-w-[80%] mx-auto px-4">
-            <div className="space-y-4">
-              <div className="animate-fade-up">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm ring-1 ring-red-500/10">
-                  <Star className="h-3.5 w-3.5 fill-red-400" />
-                  {theater.rating} Rating
-                </div>
-                <h1 className="text-4xl md:text-6xl font-bold text-white">
-                  {theater.name}
-                </h1>
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-400">
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 text-red-500" />
-                    {theater.location}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Monitor className="h-4 w-4 text-red-500" />
-                    {theater.screens} Screens
-                  </span>
-                </div>
+        {/* Hero Content - center */}
+        <div className="absolute inset-0 z-20 flex items-center justify-center pt-14 sm:pt-16">
+          <div className="max-w-[80%] mx-auto px-4 text-center">
+            <div className="animate-fade-up">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 backdrop-blur-sm ring-1 ring-red-500/10">
+                <Star className="h-3.5 w-3.5 fill-red-400" />
+                {theater.rating} Rating
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto animate-fade-up" style={{ animationDelay: "150ms" }}>
-                <button className="w-full sm:w-auto rounded-full bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-300 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/30 active:scale-[0.97]">
-                  View Movies
-                </button>
-                <button className="w-full sm:w-auto rounded-full border border-white/10 bg-white/[0.04] px-6 py-3 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white active:scale-[0.97]">
-                  Book Now
-                </button>
+              <h1 className="text-4xl md:text-6xl font-bold text-white">
+                {theater.name}
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-gray-400">
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 text-red-500" />
+                  {theater.location}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Monitor className="h-4 w-4 text-red-500" />
+                  {theater.screens} Screens
+                </span>
               </div>
             </div>
           </div>
