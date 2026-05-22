@@ -64,7 +64,7 @@ const ListMovies = () => {
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       <AdminSidebar />
-      <main className="flex-1 w-full lg:ml-64">
+      <main className="flex-1 w-full lg:ml-64 pt-14 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8">
           <MovieHeader onRefresh={fetchMovies} />
 

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Star, Clock, Film, ChevronRight, X, Play, TrendingUp, Sparkles, CalendarDays, Loader2, AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { request } from "../../services/authClient.js";
+import { getMovieById } from "../../services/api.js";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 const BACKDROP_BASE = `${TMDB_IMG}/w1280`;
@@ -16,6 +18,7 @@ const formatDate = (d) => {
 };
 
 const Releases = () => {
+  const navigate = useNavigate();
   const [heroMovie, setHeroMovie] = useState(null);
   const [upcoming, setUpcoming] = useState([]);
   const [trending, setTrending] = useState([]);
@@ -25,6 +28,8 @@ const Releases = () => {
   const [loading, setLoading] = useState(true);
   const [trailerModal, setTrailerModal] = useState({ open: false, key: null });
   const scrollRef = useRef(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const autoScrollRef = useRef(null);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -60,6 +65,23 @@ const Releases = () => {
     fetchAll();
   }, []);
 
+  useEffect(() => {
+    if (upcoming.length === 0) return;
+
+    const interval = setInterval(() => {
+      if (!scrollRef.current || isHovering) return;
+      const el = scrollRef.current;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 10) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: 160, behavior: "smooth" });
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [upcoming, isHovering]);
+
   const handleGenreFilter = (genre) => {
     if (selectedGenre === genre) {
       setSelectedGenre(null);
@@ -89,6 +111,15 @@ const Releases = () => {
   const scroll = (dir) => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: dir * 320, behavior: "smooth" });
+    }
+  };
+
+  const handleMovieClick = async (movieId) => {
+    try {
+      await getMovieById(movieId);
+      navigate(`/movies/${movieId}`);
+    } catch (err) {
+      toast.error(`"${err.data?.title || "This movie"}" is not available yet.`);
     }
   };
 
@@ -197,11 +228,16 @@ const Releases = () => {
             </div>
           </div>
 
-          <div ref={scrollRef} className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
+          <div
+            ref={scrollRef}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
             {upcoming.map((movie) => (
               <div
                 key={movie.id}
-                className="min-w-[120px] sm:min-w-[130px] md:min-w-[150px] lg:min-w-[170px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0"
+                onClick={() => handleMovieClick(movie.id)}
+                className="min-w-[120px] sm:min-w-[130px] md:min-w-[150px] lg:min-w-[170px] snap-start rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] shrink-0 cursor-pointer"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
                   <img
@@ -242,7 +278,8 @@ const Releases = () => {
             {trending.map((movie, i) => (
               <div
                 key={movie.id}
-                className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)]"
+                onClick={() => handleMovieClick(movie.id)}
+                className="group rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
                   <img
@@ -317,7 +354,8 @@ const Releases = () => {
                 return (
                   <div
                     key={movie.id}
-                    className="rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)]"
+                    onClick={() => handleMovieClick(movie.id)}
+                    className="rounded-xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] overflow-hidden transition-all duration-300 hover:border-red-500/20 hover:shadow-[0_0_30px_rgba(239,68,68,0.06)] cursor-pointer"
                   >
                     <div className="relative aspect-[2/3] overflow-hidden">
                       <img

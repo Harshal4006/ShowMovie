@@ -156,65 +156,65 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
       <div className="rounded-xl bg-gray-800/50 border border-gray-700 p-4">
         <h3 className="text-lg font-semibold text-white mb-4">Select Movie *</h3>
 
-        <div className="flex gap-2 mb-4 border-b border-gray-700 pb-2">
+        <div className="flex gap-1.5 sm:gap-2 mb-4 border-b border-gray-700 pb-2 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <button
             type="button"
             onClick={() => setActiveTab("now-playing")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition shrink-0 ${
               activeTab === "now-playing"
                 ? "bg-red-600 text-white"
                 : "text-gray-400 hover:text-white hover:bg-gray-700"
             }`}
           >
-            <Film className="h-4 w-4" />
+            <Film className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Now Playing
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("upcoming")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition shrink-0 ${
               activeTab === "upcoming"
                 ? "bg-red-600 text-white"
                 : "text-gray-400 hover:text-white hover:bg-gray-700"
             }`}
           >
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Upcoming
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("trending")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition shrink-0 ${
               activeTab === "trending"
                 ? "bg-red-600 text-white"
                 : "text-gray-400 hover:text-white hover:bg-gray-700"
             }`}
           >
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Trending
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("popular")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition shrink-0 ${
               activeTab === "popular"
                 ? "bg-red-600 text-white"
                 : "text-gray-400 hover:text-white hover:bg-gray-700"
             }`}
           >
-            <Star className="h-4 w-4" />
+            <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Most Popular
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("search")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition shrink-0 ${
               activeTab === "search"
                 ? "bg-red-600 text-white"
                 : "text-gray-400 hover:text-white hover:bg-gray-700"
             }`}
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Search
           </button>
         </div>

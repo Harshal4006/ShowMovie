@@ -129,7 +129,7 @@ const Dashboard = () => {
     return (
       <div className="flex min-h-screen bg-gray-950 text-white">
         <AdminSidebar />
-        <main className="flex-1 w-full lg:ml-64">
+        <main className="flex-1 w-full lg:ml-64 pt-14 lg:pt-0">
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex items-center justify-center h-96">
             <div className="text-gray-400">Loading dashboard...</div>
           </div>
@@ -141,7 +141,7 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       <AdminSidebar />
-      <main className="flex-1 w-full lg:ml-64">
+      <main className="flex-1 w-full lg:ml-64 pt-14 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           <DashboardHeader />
           <StatsCards stats={stats} />

@@ -200,22 +200,30 @@ const BookingConfirmationModal = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-4">
+              <div className="space-y-4 mt-8">
                 <button
                   onClick={onConfirm}
                   disabled={isLoading || totalSeats === 0}
-                  className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-lg hover:opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-red-500/20"
+                  className="group relative w-full h-16 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 bg-[length:200%_100%] text-white font-bold text-lg shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-red-500/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
+                  <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.12)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-2xl ring-1 ring-white/15 inset-ring-1 inset-ring-white/20 pointer-events-none" />
                   {isLoading ? (
-                    <>
-                      <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="relative z-10 flex items-center justify-center gap-3">
+                      <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
                       Processing...
-                    </>
+                    </span>
                   ) : (
-                    <>
-                      <CheckCircle className="w-6 h-6" />
-                      Confirm & Pay<IndianRupee size={14} className="inline self-center" />{total.toFixed(2)}
-                    </>
+                    <span className="relative z-10 flex items-center justify-between px-8">
+                      <span className="flex items-center gap-3">
+                        <CheckCircle className="w-6 h-6" />
+                        <span>Confirm & Pay</span>
+                      </span>
+                      <span className="flex items-baseline gap-1">
+                        <IndianRupee className="h-5 w-5" />
+                        <span className="text-2xl font-bold tracking-tight">{total.toFixed(2)}</span>
+                      </span>
+                    </span>
                   )}
                 </button>
                 

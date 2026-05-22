@@ -36,19 +36,19 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
 
   return (
     <div
-      className={`group flex items-start gap-3 rounded-xl p-3 transition-all hover:bg-white/5 ${
+      className={`flex items-start gap-2.5 sm:gap-3 rounded-xl p-2.5 sm:p-3 transition-all hover:bg-white/5 ${
         !notification.isRead ? "border-l-2 border-red-500 bg-red-500/5" : ""
       }`}
     >
-      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10">
+      <div className="mt-0.5 flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-white/10">
         {getIcon(notification.type)}
       </div>
       <div className="min-w-0 flex-1">
-        <p className={`text-sm font-medium ${notification.isRead ? "text-gray-400" : "text-white"}`}>
+        <p className={`text-xs sm:text-sm font-medium leading-snug ${notification.isRead ? "text-gray-400" : "text-white"}`}>
           {notification.title}
         </p>
-        <p className="mt-1 text-xs text-gray-500 line-clamp-2">{notification.message}</p>
-        <p className="mt-2 text-xs text-gray-600">
+        <p className="mt-1 text-[11px] sm:text-xs text-gray-500 line-clamp-2 leading-relaxed">{notification.message}</p>
+        <p className="mt-1.5 text-[10px] sm:text-xs text-gray-600">
           {new Date(notification.createdAt).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "short",
@@ -57,11 +57,11 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
           })}
         </p>
       </div>
-      <div className="flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex flex-col gap-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
         {!notification.isRead && (
           <button
             onClick={() => onMarkRead(notification._id)}
-            className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-green-400"
+            className="rounded-full p-1.5 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-green-400"
             title="Mark as read"
           >
             <Check className="h-3.5 w-3.5" />
@@ -69,7 +69,7 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
         )}
         <button
           onClick={() => onDelete(notification._id)}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
+          className="rounded-full p-1.5 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
           title="Delete"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -218,63 +218,70 @@ const Navbar = () => {
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 top-full mt-2 w-80 max-h-96 sm:w-96 overflow-hidden rounded-2xl border border-white/10 bg-black/95 backdrop-blur-xl shadow-xl">
-                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                  <h3 className="font-semibold text-white">Notifications</h3>
-                  <div className="flex gap-2">
-                    {notifications.length > 0 && (
-                      <>
-                        <button
-                          onClick={handleMarkAllRead}
-                          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-                          title="Mark all as read"
-                        >
-                          <Check className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={handleClearAll}
-                          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
-                          title="Clear all"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </>
+              <>
+                {/* Mobile backdrop */}
+                <div
+                  className="fixed inset-0 bg-black/40 backdrop-blur-sm sm:hidden"
+                  onClick={() => setShowNotifications(false)}
+                />
+                <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px] max-h-[70vh] sm:max-h-96 overflow-hidden rounded-2xl border border-white/10 bg-black/95 backdrop-blur-xl shadow-xl animate-dropdown origin-top-right">
+                  <div className="flex items-center justify-between border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
+                    <h3 className="text-sm sm:text-base font-semibold text-white">Notifications</h3>
+                    <div className="flex gap-1.5 sm:gap-2">
+                      {notifications.length > 0 && (
+                        <>
+                          <button
+                            onClick={handleMarkAllRead}
+                            className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                            title="Mark all as read"
+                          >
+                            <Check className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={handleClearAll}
+                            className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
+                            title="Clear all"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={toggleNotifications}
+                        className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="overflow-y-auto max-h-[calc(70vh-56px)] sm:max-h-80 scrollbar-hide">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin text-red-500" />
+                      </div>
+                    ) : error ? (
+                      <div className="p-4 text-center text-sm text-red-400">{error}</div>
+                    ) : notifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4">
+                        <BellOff className="h-8 w-8 sm:h-10 sm:w-10 text-gray-600" />
+                        <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500">No notifications yet</p>
+                      </div>
+                    ) : (
+                      <div className="p-1.5 sm:p-2">
+                        {notifications.map((notification) => (
+                          <NotificationItem
+                            key={notification._id}
+                            notification={notification}
+                            onMarkRead={handleMarkRead}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                      </div>
                     )}
-                    <button
-                      onClick={toggleNotifications}
-                      className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
                   </div>
                 </div>
-
-                <div className="max-h-80 overflow-y-auto">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="h-6 w-6 animate-spin text-red-500" />
-                    </div>
-                  ) : error ? (
-                    <div className="p-4 text-center text-sm text-red-400">{error}</div>
-                  ) : notifications.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 px-4">
-                      <BellOff className="h-10 w-10 text-gray-600" />
-                      <p className="mt-3 text-sm text-gray-500">No notifications yet</p>
-                    </div>
-                  ) : (
-                    <div className="p-2">
-                      {notifications.map((notification) => (
-                        <NotificationItem
-                          key={notification._id}
-                          notification={notification}
-                          onMarkRead={handleMarkRead}
-                          onDelete={handleDelete}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              </>
             )}
           </div>
         </SignedIn>

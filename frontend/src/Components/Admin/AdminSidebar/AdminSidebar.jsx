@@ -8,9 +8,20 @@ import {
   LogOut,
   X,
   ChevronRight,
+  Menu,
+  User,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+
+const pageTitleMap = {
+  "/admin": "Dashboard",
+  "/admin/add-show": "Add Show",
+  "/admin/list-shows": "List Shows",
+  "/admin/list-bookings": "List Bookings",
+  "/admin/manage-theaters": "Manage Theaters",
+  "/admin/list-movies": "Manage Movies",
+};
 
 const SidebarContent = ({ isMobile, navItems, locationPath, onNavClick, onCloseMobile, onLogout }) => (
   <div className={`flex h-full flex-col ${isMobile ? "w-72" : "w-64"}`}>
@@ -72,7 +83,6 @@ const SidebarContent = ({ isMobile, navItems, locationPath, onNavClick, onCloseM
 
     {/* Bottom Section */}
     <div className="border-t border-gray-800 p-3 space-y-1.5">
-      {/* User Section */}
       <div className="mt-4 rounded-xl bg-gray-900/50 p-3">
         <div className="flex items-center gap-3 mb-3">
           <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-sm font-medium text-gray-300">
@@ -100,7 +110,6 @@ const AdminSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // sidebar navigation items
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
     { icon: PlusCircle, label: "Add Show", path: "/admin/add-show" },
@@ -110,7 +119,8 @@ const AdminSidebar = () => {
     { icon: Film, label: "Manage Movies", path: "/admin/list-movies" },
   ];
 
-  // lock body scroll when mobile menu is open
+  const currentPageTitle = pageTitleMap[location.pathname] || "Admin";
+
   useEffect(() => {
     if (isMobileOpen) {
       document.body.style.overflow = "hidden";
@@ -137,16 +147,27 @@ const AdminSidebar = () => {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button
-        className="fixed left-3 top-3 z-50 rounded-lg bg-gray-900/90 backdrop-blur-sm p-2.5 text-white shadow-lg shadow-black/20 lg:hidden border border-gray-800"
-        onClick={() => setIsMobileOpen(true)}
-        aria-label="Open menu"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 12h18M3 6h18M3 18h18" />
-        </svg>
-      </button>
+      {/* Mobile Top Header Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-14 px-4 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800 lg:hidden">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-red-700 shadow-sm shadow-red-600/20">
+              <Film size={14} className="text-white" />
+            </div>
+            <h1 className="text-sm font-semibold text-white">{currentPageTitle}</h1>
+          </div>
+        </div>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gray-700 to-gray-600 text-xs font-medium text-gray-300 ring-1 ring-white/10">
+          A
+        </div>
+      </div>
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex fixed left-0 top-0 z-40 h-screen bg-gray-950 border-r border-gray-800">
@@ -169,7 +190,7 @@ const AdminSidebar = () => {
             role="presentation"
           />
           <aside
-            className="fixed left-0 top-0 z-50 h-screen bg-gray-950 border-r border-gray-800 shadow-2xl shadow-black/50 lg:hidden animate-slide-in"
+            className="fixed left-0 top-0 z-50 h-screen bg-gray-950 border-r border-gray-800 shadow-2xl shadow-black/50 lg:hidden animate-slide-in pt-14"
             role="dialog"
             aria-modal="true"
             aria-label="Admin sidebar"

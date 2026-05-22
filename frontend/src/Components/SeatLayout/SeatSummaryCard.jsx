@@ -1,5 +1,5 @@
 import React from "react";
-import { Ticket, IndianRupee, Clock, MapPin, Film, Shield, Star, Monitor, Languages, Info } from "lucide-react";
+import { Ticket, IndianRupee, Clock, MapPin, Film, Shield, Star, Monitor, Languages, Info, CheckCircle } from "lucide-react";
 
 import { formatShowDate } from "./seatLayoutUtils.js";
 
@@ -121,13 +121,26 @@ const SeatSummaryCard = ({
           type="button"
           onClick={onConfirm}
           disabled={confirmDisabled}
-          className="w-full rounded-2xl bg-gradient-to-r from-red-500 to-red-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition hover:from-red-400 hover:to-red-500 disabled:opacity-60"
+          className="group relative w-full h-14 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 bg-[length:200%_100%] text-white font-semibold shadow-lg shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-red-500/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
         >
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.12)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+          <div className="absolute inset-0 rounded-2xl ring-1 ring-white/15 inset-ring-1 inset-ring-white/20 pointer-events-none" />
           {selectedSeats.length > 0 ? (
-            <span className="flex items-center justify-center gap-1">
-              Pay <IndianRupee size={14} className="inline self-center" />{subtotal}
+            <span className="relative z-10 flex items-center justify-between px-6">
+              <span className="flex items-center gap-2.5 text-sm">
+                <CheckCircle className="h-5 w-5" />
+                <span>Pay</span>
+              </span>
+              <span className="flex items-baseline gap-0.5">
+                <IndianRupee className="h-4 w-4" />
+                <span className="text-xl font-bold tracking-tight">{subtotal}</span>
+              </span>
             </span>
-          ) : "Select Seats to Continue"}
+          ) : (
+            <span className="relative z-10 flex items-center justify-center gap-2 text-sm text-white/60">
+              Select Seats to Continue
+            </span>
+          )}
         </button>
 
         <div className="flex items-center justify-center gap-3">
