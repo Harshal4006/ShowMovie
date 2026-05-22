@@ -21,14 +21,13 @@ const theaterSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 
-theaterSchema.pre('save', function (next) {
+theaterSchema.pre('save', function () {
   if (!this.slug) {
     this.slug = this.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
   }
-  next();
 });
 
 module.exports = mongoose.model('Theater', theaterSchema);
