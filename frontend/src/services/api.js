@@ -106,12 +106,12 @@ export const getShowsByMovie = (movieId, options = {}) => request(`/shows/movie/
 export const getOccupiedSeats = (showId) => request(`/shows/${showId}/occupied-seats`);
 
 export const searchTmdbMovies = (query, page = 1) =>
-  request(`/admin/tmdb/search?query=${encodeURIComponent(query)}&page=${page}`);
-export const getTmdbMovieDetails = (tmdbId) => request(`/admin/tmdb/movie/${tmdbId}`);
-export const getTmdbNowPlaying = (page = 1) => request(`/admin/tmdb/now-playing?page=${page}`);
-export const getTmdbUpcoming = (page = 1) => request(`/admin/tmdb/upcoming?page=${page}`);
-export const getTmdbTrending = (page = 1) => request(`/admin/tmdb/trending?page=${page}`);
-export const getTmdbPopular = (page = 1) => request(`/admin/tmdb/popular?page=${page}`);
+  request(`/tmdb/search?query=${encodeURIComponent(query)}&page=${page}`);
+export const getTmdbMovieDetails = (tmdbId) => request(`/tmdb/movie/${tmdbId}`);
+export const getTmdbNowPlaying = (page = 1) => request(`/tmdb/now-playing?page=${page}`);
+export const getTmdbUpcoming = (page = 1) => request(`/tmdb/upcoming?page=${page}`);
+export const getTmdbTrending = (page = 1) => request(`/tmdb/trending?page=${page}`);
+export const getTmdbPopular = (page = 1) => request(`/tmdb/popular?page=${page}`);
 
 export default {
   getMovies,
