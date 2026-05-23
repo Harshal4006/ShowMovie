@@ -461,7 +461,7 @@ const CreateShow = async (req, res) => {
 
     // Notify users who favorited this movie
     if (movie) {
-      const favoritedUsers = await User.find({ favorites: movie._id }).select('_id');
+      const favoritedUsers = await User.find({ favorites: movie.tmdbId }).select('_id');
       const showDate = new Date(dateTimes[0]).toLocaleDateString('en-IN', {
         day: 'numeric',
         month: 'short',
