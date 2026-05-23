@@ -312,44 +312,48 @@ const CreateShow = async (req, res) => {
         if (existingByTmdb) {
           movie = existingByTmdb;
         } else {
-          const { imageBaseUrl } = getTmdbConfig();
-          const [tmdbMovie, credits, videos] = await Promise.all([
-            callTmdb(`/movie/${tmdbId}?language=en-US`),
-            callTmdb(`/movie/${tmdbId}/credits?language=en-US`),
-            callTmdb(`/movie/${tmdbId}/videos?language=en-US`)
-          ]);
+          try {
+            const { imageBaseUrl } = getTmdbConfig();
+            const [tmdbMovie, credits, videos] = await Promise.all([
+              callTmdb(`/movie/${tmdbId}?language=en-US`),
+              callTmdb(`/movie/${tmdbId}/credits?language=en-US`),
+              callTmdb(`/movie/${tmdbId}/videos?language=en-US`)
+            ]);
 
-          const trailer = videos.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-          const tmdbCast = credits.cast?.slice(0, 10).map(c => ({
-            name: c.name,
-            character: c.character,
-            profilePath: c.profile_path ? `${imageBaseUrl}/w200${c.profile_path}` : null
-          }));
+            const trailer = videos.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+            const tmdbCast = credits.cast?.slice(0, 10).map(c => ({
+              name: c.name,
+              character: c.character,
+              profilePath: c.profile_path ? `${imageBaseUrl}/w200${c.profile_path}` : null
+            }));
 
-          movie = await Movie.create({
-            tmdbId: tmdbMovie.id,
-            title: tmdbMovie.title,
-            originalTitle: tmdbMovie.original_title,
-            overview: tmdbMovie.overview,
-            posterPath: tmdbMovie.poster_path,
-            backdropPath: tmdbMovie.backdrop_path,
-            posterUrl: tmdbMovie.poster_path ? `${imageBaseUrl}/w500${tmdbMovie.poster_path}` : null,
-            backdropUrl: tmdbMovie.backdrop_path ? `${imageBaseUrl}/w1280${tmdbMovie.backdrop_path}` : null,
-            releaseDate: tmdbMovie.release_date,
-            runtime: tmdbMovie.runtime,
-            genres: tmdbMovie.genres,
-            rating: tmdbMovie.vote_average,
-            voteCount: tmdbMovie.vote_count,
-            language: tmdbMovie.original_language,
-            tagline: tmdbMovie.tagline,
-            trailerKey: trailer?.key || null,
-            cast: tmdbCast,
-            status: 'active',
-            price: showPrice || 0,
-            movieLanguage: language || 'English',
-            format: screenType || '2D',
-            isFeatured: false
-          });
+            movie = await Movie.create({
+              tmdbId: tmdbMovie.id,
+              title: tmdbMovie.title,
+              originalTitle: tmdbMovie.original_title,
+              overview: tmdbMovie.overview,
+              posterPath: tmdbMovie.poster_path,
+              backdropPath: tmdbMovie.backdrop_path,
+              posterUrl: tmdbMovie.poster_path ? `${imageBaseUrl}/w500${tmdbMovie.poster_path}` : null,
+              backdropUrl: tmdbMovie.backdrop_path ? `${imageBaseUrl}/w1280${tmdbMovie.backdrop_path}` : null,
+              releaseDate: tmdbMovie.release_date,
+              runtime: tmdbMovie.runtime,
+              genres: tmdbMovie.genres,
+              rating: tmdbMovie.vote_average,
+              voteCount: tmdbMovie.vote_count,
+              language: tmdbMovie.original_language,
+              tagline: tmdbMovie.tagline,
+              trailerKey: trailer?.key || null,
+              cast: tmdbCast,
+              status: 'active',
+              price: showPrice || 0,
+              movieLanguage: language || 'English',
+              format: screenType || '2D',
+              isFeatured: false
+            });
+          } catch {
+            // TMDB unavailable — will fall through to minimal creation below
+          }
         }
       }
     }
