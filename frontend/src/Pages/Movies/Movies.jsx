@@ -1,5 +1,5 @@
 // Movies page - browse, search, filter, and sort movies
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
@@ -31,7 +31,6 @@ const Movies = () => {
         setTotalPages(data.pages || 1);
         setTotal(data.total || 0);
       } catch (error) {
-        console.error('Failed to fetch movies:', error);
       } finally {
         setLoading(false);
       }

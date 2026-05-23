@@ -1,4 +1,3 @@
-import React from "react";
 import MovieCardSkeleton from "./MovieCardSkeleton";
 
 const MovieGridSkeleton = ({ count = 8 }) => {

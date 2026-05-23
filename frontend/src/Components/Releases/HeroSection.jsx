@@ -1,4 +1,3 @@
-import React from 'react';
 import { Star, CalendarDays, Play, ChevronRight, Loader2 } from 'lucide-react';
 
 const HeroSection = ({

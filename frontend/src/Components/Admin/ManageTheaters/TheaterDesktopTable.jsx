@@ -1,4 +1,3 @@
-import React from 'react';
 import { Building2, Edit3, Trash2 } from 'lucide-react';
 
 const TheaterRow = ({ theater, onEdit, onDelete }) => (

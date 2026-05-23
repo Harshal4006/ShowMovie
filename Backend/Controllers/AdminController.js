@@ -26,7 +26,7 @@ const callTmdb = async (endpoint) => {
   return response.data;
 };
 
-// Dashboard Stats
+// Fetch dashboard statistics for admin panel
 const GetDashboardStats = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -49,7 +49,7 @@ const GetDashboardStats = async (req, res) => {
   }
 };
 
-// TMDB Search
+// Search movies on TMDB by query string
 const TmdbSearchMovies = async (req, res) => {
   try {
     const { query, page = 1 } = req.query;
@@ -62,7 +62,7 @@ const TmdbSearchMovies = async (req, res) => {
   }
 };
 
-// TMDB Get Now Playing movies
+// Fetch currently playing movies from TMDB
 const TmdbGetNowPlaying = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -73,7 +73,7 @@ const TmdbGetNowPlaying = async (req, res) => {
   }
 };
 
-// TMDB Get Upcoming movies
+// Fetch upcoming movies from TMDB
 const TmdbGetUpcoming = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -84,7 +84,7 @@ const TmdbGetUpcoming = async (req, res) => {
   }
 };
 
-// TMDB Get Trending movies
+// Fetch trending movies from TMDB
 const TmdbGetTrending = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -95,7 +95,7 @@ const TmdbGetTrending = async (req, res) => {
   }
 };
 
-// TMDB Get Popular movies
+// Fetch popular movies from TMDB
 const TmdbGetPopular = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -106,7 +106,7 @@ const TmdbGetPopular = async (req, res) => {
   }
 };
 
-// TMDB Get Movie Details
+// Fetch full movie details, credits, and trailer from TMDB
 const TmdbGetMovieDetails = async (req, res) => {
   try {
     const { tmdbId } = req.params;
@@ -149,7 +149,7 @@ const TmdbGetMovieDetails = async (req, res) => {
   }
 };
 
-// Import Movie from TMDB
+// Import a movie from TMDB into local database
 const ImportMovie = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -205,7 +205,7 @@ const ImportMovie = async (req, res) => {
   }
 };
 
-// Get All Movies (Admin)
+// List all movies with optional filters and pagination
 const GetAllMoviesAdmin = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -222,7 +222,7 @@ const GetAllMoviesAdmin = async (req, res) => {
   }
 };
 
-// Update Movie (Admin)
+// Update movie metadata and admin flags
 const UpdateMovie = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -239,7 +239,7 @@ const UpdateMovie = async (req, res) => {
   }
 };
 
-// Delete Movie (Admin)
+// Delete a movie from the database
 const DeleteMovie = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -251,7 +251,7 @@ const DeleteMovie = async (req, res) => {
   }
 };
 
-// Create Show
+// Create one or more showings for a movie at a theater
 const CreateShow = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -412,18 +412,18 @@ const CreateShow = async (req, res) => {
           tmdbId: Number.isFinite(Number(movieId)) ? Number(movieId) : Math.floor(Date.now() / 1000),
           title: movieName,
           originalTitle: movieName,
-          overview: movieOverview || "",
-          posterPath: moviePoster || "",
-          backdropPath: movieBackdrop || "",
+          overview: movieOverview || '',
+          posterPath: moviePoster || '',
+          backdropPath: movieBackdrop || '',
           posterUrl: moviePoster ? (moviePoster.startsWith('http') ? moviePoster : `${imageBaseUrl}/w500${moviePoster}`) : null,
           backdropUrl: movieBackdrop ? (movieBackdrop.startsWith('http') ? movieBackdrop : `${imageBaseUrl}/w1280${movieBackdrop}`) : null,
-          releaseDate: releaseDate || "",
+          releaseDate: releaseDate || '',
           runtime: runtime || 0,
           genres: genres || [],
           rating: rating || 0,
           voteCount: voteCount || 0,
           language: language || 'English',
-          tagline: tagline || "",
+          tagline: tagline || '',
           trailerKey: null,
           cast: cast || [],
           status: 'active',
@@ -499,19 +499,22 @@ const CreateShow = async (req, res) => {
 
     res.status(201).json({ shows: populated, movie });
   } catch (error) {
-    console.error('CreateShow error:', error);
     res.status(500).json({
       message: 'Failed to create show',
-      error: error.message
     });
   }
 };
 
-// Update Show
+// Update show details like time, price, or status
 const UpdateShow = async (req, res) => {
   try {
     await ensureDbConnection();
-    const show = await Show.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('movie');
+    const allowed = ['showDateTime', 'showPrice', 'theater', 'screenType', 'language', 'status'];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+    const show = await Show.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).populate('movie');
     if (!show) return res.status(404).json({ message: 'Show not found' });
     res.json(show);
   } catch (error) {
@@ -519,7 +522,7 @@ const UpdateShow = async (req, res) => {
   }
 };
 
-// Delete Show
+// Remove a show from the database
 const DeleteShow = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -531,7 +534,7 @@ const DeleteShow = async (req, res) => {
   }
 };
 
-// Get All Bookings (Admin)
+// List all bookings with show and movie details for admin review
 const GetAllBookings = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -541,7 +544,8 @@ const GetAllBookings = async (req, res) => {
         populate: { path: 'movie', model: 'Movie' }
       })
       .populate('user', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const enriched = bookings.map((booking) => ({
       _id: booking._id,

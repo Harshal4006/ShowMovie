@@ -51,6 +51,7 @@ export const timeToMinutes = (timeString) => {
 
 // Convert ISO date time to formatted time label (e.g., "10:30 PM")
 export const getShowTimeLabel = (isoDateTime) => {
+  if (!isoDateTime) return "";
   const parsed = new Date(isoDateTime);
   if (Number.isNaN(parsed.getTime())) return "";
   return normalizeTimeString(

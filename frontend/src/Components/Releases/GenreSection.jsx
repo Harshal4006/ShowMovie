@@ -1,4 +1,3 @@
-import React from 'react';
 import { Film, Star, AlertCircle } from 'lucide-react';
 
 const GenreSection = ({

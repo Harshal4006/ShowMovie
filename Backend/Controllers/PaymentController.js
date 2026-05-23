@@ -1,5 +1,3 @@
-// Razorpay payment order creation and verification
-
 const { getAuth } = require('@clerk/express');
 const razorpayInstance = require('../Config/Razorpay');
 const Booking = require('../Models/Booking');
@@ -9,7 +7,7 @@ const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { CreateNotification } = require('./NotificationController');
 const { inngest } = require('../Inngest/Inngest');
 
-// Creates a Razorpay order
+// Create a Razorpay payment order
 const CreateOrder = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -42,7 +40,7 @@ const CreateOrder = async (req, res) => {
   }
 };
 
-// Verifies payment signature and confirms the booking
+// Verify Razorpay signature and confirm the booking after payment
 const VerifyPayment = async (req, res) => {
   try {
     await ensureDbConnection();

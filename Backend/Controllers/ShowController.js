@@ -3,6 +3,7 @@ const Movie = require('../Models/Movie');
 const mongoose = require('mongoose');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
+// Fetch all active shows for a given movie
 const GetShowsByMovie = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -22,7 +23,7 @@ const GetShowsByMovie = async (req, res) => {
     if (!resolvedMovieId) return res.json([]);
 
     const shows = await Show.find({ movie: resolvedMovieId, status: 'active' })
-      .populate('movie')
+      .populate('movie', 'title posterUrl backdropUrl rating genres runtime')
       .sort({ showDateTime: 1 });
     res.json(shows);
   } catch (error) {
@@ -30,10 +31,11 @@ const GetShowsByMovie = async (req, res) => {
   }
 };
 
+// Get a single show by its ID with full movie details
 const GetShowById = async (req, res) => {
   try {
     await ensureDbConnection();
-    const show = await Show.findById(req.params.id).populate('movie');
+    const show = await Show.findById(req.params.id).populate('movie', 'title posterUrl backdropUrl rating genres runtime');
     if (!show) return res.status(404).json({ message: 'Show not found' });
     res.json(show);
   } catch (error) {
@@ -41,6 +43,7 @@ const GetShowById = async (req, res) => {
   }
 };
 
+// List all shows with optional status filter and pagination
 const GetAllShows = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -52,7 +55,7 @@ const GetAllShows = async (req, res) => {
     }
 
     const shows = await Show.find(query)
-      .populate('movie')
+      .populate('movie', 'title posterUrl backdropUrl')
       .sort({ showDateTime: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -65,6 +68,7 @@ const GetAllShows = async (req, res) => {
   }
 };
 
+// Get already booked seat numbers for a specific show
 const GetOccupiedSeats = async (req, res) => {
   try {
     await ensureDbConnection();

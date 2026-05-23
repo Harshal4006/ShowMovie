@@ -1,5 +1,3 @@
-import React from "react";
-
 const ErrorState = ({ title, message, actionLabel, onAction }) => {
   return (
     <div className="rounded-4xl border border-white/10 bg-white/4 px-6 py-10 text-center backdrop-blur-sm sm:px-10">

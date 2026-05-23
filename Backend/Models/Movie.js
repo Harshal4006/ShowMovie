@@ -1,4 +1,5 @@
 // Movie schema - stores TMDB data alongside app-specific fields
+// Index recommendation for text search: movieSchema.index({ title: 'text', tagline: 'text', overview: 'text' });
 
 const mongoose = require('mongoose');
 
@@ -44,5 +45,15 @@ const movieSchema = new mongoose.Schema({
   // Basic fields
   isActive: { type: Boolean, default: true }
 }, { timestamps: true });
+
+movieSchema.index({ tmdbId: 1 });
+movieSchema.index({ status: 1, isActive: 1 });
+movieSchema.index({ isFeatured: 1, isActive: 1 });
+movieSchema.index({ isTrending: 1, isActive: 1 });
+movieSchema.index({ isMostPopular: 1, isActive: 1 });
+movieSchema.index({ title: 1 });
+movieSchema.index({ 'genres.name': 1 });
+movieSchema.index({ status: 1, isActive: 1, releaseDate: -1 });
+movieSchema.index({ trailerUrl: 1, isActive: 1 });
 
 module.exports = mongoose.model('Movie', movieSchema);

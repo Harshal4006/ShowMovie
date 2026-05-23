@@ -23,25 +23,28 @@ const NotificationPanel = ({
         <div className="flex gap-1.5 sm:gap-2">
           {notifications.length > 0 && (
             <>
-              <button
-                onClick={onMarkAllRead}
-                className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-                title="Mark all as read"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-              <button
-                onClick={onClearAll}
-                className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
-                title="Clear all"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+          <button
+            onClick={onMarkAllRead}
+            className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="Mark all as read"
+            title="Mark all as read"
+          >
+            <Check className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onClearAll}
+            className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
+            aria-label="Clear all notifications"
+            title="Clear all"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
             </>
           )}
           <button
             onClick={onClose}
             className="rounded-full p-2 sm:p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="Close notifications"
           >
             <X className="h-4 w-4" />
           </button>

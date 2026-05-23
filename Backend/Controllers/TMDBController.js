@@ -2,7 +2,7 @@
 
 const axios = require('axios');
 
-// Gets now-playing movies from TMDB
+// Proxy to TMDB API - fetch currently playing movies
 const GetNowPlayingMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -28,12 +28,11 @@ const GetNowPlayingMovies = async (req, res) => {
       totalResults: response.data.total_results
     });
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch movies from TMDB', error: error.message });
   }
 };
 
-// Gets full movie details by TMDB ID
+// Proxy to TMDB API - fetch full movie details by TMDB ID
 const GetMovieDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -54,12 +53,11 @@ const GetMovieDetails = async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch movie details from TMDB' });
   }
 };
 
-// Gets the list of movie genres
+// Proxy to TMDB API - fetch available movie genres
 const GetMovieGenres = async (req, res) => {
   try {
     const accessToken = process.env.TMDB_ACCESS_TOKEN;
@@ -79,12 +77,11 @@ const GetMovieGenres = async (req, res) => {
 
     res.json(response.data.genres);
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch genres from TMDB' });
   }
 };
 
-// Searches movies by query string
+// Proxy to TMDB API - search movies by query string
 const SearchMovies = async (req, res) => {
   try {
     const { query, page = 1 } = req.query;
@@ -114,12 +111,11 @@ const SearchMovies = async (req, res) => {
       totalResults: response.data.total_results
     });
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to search movies from TMDB', error: error.message });
   }
 };
 
-// Gets cast and crew for a movie
+// Proxy to TMDB API - fetch cast and crew for a movie
 const GetMovieCredits = async (req, res) => {
   try {
     const { id } = req.params;
@@ -140,12 +136,11 @@ const GetMovieCredits = async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch movie credits from TMDB' });
   }
 };
 
-// Gets trailers and videos for a movie
+// Proxy to TMDB API - fetch trailers and videos for a movie
 const GetMovieVideos = async (req, res) => {
   try {
     const { id } = req.params;
@@ -166,12 +161,11 @@ const GetMovieVideos = async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch movie videos from TMDB' });
   }
 };
 
-// Gets weekly trending movies
+// Proxy to TMDB API - fetch weekly trending movies
 const GetTrendingMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -183,12 +177,11 @@ const GetTrendingMovies = async (req, res) => {
     );
     res.json({ movies: response.data.results, page: response.data.page, totalPages: response.data.total_pages, totalResults: response.data.total_results });
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch trending movies', error: error.message });
   }
 };
 
-// Gets upcoming movies
+// Proxy to TMDB API - fetch upcoming movies
 const GetUpcomingMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -200,12 +193,11 @@ const GetUpcomingMovies = async (req, res) => {
     );
     res.json({ movies: response.data.results, page: response.data.page, totalPages: response.data.total_pages, totalResults: response.data.total_results });
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch upcoming movies', error: error.message });
   }
 };
 
-// Gets popular movies
+// Proxy to TMDB API - fetch popular movies
 const GetPopularMovies = async (req, res) => {
   try {
     const { page = 1 } = req.query;
@@ -217,9 +209,18 @@ const GetPopularMovies = async (req, res) => {
     );
     res.json({ movies: response.data.results, page: response.data.page, totalPages: response.data.total_pages, totalResults: response.data.total_results });
   } catch (error) {
-    console.error('TMDB API Error:', error.message);
     res.status(500).json({ message: 'Failed to fetch popular movies', error: error.message });
   }
 };
 
-module.exports = { GetNowPlayingMovies, GetMovieDetails, GetMovieGenres, SearchMovies, GetMovieCredits, GetMovieVideos, GetTrendingMovies, GetUpcomingMovies, GetPopularMovies };
+module.exports = {
+  GetNowPlayingMovies,
+  GetMovieDetails,
+  GetMovieGenres,
+  SearchMovies,
+  GetMovieCredits,
+  GetMovieVideos,
+  GetTrendingMovies,
+  GetUpcomingMovies,
+  GetPopularMovies,
+};

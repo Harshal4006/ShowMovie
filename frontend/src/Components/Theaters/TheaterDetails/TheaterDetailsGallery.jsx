@@ -1,10 +1,9 @@
-import React from 'react';
 
 const TheaterDetailsGallery = ({ gallery = [] }) => {
   if (gallery.length === 0) return null;
 
   return (
-    <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6" style={{ animationDelay: "250ms" }}>
+    <div className="animate-fade-up animate-delay-250 rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6">
       <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-white">Gallery</h2>
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {gallery.slice(0, 4).map((img, i) => (

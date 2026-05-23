@@ -1,5 +1,5 @@
 // MovieDetailse page - single movie view with showtimes, cast, and related movies
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";

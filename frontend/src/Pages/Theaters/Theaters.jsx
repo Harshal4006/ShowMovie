@@ -1,4 +1,3 @@
-import React from 'react';
 import { MapPin, Loader2 } from "lucide-react";
 import TheaterCard from "../../Components/Theaters/TheaterCard.jsx";
 import useTheaters from "../../Components/Theaters/Theaters/useTheaters.js";
@@ -21,23 +20,6 @@ const Theaters = () => {
 
   return (
     <section className="relative min-h-screen w-full">
-      <style>{`
-        @keyframes gradient-shift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        .animate-gradient-text {
-          background-size: 200% 200%;
-          animation: gradient-shift 4s ease infinite;
-        }
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-up {
-          animation: fade-up 0.6s ease-out both;
-        }
-      `}</style>
 
       <TheatersHeroSection />
 

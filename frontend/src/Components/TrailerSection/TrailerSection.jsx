@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import TrailerCarousel from "./TrailerCarousel.jsx";
 import { getTrailerMovies } from "../../services/api";
 import "./TrailerSection.css";
@@ -15,7 +15,6 @@ const TrailerSection = () => {
         const data = await getTrailerMovies();
         setTrailers(data || []);
       } catch (error) {
-        console.error('Failed to fetch trailers:', error);
       } finally {
         setLoading(false);
       }

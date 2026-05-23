@@ -3,6 +3,7 @@ const router = express.Router();
 const VerifyToken = require('../Middleware/AuthMiddleware');
 const NotificationController = require('../Controllers/NotificationController');
 
+// Auth required - notification management
 router.get('/', VerifyToken, NotificationController.GetNotifications);
 router.patch('/:id/read', VerifyToken, NotificationController.MarkAsRead);
 router.patch('/read-all', VerifyToken, NotificationController.MarkAllAsRead);

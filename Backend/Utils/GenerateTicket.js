@@ -1,6 +1,6 @@
 // Utility kept for reference - not currently imported
 
-// Generate Ticket - creates booking ticket data
+// Create a structured ticket object from booking data
 const GenerateTicket = (booking) => {
   const ticket = {
     ticketId: booking._id,

@@ -45,15 +45,16 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, [isSignedIn, fetchNotifications]);
 
+  const handleClickOutside = useCallback((event) => {
+    if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      setShowNotifications(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setShowNotifications(false);
-      }
-    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [handleClickOutside]);
 
   const handleMarkRead = useCallback(async (id) => {
     try {

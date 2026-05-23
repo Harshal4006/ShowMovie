@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Search } from 'lucide-react';
 
 const TheatersEmptyState = ({ onClear }) => (
@@ -17,4 +17,6 @@ const TheatersEmptyState = ({ onClear }) => (
   </div>
 );
 
-export default TheatersEmptyState;
+const MemoTheatersEmptyState = memo(TheatersEmptyState);
+MemoTheatersEmptyState.displayName = "TheatersEmptyState";
+export default MemoTheatersEmptyState;

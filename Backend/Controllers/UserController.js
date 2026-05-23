@@ -4,6 +4,7 @@ const Movie = require('../Models/Movie');
 const Booking = require('../Models/Booking');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
+// Get the currently authenticated user's profile
 const GetCurrentUser = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -27,6 +28,7 @@ const GetCurrentUser = async (req, res) => {
   }
 };
 
+// Update current user's name, email, or profile image
 const UpdateUserProfile = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -48,6 +50,7 @@ const UpdateUserProfile = async (req, res) => {
   }
 };
 
+// Add or remove a movie from user's favorites by TMDB ID
 const ToggleFavorite = async (req, res) => {
   try {
     const { tmdbId } = req.body;
@@ -78,6 +81,7 @@ const ToggleFavorite = async (req, res) => {
   }
 };
 
+// Get full movie details for all of the user's favorite movies
 const GetUserFavorites = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -127,6 +131,8 @@ const GetUserFavorites = async (req, res) => {
   }
 };
 
+// Admin: list all users with optional search and pagination
+// For production with large user sets, consider adding a text index on { name: 'text', email: 'text' } instead of $regex
 const GetAllUsers = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -154,6 +160,7 @@ const GetAllUsers = async (req, res) => {
   }
 };
 
+// Admin: get a specific user by MongoDB ID
 const GetUserById = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -168,6 +175,7 @@ const GetUserById = async (req, res) => {
   }
 };
 
+// Admin: change a user's role (user/admin)
 const UpdateUserRole = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -175,7 +183,7 @@ const UpdateUserRole = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { role },
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
@@ -184,6 +192,7 @@ const UpdateUserRole = async (req, res) => {
   }
 };
 
+// Admin: delete a user and their associated bookings
 const DeleteUser = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -198,6 +207,7 @@ const DeleteUser = async (req, res) => {
   }
 };
 
+// Admin: get user stats including booking and favorite counts
 const GetUserStats = async (req, res) => {
   try {
     await ensureDbConnection();

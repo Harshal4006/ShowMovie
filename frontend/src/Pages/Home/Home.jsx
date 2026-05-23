@@ -1,5 +1,5 @@
 // Home page - landing page with hero, featured, trending, and about sections
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import Hero from '../../Components/HeroSection/HeroSection.jsx'
 import MovieSection from '../../Components/FeatureSection/MovieSection.jsx'
@@ -17,11 +17,9 @@ const Home = () => {
     return () => clearTimeout(timer)
   }, [])
 
-  // Render
   return (
     <>
       {isLoading ? (
-        // Loading state
         <HeroSkeleton />
       ) : (
         <>

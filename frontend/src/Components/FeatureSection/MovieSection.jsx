@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Link } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import FeatureCard from "./FeatureCard.jsx";
@@ -21,7 +21,6 @@ const MovieSection = ({ title, subtitle, fetchFn, sectionKey }) => {
           setMovies(data.slice(0, 8));
         }
       } catch (err) {
-        console.error(`Failed to fetch ${title}:`, err);
         setError('Failed to load movies');
       } finally {
         setLoading(false);
@@ -94,4 +93,6 @@ const MovieSection = ({ title, subtitle, fetchFn, sectionKey }) => {
   );
 };
 
-export default MovieSection;
+const MemoMovieSection = memo(MovieSection);
+MemoMovieSection.displayName = "MovieSection";
+export default MemoMovieSection;

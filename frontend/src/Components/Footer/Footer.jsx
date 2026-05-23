@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Clock3, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 
@@ -84,4 +84,6 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+const MemoFooter = memo(Footer);
+MemoFooter.displayName = "Footer";
+export default MemoFooter;

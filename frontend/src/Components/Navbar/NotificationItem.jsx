@@ -40,6 +40,7 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
           <button
             onClick={() => onMarkRead(notification._id)}
             className="rounded-full p-1.5 sm:p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-green-400"
+            aria-label="Mark notification as read"
             title="Mark as read"
           >
             <Check className="h-3.5 w-3.5" />
@@ -48,6 +49,7 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
         <button
           onClick={() => onDelete(notification._id)}
           className="rounded-full p-1.5 sm:p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-red-400"
+          aria-label="Delete notification"
           title="Delete"
         >
           <Trash2 className="h-3.5 w-3.5" />

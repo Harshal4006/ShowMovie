@@ -1,4 +1,3 @@
-import React from "react";
 import { Clock3, ShieldCheck, Ticket } from "lucide-react";
 import StudioStrip from "../StudioStrip/StudioStrip.jsx";
 import StatsGrid from "./StatsGrid.jsx";

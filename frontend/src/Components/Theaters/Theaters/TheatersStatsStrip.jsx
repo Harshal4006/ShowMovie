@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Monitor, Star, Film, Sparkles } from 'lucide-react';
 
 const TheatersStatsStrip = ({ totalScreens, theaterCount, imaxCount, dxCount }) => (
@@ -30,4 +30,6 @@ const TheatersStatsStrip = ({ totalScreens, theaterCount, imaxCount, dxCount }) 
   </div>
 );
 
-export default TheatersStatsStrip;
+const MemoTheatersStatsStrip = memo(TheatersStatsStrip);
+MemoTheatersStatsStrip.displayName = "TheatersStatsStrip";
+export default MemoTheatersStatsStrip;

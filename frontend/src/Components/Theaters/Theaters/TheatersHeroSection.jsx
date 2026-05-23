@@ -1,12 +1,21 @@
-import React from 'react';
+import { memo } from 'react';
 import { Film } from 'lucide-react';
+import cinemaHero from '../../../assets/cinema-hero.webp';
 
 const TheatersHeroSection = () => (
   <div className="relative h-[70vh] min-h-[500px] overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#1a0a0a] to-[#050505]" />
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.15),transparent_70%)]" />
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.06),transparent_60%)]" />
-    <div className="absolute inset-0 backdrop-blur-[2px]" />
+    {/* Background Image */}
+    <div
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110"
+      style={{ backgroundImage: `url(${cinemaHero})` }}
+    />
+
+    {/* Dark Overlay Blend */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f]/95 via-[#1a0a0a]/90 to-[#050505]/95" />
+    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.25),transparent_70%)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,255,255,0.08),transparent_60%)]" />
+    <div className="absolute inset-0 backdrop-blur-[1px]" />
 
     <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
       <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-sm font-medium text-red-400 backdrop-blur-md ring-1 ring-red-500/10">
@@ -26,4 +35,6 @@ const TheatersHeroSection = () => (
   </div>
 );
 
-export default TheatersHeroSection;
+const MemoTheatersHeroSection = memo(TheatersHeroSection);
+MemoTheatersHeroSection.displayName = "TheatersHeroSection";
+export default MemoTheatersHeroSection;

@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Search } from 'lucide-react';
 
 const TheatersSearchFilter = ({
@@ -39,4 +39,6 @@ const TheatersSearchFilter = ({
   </div>
 );
 
-export default TheatersSearchFilter;
+const MemoTheatersSearchFilter = memo(TheatersSearchFilter);
+MemoTheatersSearchFilter.displayName = "TheatersSearchFilter";
+export default MemoTheatersSearchFilter;

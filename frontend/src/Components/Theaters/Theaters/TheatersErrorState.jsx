@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Film } from 'lucide-react';
 
 const TheatersErrorState = ({ message }) => (
@@ -17,4 +17,6 @@ const TheatersErrorState = ({ message }) => (
   </div>
 );
 
-export default TheatersErrorState;
+const MemoTheatersErrorState = memo(TheatersErrorState);
+MemoTheatersErrorState.displayName = "TheatersErrorState";
+export default MemoTheatersErrorState;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertCircle, ChevronRight } from 'lucide-react';
 
 const ImportantInfoCard = () => {

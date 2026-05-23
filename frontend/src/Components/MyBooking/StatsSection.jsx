@@ -1,4 +1,3 @@
-import React from "react";
 import { IndianRupee } from "lucide-react";
 
 const StatsSection = ({ totalBookings, paidBookings, pendingBookings, totalAmount }) => {

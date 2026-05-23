@@ -3,6 +3,7 @@ const Notification = require('../Models/Notification');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
+// Fetch latest notifications for the authenticated user
 const GetNotifications = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -18,6 +19,7 @@ const GetNotifications = async (req, res) => {
     }
 
     const notifications = await Notification.find({ user: user._id })
+      .select('type title message isRead createdAt')
       .sort({ createdAt: -1 })
       .limit(50);
 
@@ -29,6 +31,7 @@ const GetNotifications = async (req, res) => {
   }
 };
 
+// Mark a single notification as read
 const MarkAsRead = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -50,6 +53,7 @@ const MarkAsRead = async (req, res) => {
   }
 };
 
+// Mark all unread notifications as read for the user
 const MarkAllAsRead = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -67,6 +71,7 @@ const MarkAllAsRead = async (req, res) => {
   }
 };
 
+// Delete a single notification by ID
 const DeleteNotification = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -85,6 +90,7 @@ const DeleteNotification = async (req, res) => {
   }
 };
 
+// Clear all notifications for the current user
 const ClearAllNotifications = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -102,6 +108,7 @@ const ClearAllNotifications = async (req, res) => {
   }
 };
 
+// Create a notification record for a given user (used internally)
 const CreateNotification = async (userId, type, title, message, relatedId = null, relatedModel = null) => {
   try {
     await ensureDbConnection();

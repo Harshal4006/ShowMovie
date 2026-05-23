@@ -1,4 +1,3 @@
-import React from 'react';
 import { Star, MapPin, Monitor } from 'lucide-react';
 
 const TheaterDetailsHero = ({ theater }) => (

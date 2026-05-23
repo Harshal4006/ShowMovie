@@ -1,4 +1,4 @@
-import React from "react";
+import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Star, Monitor, Film, Volume2, Dices, ParkingCircle, Armchair, UtensilsCrossed, Crown, ChevronRight } from "lucide-react";
 
@@ -15,12 +15,28 @@ const facilityIcons = {
 const TheaterCard = ({ theater }) => {
   const navigate = useNavigate();
 
+  const handleClick = useCallback(() => navigate(`/theaters/${theater.id}`), [navigate, theater.id]);
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      navigate(`/theaters/${theater.id}`);
+    }
+  }, [navigate, theater.id]);
+  const handleViewMovies = useCallback((e) => {
+    e.stopPropagation();
+    navigate(`/theaters/${theater.id}`);
+  }, [navigate, theater.id]);
+  const handleShowtimes = useCallback((e) => {
+    e.stopPropagation();
+    navigate(`/theaters/${theater.id}`);
+  }, [navigate, theater.id]);
+
   return (
     <div
-      onClick={() => navigate(`/theaters/${theater.id}`)}
+      onClick={handleClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/theaters/${theater.id}`); } }}
+      onKeyDown={handleKeyDown}
       className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] backdrop-blur-lg transition-all duration-500 hover:border-red-500/40 hover:shadow-[0_0_60px_rgba(239,68,68,0.15)] hover:-translate-y-1.5">
       {/* Image */}
       <div className="relative h-52 overflow-hidden">
@@ -78,13 +94,13 @@ const TheaterCard = ({ theater }) => {
         {/* Actions */}
         <div className="mt-5 flex gap-3">
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/theaters/${theater.id}`); }}
+            onClick={handleViewMovies}
             className="flex-1 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:shadow-red-500/25 active:scale-[0.97]"
           >
             View Movies
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/theaters/${theater.id}`); }}
+            onClick={handleShowtimes}
             className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-gray-400 transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-white active:scale-[0.97]"
           >
             Showtimes
@@ -96,4 +112,6 @@ const TheaterCard = ({ theater }) => {
   );
 };
 
-export default TheaterCard;
+const MemoTheaterCard = memo(TheaterCard);
+MemoTheaterCard.displayName = "TheaterCard";
+export default MemoTheaterCard;

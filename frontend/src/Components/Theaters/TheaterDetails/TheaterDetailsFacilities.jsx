@@ -1,4 +1,3 @@
-import React from 'react';
 import { Film, Volume2, Dices, ParkingCircle, Armchair, UtensilsCrossed, Crown } from 'lucide-react';
 
 const facilityIconMap = {
@@ -12,7 +11,7 @@ const facilityIconMap = {
 };
 
 const TheaterDetailsFacilities = ({ facilities = [] }) => (
-  <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6" style={{ animationDelay: "150ms" }}>
+  <div className="animate-fade-up animate-delay-150 rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6">
     <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-white">Facilities</h2>
     <div className="flex flex-wrap gap-2">
       {facilities.map((f) => {

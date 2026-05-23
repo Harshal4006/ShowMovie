@@ -28,7 +28,6 @@ const ListMovies = () => {
       const data = await getAdminMovies(token);
       setMovies(data.movies || []);
     } catch (err) {
-      console.error("Failed to load movies:", err);
       toast.error("Failed to load movies");
     } finally {
       setLoading(false);

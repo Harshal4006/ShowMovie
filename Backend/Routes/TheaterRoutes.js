@@ -3,6 +3,11 @@ const router = express.Router();
 const VerifyToken = require('../Middleware/AuthMiddleware');
 const VerifyAdmin = require('../Middleware/AdminMiddleware');
 const {
+  validateCreateTheater,
+  validateUpdateTheater,
+  sanitizeSearch,
+} = require('../Middleware/Validators');
+const {
   GetAllTheaters,
   GetTheaterById,
   GetAllTheatersAdmin,
@@ -14,13 +19,14 @@ const {
 } = require('../Controllers/TheaterController');
 
 // Public routes
-router.get('/', GetAllTheaters);
+router.get('/', sanitizeSearch, GetAllTheaters);
 router.get('/:id', GetTheaterById);
 
 // Admin-only routes
+// Admin-only routes
 router.get('/admin/all', VerifyToken, VerifyAdmin, GetAllTheatersAdmin);
-router.post('/', VerifyToken, VerifyAdmin, CreateTheater);
-router.put('/:id', VerifyToken, VerifyAdmin, UpdateTheater);
+router.post('/', VerifyToken, VerifyAdmin, validateCreateTheater, CreateTheater);
+router.put('/:id', VerifyToken, VerifyAdmin, validateUpdateTheater, UpdateTheater);
 router.delete('/:id', VerifyToken, VerifyAdmin, DeleteTheater);
 router.post('/:id/movies', VerifyToken, VerifyAdmin, AddMovieToTheater);
 router.delete('/:id/movies', VerifyToken, VerifyAdmin, RemoveMovieFromTheater);

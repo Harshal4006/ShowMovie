@@ -2,6 +2,7 @@ const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { getClerkUserMetadata, extractRoleFromClerk } = require('../Utils/clerkSync');
 
+// Sync user from Clerk authentication to local database
 const SyncUser = async (req, res) => {
   try {
     await ensureDbConnection();

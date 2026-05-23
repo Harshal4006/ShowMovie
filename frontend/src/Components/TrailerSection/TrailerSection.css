@@ -25,3 +25,10 @@
     transform: scale(0.985);
     opacity: 0.85;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .trailer-main-image,
+  .trailer-main-content {
+    transition: none !important;
+  }
+}

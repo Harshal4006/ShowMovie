@@ -1,4 +1,3 @@
-import React from 'react';
 import { Film } from 'lucide-react';
 import TheaterDetailsMovieCard from './TheaterDetailsMovieCard.jsx';
 
@@ -23,7 +22,7 @@ const TheaterDetailsNowShowing = ({ movies, moviesLoading, moviesError, showTimi
 
   return (
     <div className="space-y-6 lg:col-span-2">
-      <div className="animate-fade-up flex items-center gap-2" style={{ animationDelay: "150ms" }}>
+      <div className="animate-fade-up animate-delay-150 flex items-center gap-2">
         <Film className="h-5 w-5 text-red-400" />
         <h2 className="text-lg font-semibold text-white">Now Showing</h2>
         <span className="ml-auto text-sm text-gray-500">{movies.length} movies</span>
@@ -36,7 +35,7 @@ const TheaterDetailsNowShowing = ({ movies, moviesLoading, moviesError, showTimi
           ))}
         </div>
       ) : movies.length === 0 && !moviesError ? (
-        <div className="animate-fade-up rounded-2xl border border-white/[0.06] p-8 text-center" style={{ animationDelay: "200ms" }}>
+        <div className="animate-fade-up animate-delay-200 rounded-2xl border border-white/[0.06] p-8 text-center">
           <Film className="mx-auto mb-3 h-8 w-8 text-gray-600" />
           <p className="text-sm text-gray-500">No movies currently showing at this theater.</p>
         </div>

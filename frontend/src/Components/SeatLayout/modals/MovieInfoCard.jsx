@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Calendar, Clock, MapPin, Ticket } from 'lucide-react';
 
 const MovieInfoCard = ({
@@ -55,4 +55,6 @@ const MovieInfoCard = ({
   );
 };
 
-export default MovieInfoCard;
+const MemoMovieInfoCard = memo(MovieInfoCard);
+MemoMovieInfoCard.displayName = "MovieInfoCard";
+export default MemoMovieInfoCard;

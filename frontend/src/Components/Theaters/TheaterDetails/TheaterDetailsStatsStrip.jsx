@@ -1,10 +1,9 @@
-import React from 'react';
 import { Star, Monitor, Film, MapPin } from 'lucide-react';
 
 const TheaterDetailsStatsStrip = ({ theater }) => (
   <div className="relative z-10 -translate-y-6 md:-translate-y-14 px-4 sm:px-6 mb-6 md:mb-0">
     <div className="mx-auto max-w-full sm:max-w-[80%]">
-      <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[#0a0a0f]/80 px-4 sm:px-8 py-4 sm:py-5 backdrop-blur-xl" style={{ animationDelay: "100ms" }}>
+      <div className="animate-fade-up animate-delay-100 rounded-2xl border border-white/[0.06] bg-[#0a0a0f]/80 px-4 sm:px-8 py-4 sm:py-5 backdrop-blur-xl">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="flex flex-col items-center text-center">
             <Star className="mb-1 h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />

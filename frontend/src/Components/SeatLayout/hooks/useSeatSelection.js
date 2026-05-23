@@ -1,30 +1,16 @@
 import { useMemo, useState, useCallback } from "react";
 
-/**
- * Custom hook for managing seat selection state
- * @param {Object} options
- * @param {Set} options.occupiedSeats - Set of already occupied seat IDs
- * @param {number} options.maxSeats - Maximum number of seats that can be selected (default: 8)
- * @returns {Object} Seat selection state and actions
- */
 export const useSeatSelection = ({ occupiedSeats, maxSeats = 8 }) => {
   const [selectedSeats, setSelectedSeats] = useState([]);
 
-  // Memoized Set for faster lookups
   const selectedSeatsSet = useMemo(() => new Set(selectedSeats), [selectedSeats]);
 
-  /**
-   * Clear all selected seats
-   */
+  // Clear all selected seats
   const clearSelection = useCallback(() => {
     setSelectedSeats([]);
   }, []);
 
-  /**
-   * Toggle seat selection
-   * @param {string} seatId - ID of the seat to toggle
-   * @returns {Object} Result object with ok boolean and reason string
-   */
+  // Toggle a single seat selection
   const toggleSeat = useCallback((seatId) => {
     if (!seatId || typeof seatId !== 'string') {
       return { ok: false, reason: "invalid", message: "Invalid seat ID" };
@@ -61,11 +47,7 @@ export const useSeatSelection = ({ occupiedSeats, maxSeats = 8 }) => {
     return result;
   }, [occupiedSeats, maxSeats]);
 
-  /**
-   * Select multiple seats at once
-   * @param {Array} seatIds - Array of seat IDs to select
-   * @returns {Object} Result object with ok boolean and reason string
-   */
+  // Select multiple seats at once
   const selectMultipleSeats = useCallback((seatIds) => {
     if (!Array.isArray(seatIds)) {
       return { ok: false, reason: "invalid", message: "Invalid seat IDs array" };
@@ -100,15 +82,11 @@ export const useSeatSelection = ({ occupiedSeats, maxSeats = 8 }) => {
     };
   }, [selectedSeats, occupiedSeats, maxSeats]);
 
-  // Count of selected seats for internal use
   const selectedCount = selectedSeats.length;
 
   return {
-    // State
     selectedSeats,
     selectedSeatsSet,
-    
-    // Actions
     clearSelection,
     toggleSeat,
     selectMultipleSeats,

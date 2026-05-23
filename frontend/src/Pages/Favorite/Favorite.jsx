@@ -1,5 +1,5 @@
 // Favorite page - shows user's favorited movies
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import { Heart } from "lucide-react";
 

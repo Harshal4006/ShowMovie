@@ -1,4 +1,3 @@
-import React from "react";
 import { Ticket, IndianRupee, Clock, MapPin, Film, Shield, Star, Monitor, Languages, Info, CheckCircle } from "lucide-react";
 
 import { formatShowDate } from "../hooks/seatLayoutUtils.js";

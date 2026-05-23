@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 
 const CountdownTimer = ({ targetDate, title = "Next show starts in" }) => {

@@ -33,7 +33,6 @@ const Dashboard = () => {
         setBookingsData(Array.isArray(bookings) ? bookings : (bookings?.bookings || []));
         setShowsData(Array.isArray(shows) ? shows : (shows?.shows || []));
       } catch (e) {
-        console.error("Failed to load dashboard data:", e);
       } finally {
         setLoading(false);
       }

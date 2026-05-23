@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Shield, IndianRupee } from 'lucide-react';
 
 const PaymentSummaryCard = ({
@@ -47,4 +47,6 @@ const PaymentSummaryCard = ({
   );
 };
 
-export default PaymentSummaryCard;
+const MemoPaymentSummaryCard = memo(PaymentSummaryCard);
+MemoPaymentSummaryCard.displayName = "PaymentSummaryCard";
+export default MemoPaymentSummaryCard;

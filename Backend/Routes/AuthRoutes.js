@@ -2,13 +2,16 @@ const express = require('express');
 const router = express.Router();
 const { getAuth } = require('@clerk/express');
 const VerifyToken = require('../Middleware/AuthMiddleware');
+const VerifyAdmin = require('../Middleware/AdminMiddleware');
 const { SyncUser } = require('../Controllers/AuthController');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { getClerkUserMetadata, extractRoleFromClerk } = require('../Utils/clerkSync');
 
+// Auth required
 router.post('/sync', VerifyToken, SyncUser);
 
+// Fetch or refresh user role from Clerk metadata
 router.get('/sync-role', VerifyToken, async (req, res) => {
   try {
     await ensureDbConnection();
@@ -43,7 +46,8 @@ router.get('/sync-role', VerifyToken, async (req, res) => {
   }
 });
 
-router.get('/set-admin', async (req, res) => {
+// Admin only - set a user as admin by email
+router.get('/set-admin', VerifyToken, VerifyAdmin, async (req, res) => {
   try {
     await ensureDbConnection();
     const { email } = req.query;

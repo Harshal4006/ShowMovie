@@ -1,8 +1,5 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { Zap, Users, Star, Shield } from 'lucide-react';
-
-
- // Quick Booking Suggestions Component - Suggests optimal seat combinations based on theater layout
 
 const QuickBookingSuggestions = ({
   rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
@@ -126,7 +123,7 @@ const QuickBookingSuggestions = ({
     return suggestions.slice(0, 3); // Return top 3 suggestions
   };
 
-  const suggestions = generateSuggestions();
+  const suggestions = useMemo(() => generateSuggestions(), [rows, seatsPerRow, occupiedSeats, selectedSeats]);
 
   if (suggestions.length === 0) {
     return null;

@@ -3,8 +3,6 @@ const Movie = require('../Models/Movie');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const cloudinary = require('../Config/Cloudinary');
 
-// --- Public ---
-
 const GetAllTheaters = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -35,6 +33,7 @@ const GetAllTheaters = async (req, res) => {
   }
 };
 
+// Get detailed info about a specific theater
 const GetTheaterById = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -51,6 +50,7 @@ const GetTheaterById = async (req, res) => {
   }
 };
 
+// Fetch all theaters including inactive ones for admin management
 const GetAllTheatersAdmin = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -63,6 +63,7 @@ const GetAllTheatersAdmin = async (req, res) => {
   }
 };
 
+// Create a new theater with image uploads and slug generation
 const CreateTheater = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -94,7 +95,7 @@ const CreateTheater = async (req, res) => {
         });
         uploadedImage = result.secure_url;
       } catch (uploadErr) {
-        console.error('Image upload error:', uploadErr);
+        // silent
       }
     }
 
@@ -109,7 +110,7 @@ const CreateTheater = async (req, res) => {
             });
             galleryUrls.push(result.secure_url);
           } catch (uploadErr) {
-            console.error('Gallery upload error:', uploadErr);
+            // silent
           }
         } else {
           galleryUrls.push(img);
@@ -144,12 +145,21 @@ const CreateTheater = async (req, res) => {
   }
 };
 
+const ALLOWED_THEATER_FIELDS = [
+  'name', 'location', 'city', 'description', 'image', 'galleryImages',
+  'rating', 'screens', 'facilities', 'contactNumber', 'email',
+  'openingHours', 'movies', 'showTimings', 'featured',
+];
+
+// Update theater details, regenerate slug if name changes
 const UpdateTheater = async (req, res) => {
   try {
     await ensureDbConnection();
 
-    const updates = { ...req.body };
-    delete updates._id;
+    const updates = {};
+    for (const key of ALLOWED_THEATER_FIELDS) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
 
     // Regenerate slug if name changed
     if (updates.name) {
@@ -173,7 +183,7 @@ const UpdateTheater = async (req, res) => {
         });
         updates.image = result.secure_url;
       } catch (uploadErr) {
-        console.error('Image upload error:', uploadErr);
+        // silent
       }
     }
 
@@ -187,7 +197,7 @@ const UpdateTheater = async (req, res) => {
             });
             galleryUrls.push(result.secure_url);
           } catch (uploadErr) {
-            console.error('Gallery upload error:', uploadErr);
+            // silent
           }
         } else {
           galleryUrls.push(img);
@@ -209,6 +219,7 @@ const UpdateTheater = async (req, res) => {
   }
 };
 
+// Delete a theater from the database
 const DeleteTheater = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -221,8 +232,6 @@ const DeleteTheater = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// --- Theater-Movie Linking ---
 
 const AddMovieToTheater = async (req, res) => {
   try {
@@ -246,6 +255,7 @@ const AddMovieToTheater = async (req, res) => {
   }
 };
 
+// Remove a movie from a theater's lineup
 const RemoveMovieFromTheater = async (req, res) => {
   try {
     await ensureDbConnection();

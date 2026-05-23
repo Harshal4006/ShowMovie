@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { CheckCircle, XCircle } from "lucide-react";
 
 const StatusBadge = ({ isPaid }) => {
@@ -19,4 +20,6 @@ const StatusBadge = ({ isPaid }) => {
   );
 };
 
-export default StatusBadge;
+const MemoStatusBadge = memo(StatusBadge);
+MemoStatusBadge.displayName = "StatusBadge";
+export default MemoStatusBadge;

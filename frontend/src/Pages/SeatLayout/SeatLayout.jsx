@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";

@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 
@@ -45,4 +45,6 @@ const ErrorFallback = ({ error, onReset }) => {
   );
 };
 
-export default ErrorFallback;
+const MemoErrorFallback = memo(ErrorFallback);
+MemoErrorFallback.displayName = "ErrorFallback";
+export default MemoErrorFallback;

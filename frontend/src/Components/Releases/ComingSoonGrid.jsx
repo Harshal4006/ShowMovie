@@ -1,4 +1,3 @@
-import React from 'react';
 import { Clock } from 'lucide-react';
 
 const ComingSoonGrid = ({ movies, onMovieClick, posterBase, formatDate }) => {

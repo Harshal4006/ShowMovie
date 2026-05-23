@@ -43,7 +43,6 @@ const AddShow = () => {
           voteCount = details.voteCount || details.vote_count || 0;
           cast = details.cast || [];
         } catch (e) {
-          console.error("Failed to get TMDB details:", e);
         }
       }
 
@@ -77,7 +76,6 @@ const AddShow = () => {
       toast.success("Show added successfully!");
       navigate("/admin/list-shows");
     } catch (error) {
-      console.error("Failed to create show:", error);
       toast.error(error?.message || "Failed to add show");
     } finally {
       setIsSubmitting(false);

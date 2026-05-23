@@ -3,6 +3,10 @@ const router = express.Router();
 const VerifyToken = require('../Middleware/AuthMiddleware');
 const VerifyAdmin = require('../Middleware/AdminMiddleware');
 const {
+  validateImportMovie,
+  validateCreateShow,
+} = require('../Middleware/Validators');
+const {
   GetDashboardStats,
   TmdbSearchMovies,
   TmdbGetNowPlaying,
@@ -20,29 +24,29 @@ const {
   GetAllBookings
 } = require('../Controllers/AdminController');
 
-// Dashboard
+// Admin dashboard
 router.get('/dashboard', VerifyToken, VerifyAdmin, GetDashboardStats);
 
-// TMDB endpoints (public for admin search)
-router.get('/tmdb/search', TmdbSearchMovies);
-router.get('/tmdb/now-playing', TmdbGetNowPlaying);
-router.get('/tmdb/upcoming', TmdbGetUpcoming);
-router.get('/tmdb/trending', TmdbGetTrending);
-router.get('/tmdb/popular', TmdbGetPopular);
-router.get('/tmdb/movie/:tmdbId', TmdbGetMovieDetails);
+// TMDB proxy endpoints (admin only)
+router.get('/tmdb/search', VerifyToken, VerifyAdmin, TmdbSearchMovies);
+router.get('/tmdb/now-playing', VerifyToken, VerifyAdmin, TmdbGetNowPlaying);
+router.get('/tmdb/upcoming', VerifyToken, VerifyAdmin, TmdbGetUpcoming);
+router.get('/tmdb/trending', VerifyToken, VerifyAdmin, TmdbGetTrending);
+router.get('/tmdb/popular', VerifyToken, VerifyAdmin, TmdbGetPopular);
+router.get('/tmdb/movie/:tmdbId', VerifyToken, VerifyAdmin, TmdbGetMovieDetails);
 
 // Movies management
-router.post('/movies/import', VerifyToken, VerifyAdmin, ImportMovie);
+router.post('/movies/import', VerifyToken, VerifyAdmin, validateImportMovie, ImportMovie);
 router.get('/movies', VerifyToken, VerifyAdmin, GetAllMoviesAdmin);
 router.patch('/movies/:id', VerifyToken, VerifyAdmin, UpdateMovie);
 router.delete('/movies/:id', VerifyToken, VerifyAdmin, DeleteMovie);
 
-// Shows
-router.post('/shows', VerifyToken, VerifyAdmin, CreateShow);
+// Show management
+router.post('/shows', VerifyToken, VerifyAdmin, validateCreateShow, CreateShow);
 router.put('/shows/:id', VerifyToken, VerifyAdmin, UpdateShow);
 router.delete('/shows/:id', VerifyToken, VerifyAdmin, DeleteShow);
 
-// Bookings
+// Booking management
 router.get('/bookings', VerifyToken, VerifyAdmin, GetAllBookings);
 
 module.exports = router;

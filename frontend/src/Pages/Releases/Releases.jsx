@@ -1,4 +1,3 @@
-import React from 'react';
 import { Loader2 } from 'lucide-react';
 import useReleases from '../../Components/Releases/useReleases';
 import { BACKDROP_BASE, POSTER_BASE, genresList, formatDate } from '../../Components/Releases/releasesUtils';

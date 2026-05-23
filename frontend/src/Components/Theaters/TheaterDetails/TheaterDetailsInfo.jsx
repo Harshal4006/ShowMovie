@@ -1,4 +1,3 @@
-import React from 'react';
 import { MapPin, Clock, Phone, Mail, Monitor } from 'lucide-react';
 
 const TheaterDetailsInfo = ({ theater }) => {
@@ -11,7 +10,7 @@ const TheaterDetailsInfo = ({ theater }) => {
   ];
 
   return (
-    <div className="animate-fade-up rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6" style={{ animationDelay: "200ms" }}>
+    <div className="animate-fade-up animate-delay-200 rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-4 sm:p-6">
       <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-semibold text-white">Theater Information</h2>
       <div className="space-y-3 sm:space-y-4">
         {items.map((item) => (

@@ -11,7 +11,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'ShowMovie <onboarding@resend.dev>';
 
 class EmailService {
-  // Sends booking confirmed email
+  // Send booking confirmed email to user
   async sendBookingConfirmed(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping confirmed email');
@@ -30,7 +30,7 @@ class EmailService {
     return { success: true, emailId: result.data?.id };
   }
 
-  // Sends booking pending email
+  // Send booking pending notification email
   async sendBookingPending(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping pending email');
@@ -49,7 +49,7 @@ class EmailService {
     return { success: true, emailId: result.data?.id };
   }
 
-  // Sends booking failed notification
+  // Send booking failed notification email
   async sendBookingFailed(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping failed email');
@@ -68,7 +68,7 @@ class EmailService {
     return { success: true, emailId: result.data?.id };
   }
 
-  // Sends new show alert to users
+  // Send new show added alert to users
   async sendNewShowAdded(data) {
     if (!resend) {
       console.log('[EmailService] Resend not configured, skipping show added email');

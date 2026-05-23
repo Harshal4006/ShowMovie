@@ -19,14 +19,17 @@ const useReleases = () => {
   const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchAll = async () => {
       setLoading(true);
       try {
         const [nowPlayingRes, trendingRes, upcomingRes] = await Promise.all([
-          request("/tmdb/now-playing?page=1"),
-          request("/tmdb/trending?page=1"),
-          request("/tmdb/upcoming?page=1"),
+          request("/tmdb/now-playing?page=1", { signal: controller.signal }),
+          request("/tmdb/trending?page=1", { signal: controller.signal }),
+          request("/tmdb/upcoming?page=1", { signal: controller.signal }),
         ]);
+
+        if (controller.signal.aborted) return;
 
         const nowPlaying = nowPlayingRes?.movies || [];
         const trendingData = trendingRes?.movies || [];
@@ -44,12 +47,12 @@ const useReleases = () => {
         setComingSoon(sorted.slice(0, 8));
         setFilteredMovies(trendingData.slice(0, 12));
       } catch (err) {
-        console.error("Failed to load releases", err);
       } finally {
         setLoading(false);
       }
     };
     fetchAll();
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {

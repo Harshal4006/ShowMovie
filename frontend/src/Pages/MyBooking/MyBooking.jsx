@@ -1,5 +1,5 @@
 // MyBooking page - view and manage user bookings
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { useAuth } from "@clerk/clerk-react";
 

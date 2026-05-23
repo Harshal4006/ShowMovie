@@ -1,4 +1,3 @@
-import React from 'react';
 
 const TheaterFormModal = ({
   isOpen, editing, form, setForm, onSubmit, onClose,

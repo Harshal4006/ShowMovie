@@ -2,6 +2,7 @@ const Movie = require('../Models/Movie');
 const mongoose = require('mongoose');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 
+// List movies with filtering by genre, search, sort, and section
 const GetAllMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -41,11 +42,11 @@ const GetAllMovies = async (req, res) => {
 
     res.json({ movies, total, page: parseInt(page), pages: Math.ceil(total / limit) });
   } catch (error) {
-    console.error('GetAllMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [], total: 0 });
   }
 };
 
+// Get a single movie by MongoDB ID or TMDB ID
 const GetMovieById = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -64,11 +65,11 @@ const GetMovieById = async (req, res) => {
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
     res.json(movie);
   } catch (error) {
-    console.error('GetMovieById error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
+// Fetch movies marked as featured for homepage carousel
 const GetFeaturedMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -78,11 +79,11 @@ const GetFeaturedMovies = async (req, res) => {
       .lean();
     res.json(movies);
   } catch (error) {
-    console.error('GetFeaturedMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };
 
+// Fetch movies marked as trending
 const GetTrendingMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -92,11 +93,11 @@ const GetTrendingMovies = async (req, res) => {
       .lean();
     res.json(movies);
   } catch (error) {
-    console.error('GetTrendingMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };
 
+// Fetch movies marked as most popular by vote count
 const GetMostPopularMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -106,11 +107,11 @@ const GetMostPopularMovies = async (req, res) => {
       .lean();
     res.json(movies);
   } catch (error) {
-    console.error('GetMostPopularMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };
 
+// Fetch movies that have an available trailer URL
 const GetTrailerMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -123,11 +124,11 @@ const GetTrailerMovies = async (req, res) => {
       .lean();
     res.json(movies);
   } catch (error) {
-    console.error('GetTrailerMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };
 
+// Fetch movies currently active and showing in theaters
 const GetNowShowingMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -137,11 +138,11 @@ const GetNowShowingMovies = async (req, res) => {
       .lean();
     res.json(movies);
   } catch (error) {
-    console.error('GetNowShowingMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };
 
+// Fetch movies with coming-soon status
 const GetUpcomingMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -151,11 +152,11 @@ const GetUpcomingMovies = async (req, res) => {
       .lean();
     res.json(movies);
   } catch (error) {
-    console.error('GetUpcomingMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };
 
+// Find movies related by shared genres
 const GetRelatedMovies = async (req, res) => {
   try {
     await ensureDbConnection();
@@ -182,7 +183,6 @@ const GetRelatedMovies = async (req, res) => {
 
     res.json(related);
   } catch (error) {
-    console.error('GetRelatedMovies error:', error.message);
     res.status(500).json({ message: error.message, movies: [] });
   }
 };

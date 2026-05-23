@@ -1,4 +1,3 @@
-import React from 'react';
 import { CalendarDays, ChevronRight, Star } from 'lucide-react';
 
 const UpcomingCarousel = ({

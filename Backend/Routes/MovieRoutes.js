@@ -1,8 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { GetAllMovies, GetMovieById, GetFeaturedMovies, GetTrendingMovies, GetMostPopularMovies, GetTrailerMovies, GetNowShowingMovies, GetUpcomingMovies, GetRelatedMovies } = require('../Controllers/MovieController');
+const { sanitizeSearch } = require('../Middleware/Validators');
+const {
+  GetAllMovies,
+  GetMovieById,
+  GetFeaturedMovies,
+  GetTrendingMovies,
+  GetMostPopularMovies,
+  GetTrailerMovies,
+  GetNowShowingMovies,
+  GetUpcomingMovies,
+  GetRelatedMovies
+} = require('../Controllers/MovieController');
 
-router.get('/', GetAllMovies);
+// Public routes
+router.get('/', sanitizeSearch, GetAllMovies);
 router.get('/featured', GetFeaturedMovies);
 router.get('/trending', GetTrendingMovies);
 router.get('/most-popular', GetMostPopularMovies);

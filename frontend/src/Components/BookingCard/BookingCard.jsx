@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Ticket, IndianRupee, Calendar, Clock, MapPin } from "lucide-react";
 
@@ -25,6 +26,12 @@ const normalizePoster = (movie) => {
   return PLACEHOLDER;
 };
 
+const statusConfig = {
+  confirmed: { bg: "bg-green-500/20", text: "text-green-400", ring: "ring-green-500/30", dot: "bg-green-400", label: "Confirmed" },
+  pending: { bg: "bg-yellow-500/20", text: "text-yellow-300", ring: "ring-yellow-500/30", dot: "bg-yellow-400", label: "Pending" },
+  cancelled: { bg: "bg-gray-500/20", text: "text-gray-300", ring: "ring-gray-500/30", dot: "bg-gray-400", label: "Cancelled" },
+};
+
 const BookingCard = ({ booking }) => {
   const { show, amount, bookedSeats, isPaid, status, _id } = booking;
   const movie = show?.movie;
@@ -35,12 +42,6 @@ const BookingCard = ({ booking }) => {
   const movieId = movie?.tmdbId || movie?._id || movie?.id || "";
 
   const derivedStatus = status === "cancelled" ? "cancelled" : isPaid ? "confirmed" : "pending";
-
-  const statusConfig = {
-    confirmed: { bg: "bg-green-500/20", text: "text-green-400", ring: "ring-green-500/30", dot: "bg-green-400", label: "Confirmed" },
-    pending: { bg: "bg-yellow-500/20", text: "text-yellow-300", ring: "ring-yellow-500/30", dot: "bg-yellow-400", label: "Pending" },
-    cancelled: { bg: "bg-gray-500/20", text: "text-gray-300", ring: "ring-gray-500/30", dot: "bg-gray-400", label: "Cancelled" },
-  };
 
   const statusStyle = statusConfig[derivedStatus] || statusConfig.pending;
 
@@ -147,4 +148,6 @@ const BookingCard = ({ booking }) => {
   );
 };
 
-export default BookingCard;
+const MemoBookingCard = memo(BookingCard);
+MemoBookingCard.displayName = "BookingCard";
+export default MemoBookingCard;

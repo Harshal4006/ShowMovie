@@ -1,6 +1,6 @@
 // Utility kept for reference - not currently imported
 
-// Format API Response
+// Wrap successful API response in a standard format
 const FormatResponse = (data, message = 'Success', statusCode = 200) => {
   return {
     success: true,
@@ -10,6 +10,7 @@ const FormatResponse = (data, message = 'Success', statusCode = 200) => {
   };
 };
 
+// Wrap error response in a standard format
 const FormatError = (message = 'Error', statusCode = 500) => {
   return {
     success: false,

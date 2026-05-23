@@ -59,7 +59,6 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
         if (data?.movies?.length) setTmdbMovies(data.movies);
       }
     } catch (err) {
-      console.error("Failed to fetch movies:", err);
     } finally {
       setLoading(false);
     }

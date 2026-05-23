@@ -1,4 +1,4 @@
-import React from "react";
+import "./PageLoader.css";
 
 const PageLoader = () => {
   return (
@@ -6,7 +6,7 @@ const PageLoader = () => {
       {/* Ambient Glow Effects */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="absolute w-64 h-64 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute w-48 h-48 bg-red-600/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute w-48 h-48 bg-red-600/5 rounded-full blur-2xl animate-pulse ambient-glow-delay"></div>
       </div>
 
       {/* Film Strip Loader */}
@@ -26,10 +26,10 @@ const PageLoader = () => {
         </div>
 
         {/* Film reels */}
-        <div className="absolute -left-8 top-1/2 -translate-y-1/2 w-10 h-10 border-4 border-red-500/30 rounded-full animate-spin" style={{ animationDuration: '3s' }}>
+        <div className="absolute -left-8 top-1/2 -translate-y-1/2 w-10 h-10 border-4 border-red-500/30 rounded-full animate-spin reel-spin-normal">
           <div className="w-full h-full border-2 border-red-500/50 rounded-full border-dashed"></div>
         </div>
-        <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-10 h-10 border-4 border-red-500/30 rounded-full animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
+        <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-10 h-10 border-4 border-red-500/30 rounded-full animate-spin reel-spin-reverse">
           <div className="w-full h-full border-2 border-red-500/50 rounded-full border-dashed"></div>
         </div>
       </div>
@@ -67,54 +67,20 @@ const PageLoader = () => {
       {/* Loading text */}
       <p className="text-gray-400 text-sm font-medium tracking-wider uppercase">
         <span className="inline-block animate-loadingText">P</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.1s' }}>r</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.2s' }}>e</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.3s' }}>p</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.4s' }}>a</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.5s' }}>r</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.6s' }}>i</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.7s' }}>n</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.8s' }}>g</span>
+        <span className="inline-block animate-loadingText letter-delay-1">r</span>
+        <span className="inline-block animate-loadingText letter-delay-2">e</span>
+        <span className="inline-block animate-loadingText letter-delay-3">p</span>
+        <span className="inline-block animate-loadingText letter-delay-4">a</span>
+        <span className="inline-block animate-loadingText letter-delay-5">r</span>
+        <span className="inline-block animate-loadingText letter-delay-6">i</span>
+        <span className="inline-block animate-loadingText letter-delay-7">n</span>
+        <span className="inline-block animate-loadingText letter-delay-8">g</span>
         <span className="mx-1"></span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '0.9s' }}>S</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '1s' }}>h</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '1.1s' }}>o</span>
-        <span className="inline-block animate-loadingText" style={{ animationDelay: '1.2s' }}>w</span>
+        <span className="inline-block animate-loadingText letter-delay-9">S</span>
+        <span className="inline-block animate-loadingText letter-delay-10">h</span>
+        <span className="inline-block animate-loadingText letter-delay-11">o</span>
+        <span className="inline-block animate-loadingText letter-delay-12">w</span>
       </p>
-
-      {/* Custom CSS animations injected via style tag */}
-      <style>{`
-        @keyframes filmStrip {
-          0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(0.5); }
-        }
-
-        @keyframes loadingDot {
-          0%, 80%, 100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          40% {
-            transform: scale(1.3);
-            opacity: 0.7;
-          }
-        }
-
-        @keyframes loadingText {
-          0%, 100% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-          50% {
-            transform: translateY(-3px);
-            opacity: 0.6;
-          }
-        }
-
-        .animate-loadingText {
-          animation: loadingText 1.4s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 };

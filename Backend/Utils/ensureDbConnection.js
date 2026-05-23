@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 let connectingPromise = null;
 
+// Ensure MongoDB is connected before proceeding, reusing in-flight connections
 const ensureDbConnection = async () => {
   const mongoUri = process.env.MONGO_URI;
   if (!mongoUri) {

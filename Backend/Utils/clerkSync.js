@@ -3,6 +3,7 @@ const axios = require('axios');
 const CLERK_API_URL = 'https://api.clerk.com/v1';
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
+// Fetch user metadata (including role) from Clerk API
 async function getClerkUserMetadata(clerkId) {
   if (!CLERK_SECRET_KEY) {
     throw new Error('CLERK_SECRET_KEY not configured');
@@ -21,11 +22,11 @@ async function getClerkUserMetadata(clerkId) {
       privateMetadata: user.private_metadata || {},
     };
   } catch (error) {
-    console.error('Error fetching Clerk user metadata:', error.message);
     throw error;
   }
 }
 
+// Extract and validate the role from Clerk metadata, defaulting to user
 function extractRoleFromClerk(userMetadata) {
   const privateRole = userMetadata.privateMetadata?.role;
   const publicRole = userMetadata.publicMetadata?.role;

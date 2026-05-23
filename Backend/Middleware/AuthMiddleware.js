@@ -1,7 +1,6 @@
-// Verifies Clerk session token on protected routes
-
 const { getAuth } = require('@clerk/express');
 
+// Check that a valid Clerk user session exists on the request
 const VerifyToken = (req, res, next) => {
   const auth = getAuth(req);
 

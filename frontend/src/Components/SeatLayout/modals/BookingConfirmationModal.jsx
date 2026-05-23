@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, CheckCircle, IndianRupee } from 'lucide-react';
 import MovieInfoCard from './MovieInfoCard';
 import SeatsCard from './SeatsCard';

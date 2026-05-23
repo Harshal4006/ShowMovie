@@ -1,5 +1,3 @@
-import React from "react";
-
 const LoadingState = () => {
   return (
     <div className="rounded-4xl border border-white/10 bg-white/4 p-6 backdrop-blur-sm overflow-hidden">
@@ -31,7 +29,7 @@ const LoadingState = () => {
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 border-4 border-white/20 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-transparent border-t-red-500 rounded-full animate-spin"></div>
-            <div className="absolute inset-2 border-4 border-transparent border-b-red-400/50 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+            <div className="absolute inset-2 border-4 border-transparent border-b-red-400/50 rounded-full animate-spin spinner-inner"></div>
           </div>
         </div>
 

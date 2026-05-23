@@ -1,4 +1,3 @@
-import React from 'react';
 import { Building2, Edit3, Trash2 } from 'lucide-react';
 
 const TheaterMobileCard = ({ theater, onEdit, onDelete }) => (

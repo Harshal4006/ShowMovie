@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env?.VITE_API_URL;
+
+const pendingRequests = new Map();
 
 export class ApiError extends Error {
   constructor(message, { status, data } = {}) {
@@ -55,18 +57,33 @@ export const request = async (path, options = {}) => {
 
   const { method = 'GET', token, headers = {}, body, signal } = options;
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      ...(body != null ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body: body != null ? JSON.stringify(body) : undefined,
-    signal,
-  });
+  // Deduplicate concurrent GET requests
+  const cacheKey = method === 'GET' ? `${method}:${path}:${token || ''}` : null;
+  if (cacheKey) {
+    const pending = pendingRequests.get(cacheKey);
+    if (pending) return pending;
+  }
 
-  return handleResponse(res);
+  const fetchPromise = (async () => {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: {
+        ...(body != null ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body: body != null ? JSON.stringify(body) : undefined,
+      signal,
+    });
+    return handleResponse(res);
+  })();
+
+  if (cacheKey) {
+    pendingRequests.set(cacheKey, fetchPromise);
+    fetchPromise.finally(() => pendingRequests.delete(cacheKey));
+  }
+
+  return fetchPromise;
 };
 
 export default request;

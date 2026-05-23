@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import { Ticket } from 'lucide-react';
 
 const SeatsCard = ({ seats = [] }) => {
@@ -41,4 +41,6 @@ const SeatsCard = ({ seats = [] }) => {
   );
 };
 
-export default SeatsCard;
+const MemoSeatsCard = memo(SeatsCard);
+MemoSeatsCard.displayName = "SeatsCard";
+export default MemoSeatsCard;

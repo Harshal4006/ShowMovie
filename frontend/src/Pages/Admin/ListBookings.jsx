@@ -62,7 +62,6 @@ const ListBookings = () => {
           paymentMethod: b.isPaid ? "UPI" : "Cash",
         })));
       } catch (e) {
-        console.error("Failed to load bookings:", e);
       } finally {
         setLoading(false);
       }

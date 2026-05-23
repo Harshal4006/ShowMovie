@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { makeSeatId } from "../hooks/seatLayoutUtils";
 
 const SeatPill = ({ label, className }) => (

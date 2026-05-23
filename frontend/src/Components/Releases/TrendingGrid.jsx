@@ -1,4 +1,3 @@
-import React from 'react';
 import { TrendingUp, Star, Sparkles } from 'lucide-react';
 
 const TrendingGrid = ({ movies, onMovieClick, posterBase, genresList }) => {

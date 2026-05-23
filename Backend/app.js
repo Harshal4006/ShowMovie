@@ -5,6 +5,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const { serve } = require('inngest/express');
 const { clerkMiddleware, getAuth } = require('@clerk/express');
@@ -15,7 +17,10 @@ const ensureDbConnection = require('./Utils/ensureDbConnection');
 
 const app = express();
 
-// CORS - MUST be before all routes and middleware
+// Security headers
+app.use(helmet());
+
+// CORS - MUST be before all routes
 app.use(
   cors({
     origin: [
@@ -27,6 +32,41 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// Rate limiting - general API limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests. Please try again later.' },
+});
+app.use('/api/', limiter);
+
+// Strict rate limiters for sensitive routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many auth attempts. Please try again later.' },
+});
+
+const paymentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many payment attempts. Please try again later.' },
+});
+
+const bookingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many booking requests. Please try again later.' },
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -107,11 +147,11 @@ app.use('/api/shows', ShowRoutes);
 
 // Mount Booking routes
 const BookingRoutes = require('./Routes/BookingRoutes');
-app.use('/api/bookings', BookingRoutes);
+app.use('/api/bookings', bookingLimiter, BookingRoutes);
 
 // Mount Auth routes
 const AuthRoutes = require('./Routes/AuthRoutes');
-app.use('/api/auth', AuthRoutes);
+app.use('/api/auth', authLimiter, AuthRoutes);
 
 // Mount User routes
 const UserRoutes = require('./Routes/UserRoutes');
@@ -131,8 +171,7 @@ app.use('/api/admin', AdminRoutes);
 
 // Mount Payment routes
 const PaymentRoutes = require('./Routes/PaymentRoutes');
-app.use('/api/payment', PaymentRoutes);
-
+app.use('/api/payment', paymentLimiter, PaymentRoutes);
 
 // Error handling
 app.use(ErrorHandler);

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import ToastProvider from "./Components/ToastProvider/ToastProvider";
 import PageLoader from "./Components/PageLoader/PageLoader.jsx";

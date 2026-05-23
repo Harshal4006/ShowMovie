@@ -1,8 +1,8 @@
-// Service kept for reference - not currently imported
-
 const razorpayInstance = require('../Config/Razorpay');
 
+// Service kept for reference - not currently imported
 class PaymentService {
+  // Create a Razorpay payment order
   async CreatePayment(amount, currency = 'INR', receipt) {
     const options = {
       amount: Math.round(amount * 100),
@@ -21,6 +21,7 @@ class PaymentService {
     };
   }
 
+  // Verify Razorpay payment signature to confirm authenticity
   async VerifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature) {
     const crypto = require('crypto');
     const body = razorpayOrderId + '|' + razorpayPaymentId;
@@ -38,6 +39,7 @@ class PaymentService {
     };
   }
 
+  // Process a refund for a given payment
   async Refund(paymentId, amount) {
     const refund = await razorpayInstance.payments.refund(paymentId, { amount });
 
