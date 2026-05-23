@@ -62,18 +62,21 @@ const BookingConfirmation = ({
               <button
                 onClick={onConfirm}
                 disabled={isLoading || totalSeats === 0}
-                className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-lg hover:opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-red-500/20"
+                className="w-full py-3 md:py-4 px-5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-sm md:text-lg hover:opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-red-500/20 whitespace-nowrap"
               >
                 {isLoading ? (
-                  <>
-                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                    Processing...
-                  </>
+                  <span className="flex items-center gap-3">
+                    <div className="w-5 h-5 md:w-6 md:h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="text-sm md:text-lg">Processing...</span>
+                  </span>
                 ) : (
-                  <>
-                    <CheckCircle className="w-6 h-6" />
-                    Confirm & Pay <IndianRupee size={14} className="inline self-center" />{total.toFixed(2)}
-                  </>
+                  <span className="flex items-center gap-2 md:gap-3">
+                    <CheckCircle className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
+                    <span className="hidden md:inline">Confirm &</span>
+                    <span>Pay</span>
+                    <IndianRupee size={14} className="inline self-center shrink-0" />
+                    <span className="font-bold tracking-tight">{total.toFixed(2)}</span>
+                  </span>
                 )}
               </button>
 

@@ -78,24 +78,25 @@ const BookingConfirmationModal = ({
                 <button
                   onClick={onConfirm}
                   disabled={isLoading || totalSeats === 0}
-                  className="group relative w-full h-16 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 bg-[length:200%_100%] text-white font-bold text-lg shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-red-500/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                  className="group relative w-full h-14 md:h-16 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 bg-[length:200%_100%] text-white font-bold text-sm md:text-lg shadow-lg shadow-red-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-red-500/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.12)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
                   <div className="absolute inset-0 rounded-2xl ring-1 ring-white/15 inset-ring-1 inset-ring-white/20 pointer-events-none" />
                   {isLoading ? (
-                    <span className="relative z-10 flex items-center justify-center gap-3">
-                      <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
+                    <span className="relative z-10 flex items-center justify-center gap-3 px-4 md:px-8">
+                      <div className="w-5 h-5 md:w-6 md:h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="text-sm md:text-lg">Processing...</span>
                     </span>
                   ) : (
-                    <span className="relative z-10 flex items-center justify-between px-8">
-                      <span className="flex items-center gap-3">
-                        <CheckCircle className="w-6 h-6" />
-                        <span>Confirm & Pay</span>
+                    <span className="relative z-10 flex items-center justify-center md:justify-between gap-2 md:gap-0 px-4 md:px-8 whitespace-nowrap">
+                      <span className="flex items-center gap-2 md:gap-3">
+                        <CheckCircle className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
+                        <span className="hidden md:inline">Confirm &</span>
+                        <span>Pay</span>
                       </span>
                       <span className="flex items-baseline gap-1">
-                        <IndianRupee className="h-5 w-5" />
-                        <span className="text-2xl font-bold tracking-tight">{total.toFixed(2)}</span>
+                        <IndianRupee className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                        <span className="text-lg md:text-2xl font-bold tracking-tight">{total.toFixed(2)}</span>
                       </span>
                     </span>
                   )}
