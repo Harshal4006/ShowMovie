@@ -17,7 +17,7 @@ const ListShows = () => {
     editShowId, setEditShowId, bulkOpen, setBulkOpen,
     searchQuery, setSearchQuery, statusFilter, setStatusFilter,
     filteredShows, viewShow, editShow,
-    handleEdit, handleDelete, handleView, handleExport,
+    handleEdit, handleDelete, handleView, handleAddNew, handleExport,
     handleBulkDelete, applyBulkStatus, handleDuplicate, handleEditSubmit,
   } = useShows();
 
