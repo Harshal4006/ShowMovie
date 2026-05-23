@@ -77,7 +77,7 @@ const AddShow = () => {
       navigate("/admin/list-shows");
     } catch (error) {
       console.error("CreateShow error:", error);
-      toast.error(error?.message || error?.data?.message || "Failed to add show");
+      toast.error(error?.data?.error || error?.message || "Failed to add show");
     } finally {
       setIsSubmitting(false);
     }
