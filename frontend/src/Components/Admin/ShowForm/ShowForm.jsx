@@ -13,7 +13,7 @@ const emptyForm = {
   price: "", screenType: "", description: "", status: "active",
 };
 
-const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
+const ShowForm = ({ onSubmit, initialData = {}, isEditing = false, isSubmitting = false }) => {
   const [tmdbMovies, setTmdbMovies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -221,9 +221,10 @@ const ShowForm = ({ onSubmit, initialData = {}, isEditing = false }) => {
         </button>
         <button
           type="submit"
-          className="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-500"
+          disabled={isSubmitting}
+          className="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isEditing ? "Update Show" : "Add Show"}
+          {isSubmitting ? "Adding..." : isEditing ? "Update Show" : "Add Show"}
         </button>
       </div>
     </form>

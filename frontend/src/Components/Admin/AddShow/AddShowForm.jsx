@@ -1,7 +1,7 @@
 import { Info } from "lucide-react";
 import ShowForm from "../ShowForm/ShowForm";
 
-const AddShowForm = ({ onSubmit, initialData }) => {
+const AddShowForm = ({ onSubmit, initialData, isSubmitting }) => {
   return (
     <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 sm:p-6">
       <div className="mb-6 pb-4 border-b border-gray-800">
@@ -11,7 +11,7 @@ const AddShowForm = ({ onSubmit, initialData }) => {
         </p>
       </div>
 
-      <ShowForm onSubmit={onSubmit} initialData={initialData} />
+      <ShowForm onSubmit={onSubmit} initialData={initialData} isSubmitting={isSubmitting} />
 
       {/* Help Tips */}
       <div className="mt-8 p-4 rounded-xl bg-gray-800/50 border border-gray-800">

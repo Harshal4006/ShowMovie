@@ -30,6 +30,7 @@ const AddShow = () => {
       let rating = 0;
       let voteCount = 0;
       let cast = [];
+      let trailerUrl = "";
       let tmdbId = formData.movieId;
 
       if (tmdbId) {
@@ -42,6 +43,7 @@ const AddShow = () => {
           rating = details.rating || details.vote_average || 0;
           voteCount = details.voteCount || details.vote_count || 0;
           cast = details.cast || [];
+          trailerUrl = details.trailerUrl || "";
         } catch (e) {
         }
       }
@@ -70,6 +72,7 @@ const AddShow = () => {
         rating: rating,
         voteCount: voteCount,
         cast: cast,
+        trailerUrl: trailerUrl,
       };
 
       await createShow(token, showData);
@@ -94,7 +97,7 @@ const AddShow = () => {
         <div className="p-4 sm:p-6 lg:p-8">
           <AddShowHeader onQuickAdd={handleQuickAdd} />
 
-          <AddShowForm onSubmit={handleSubmit} initialData={quickAddData || {}} />
+          <AddShowForm onSubmit={handleSubmit} initialData={quickAddData || {}} isSubmitting={isSubmitting} />
           <AddShowPreview />
 
           {isSubmitting && (

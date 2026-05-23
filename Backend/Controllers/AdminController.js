@@ -226,10 +226,10 @@ const GetAllMoviesAdmin = async (req, res) => {
 const UpdateMovie = async (req, res) => {
   try {
     await ensureDbConnection();
-    const { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular, trailerKey, tagline } = req.body;
+    const { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular, trailerKey, trailerUrl, tagline } = req.body;
     const movie = await Movie.findByIdAndUpdate(
       req.params.id,
-      { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular, trailerKey, tagline },
+      { price, movieLanguage, format, status, isFeatured, isTrending, isMostPopular, trailerKey, trailerUrl, tagline },
       { new: true }
     );
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
@@ -274,6 +274,7 @@ const CreateShow = async (req, res) => {
       rating,
       voteCount,
       cast,
+      trailerUrl,
     } = req.body;
 
     const dateTimes = Array.isArray(showDateTimes) && showDateTimes.length > 0
@@ -344,6 +345,7 @@ const CreateShow = async (req, res) => {
               language: tmdbMovie.original_language,
               tagline: tmdbMovie.tagline,
               trailerKey: trailer?.key || null,
+              trailerUrl: trailer?.key ? `https://www.youtube.com/watch?v=${trailer.key}` : trailerUrl || null,
               cast: tmdbCast,
               status: 'active',
               price: showPrice || 0,
@@ -396,6 +398,7 @@ const CreateShow = async (req, res) => {
             language: tmdbMovie.original_language,
             tagline: tmdbMovie.tagline,
             trailerKey: trailer?.key || null,
+            trailerUrl: trailer?.key ? `https://www.youtube.com/watch?v=${trailer.key}` : trailerUrl || null,
             cast: tmdbCast,
             status: 'active',
             price: showPrice || 0,
@@ -429,6 +432,7 @@ const CreateShow = async (req, res) => {
           language: language || 'English',
           tagline: tagline || '',
           trailerKey: null,
+          trailerUrl: trailerUrl || null,
           cast: cast || [],
           status: 'active',
           price: showPrice || 0,
