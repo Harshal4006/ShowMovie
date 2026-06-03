@@ -148,7 +148,7 @@ const MovieDetailse = () => {
   // Error state
   if (error || !movie) {
     return (
-      <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
+      <section className="relative w-full px-4 pb-16 sm:px-6 lg:px-10 xl:px-16">
         <div className="mx-auto max-w-7xl text-center">
           <h1 className="text-3xl font-bold text-gray-100">{error || 'Movie not found'}</h1>
           <p className="mt-3 text-gray-400">The movie you're looking for doesn't exist.</p>
@@ -167,7 +167,7 @@ const MovieDetailse = () => {
 
   // Render
   return (
-    <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
+    <section className="relative w-full px-4 pb-16 sm:px-6 lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">
         <Link to="/movies" className="mb-8 inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-white">
           <ChevronLeft className="h-4 w-4" />

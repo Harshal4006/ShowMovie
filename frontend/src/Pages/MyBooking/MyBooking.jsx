@@ -54,7 +54,7 @@ const MyBooking = () => {
   const totalAmount = bookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
 
   return (
-    <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
+    <section className="w-full px-4 pb-16 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="flex flex-col justify-center items-center text-center">

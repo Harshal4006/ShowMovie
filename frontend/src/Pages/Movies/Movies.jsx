@@ -74,7 +74,7 @@ const Movies = () => {
   };
 
   return (
-    <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
+    <section className="relative w-full px-4 pb-16 sm:px-6 lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-3xl font-bold leading-tight text-gray-100 sm:text-4xl">

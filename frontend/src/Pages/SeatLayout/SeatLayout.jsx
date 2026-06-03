@@ -55,7 +55,7 @@ const SeatLayout = () => {
   });
 
   return (
-    <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
+    <section className="relative w-full px-4 pb-16 sm:px-6 lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">
         <Link
           to={movie ? `/movies/${movie.id ?? movie._id}` : "/movies"}
