@@ -1,7 +1,7 @@
 
 const MovieDetailsSkeleton = () => {
   return (
-    <section className="relative w-full px-4 pb-16 sm:px-6 lg:px-10 xl:px-16">
+    <section className="relative w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10 xl:px-16">
       <div className="mx-auto max-w-7xl">
         {/* Back button skeleton */}
         <div className="mb-8 h-6 w-32 rounded-lg bg-gray-800 animate-pulse" />

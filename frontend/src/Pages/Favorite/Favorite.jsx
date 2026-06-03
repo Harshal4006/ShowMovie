@@ -24,7 +24,7 @@ const Favorite = () => {
   // Loading state
   if (userLoading) {
     return (
-      <section className="w-full px-4 pb-16 sm:px-6 lg:px-10">
+      <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-center items-center text-center">
             <h1 className="text-3xl font-bold text-white sm:text-4xl">Favorites</h1>
@@ -43,7 +43,7 @@ const Favorite = () => {
   // Signed-out state
   if (!isSignedIn) {
     return (
-      <section className="w-full px-4 pb-16 sm:px-6 lg:px-10">
+      <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-center items-center text-center">
             <h1 className="text-3xl font-bold text-white sm:text-4xl">Favorites</h1>
@@ -68,7 +68,7 @@ const Favorite = () => {
   // Empty state
   if (visibleMovies.length === 0) {
     return (
-      <section className="w-full px-4 pb-16 sm:px-6 lg:px-10">
+      <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-center items-center text-center">
             <h1 className="text-3xl font-bold text-white sm:text-4xl">Favorites</h1>
@@ -92,7 +92,7 @@ const Favorite = () => {
 
   // Render
   return (
-    <section className="w-full px-4 pb-16 sm:px-6 lg:px-10">
+    <section className="w-full px-4 pb-16 pt-24 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-center items-center text-center">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">Favorites</h1>
