@@ -398,5 +398,5 @@ const functions = [
 
 module.exports = {
   inngest,
-  functions: [syncUserCreation, syncUserUpdate, syncUserDeletion, bookingConfirmedEmail, sendBookingReminder, sendShowAddedNotification, expireShowsJob],
+  functions: [syncUserCreation, syncUserUpdate, syncUserDeletion, bookingConfirmedEmail, bookingPendingEmail, bookingFailedEmail, newShowAddedEmail, expireShowsJob],
 };
