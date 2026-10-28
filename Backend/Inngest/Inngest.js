@@ -40,11 +40,11 @@ const expireShowsJob = inngest.createFunction(
     id: 'expire-shows',
     name: 'Expire Completed Shows',
     timeout: '60s',
+    triggers: [
+      { event: 'shows/expire.request' },
+      { cron: '*/5 * * * *' },
+    ],
   },
-  [
-    { event: 'shows/expire.request' },
-    { cron: '*/5 * * * *' },
-  ],
   async () => {
     await connectDB();
     const { expireShowsNow } = require('../Utils/showExpiry');
