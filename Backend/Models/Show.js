@@ -6,6 +6,7 @@ const showSchema = new mongoose.Schema({
 
   // Show timing
   showDateTime: { type: Date, required: true },
+  endDateTime: { type: Date },
   showPrice: { type: Number, required: true },
   theater: { type: String, required: true },
   screenType: { type: String },
@@ -13,7 +14,7 @@ const showSchema = new mongoose.Schema({
 
   // Seats and availability
   occupiedSeats: { type: Map, of: String, default: {} },
-  status: { type: String, enum: ['active', 'sold-out', 'upcoming'], default: 'active' }
+  status: { type: String, enum: ['active', 'sold-out', 'upcoming', 'completed', 'expired'], default: 'active' }
 }, { timestamps: true });
 
 showSchema.index({ movie: 1, status: 1 });
@@ -21,5 +22,6 @@ showSchema.index({ movie: 1, showDateTime: 1 });
 showSchema.index({ movie: 1, status: 1, showDateTime: 1 });
 showSchema.index({ status: 1 });
 showSchema.index({ showDateTime: 1 });
+showSchema.index({ endDateTime: 1 });
 
 module.exports = mongoose.model('Show', showSchema);

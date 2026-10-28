@@ -34,6 +34,25 @@ const inngest = new Inngest({
   signingKey: process.env.INNGEST_SIGNING_KEY,
 });
 
+// Auto-expire shows
+const expireShowsJob = inngest.createFunction(
+  {
+    id: 'expire-shows',
+    name: 'Expire Completed Shows',
+    timeout: '60s',
+  },
+  [
+    { event: 'shows/expire.request' },
+    { cron: '*/5 * * * *' },
+  ],
+  async () => {
+    await connectDB();
+    const { expireShowsNow } = require('../Utils/showExpiry');
+    const count = await expireShowsNow();
+    return { success: true, expired: count };
+  }
+);
+
 // Sync Clerk user creation
 const syncUserCreation = inngest.createFunction(
   {
@@ -379,5 +398,5 @@ const functions = [
 
 module.exports = {
   inngest,
-  functions,
+  functions: [syncUserCreation, syncUserUpdate, syncUserDeletion, bookingConfirmedEmail, sendBookingReminder, sendShowAddedNotification, expireShowsJob],
 };

@@ -447,15 +447,25 @@ const CreateShow = async (req, res) => {
       return res.status(400).json({ message: 'Movie not found and could not be created' });
     }
 
-    const showsToCreate = dateTimes.map((dt) => ({
-      movie: movie._id,
-      showDateTime: dt,
-      showPrice,
-      theater,
-      screenType,
-      language,
-      status: 'active'
-    }));
+    const showsToCreate = dateTimes.map((dt) => {
+      const start = new Date(dt);
+      let endDateTime = null;
+      if (movie.runtime && typeof movie.runtime === 'number' && movie.runtime > 0) {
+        endDateTime = new Date(start.getTime() + movie.runtime * 60 * 1000);
+      } else {
+        endDateTime = new Date(start.getTime() + 150 * 60 * 1000);
+      }
+      return {
+        movie: movie._id,
+        showDateTime: dt,
+        endDateTime,
+        showPrice,
+        theater,
+        screenType,
+        language,
+        status: 'active'
+      };
+    });
 
     const createdShows = await Show.insertMany(showsToCreate, { ordered: true });
     const createdIds = createdShows.map((s) => s._id);

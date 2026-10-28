@@ -4,11 +4,13 @@ const Show = require('../Models/Show');
 const User = require('../Models/User');
 const ensureDbConnection = require('../Utils/ensureDbConnection');
 const { CreateNotification } = require('./NotificationController');
+const { expireShowsNow, getShowEndTime } = require('../Utils/showExpiry');
 
 // Reserve seats and create a pending booking
 const CreateBooking = async (req, res) => {
   try {
     await ensureDbConnection();
+    await expireShowsNow();
     const { showId, bookedSeats, amount } = req.body;
     const { userId } = getAuth(req);
 
@@ -17,8 +19,16 @@ const CreateBooking = async (req, res) => {
     const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: 'User not found. Please sign in again.' });
 
-    const show = await Show.findById(showId);
+    const show = await Show.findById(showId).populate('movie', 'runtime');
     if (!show) return res.status(404).json({ message: 'Show not found' });
+    if (show.status === 'completed' || show.status === 'expired') {
+      return res.status(400).json({ message: 'This show has expired and is no longer bookable' });
+    }
+    const endTime = getShowEndTime(show);
+    if (endTime && endTime <= new Date()) {
+      await Show.updateOne({ _id: show._id }, { $set: { status: 'expired' } });
+      return res.status(400).json({ message: 'This show has expired and is no longer bookable' });
+    }
 
     const occupiedSeats = show.occupiedSeats || new Map();
     for (const seat of bookedSeats) {
