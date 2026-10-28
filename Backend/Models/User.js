@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema({
   favorites: [{ type: Number, required: true }]
 }, { timestamps: true });
 
-userSchema.index({ clerkId: 1 });
 userSchema.index({ favorites: 1 });
 
 module.exports = mongoose.model('User', userSchema);
